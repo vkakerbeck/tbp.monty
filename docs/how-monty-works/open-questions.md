@@ -11,7 +11,7 @@ description: I'm just starting to collect a new list of open questions here. Sti
 - How are the recognized?
 
 ## Object Models
-- Where do we have a model of general physics? Does every LM know about this?
+- Where do we have a model of general physics? Can every LM learn the basic physics necessary for the objects it models (e.g. fluid-like behavior in some, cloth-like behavior in others)? Or are some LMs more specialized for this?
 
 ## Object Transformations
 
