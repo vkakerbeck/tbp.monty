@@ -24,9 +24,9 @@ description: I'm just starting to collect a new list of open questions here. Sti
 - How do we know the scale of an object?
 
 ## Learning
-- How does it work that I can learn an object using vision but the recognize it using touch? (in Monty the Sensor Module can simply be switched out but how would it work in the brain? Or how would it work in a multimodal Monty system without rewiring the SM to LM connections or explicitly copying models?)
+- How does it work that I can learn an object using vision but then recognize it using touch? (in Monty the Sensor Module can simply be switched out but how would it work in the brain? Or how would it work in a multimodal Monty system without rewiring the SM to LM connections or explicitly copying models?)
 - Should there be some form of memory consolidation?
-- How do we learn where and object begins and where it ends? What defines a sub-component of an object?
+- How do we learn where an object begins and where it ends? What defines a sub-component of an object?
 
 # Sensor Modules
 
@@ -36,7 +36,7 @@ description: I'm just starting to collect a new list of open questions here. Sti
 - How are goal states decomposed into sub-goals?
 
 ## Model-Free Policies and the Motor System
-- How does the motor system decide which goal state to implement (given that every/many LMs produce goal states)?
+- How does the motor system decide which goal state to carry out (given that every/many LMs produce goal states)?
 
 # CMP
 
