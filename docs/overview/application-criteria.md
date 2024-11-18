@@ -18,9 +18,9 @@ Applications where we anticipage Monty to particularly shine are:
 - Applications where the agent needs to **generalize/extrapolate to new tasks**
 - Applications where **interpretability** is important
 - Applications where **robustness** is important (to noise but also samples outside of the training distribution)
-- Applications where **multimodal integration** is required or **multimodal transfer** (learning with on modality and inferring with another)
+- Applications where **multimodal integration** is required or **multimodal transfer** (learning with one modality and inferring with another)
 - Applications where the agent needs to **solve a wide range of tasks**
-- Applications **where humans do well** but current AI doesn't
+- Applications **where humans do well** but current AI does not
 
 # Capabilities
 
