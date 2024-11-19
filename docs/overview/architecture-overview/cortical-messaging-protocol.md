@@ -1,6 +1,20 @@
 ---
 title: Cortical Messaging Protocol
 ---
+
+[block:embed]
+{
+  "html": "<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fwww.youtube.com%2Fembed%2F8IfIXQ2y2TM%3Ffeature%3Doembed&display_name=YouTube&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D8IfIXQ2y2TM&image=https%3A%2F%2Fi.ytimg.com%2Fvi%2F8IfIXQ2y2TM%2Fhqdefault.jpg&type=text%2Fhtml&schema=youtube\" width=\"854\" height=\"480\" scrolling=\"no\" title=\"YouTube embed\" frameborder=\"0\" allow=\"autoplay; fullscreen; encrypted-media; picture-in-picture;\" allowfullscreen=\"true\"></iframe>",
+  "url": "https://www.youtube.com/watch?v=8IfIXQ2y2TM",
+  "title": "2023/06 - The Cortical Messaging Protocol",
+  "favicon": "https://www.youtube.com/favicon.ico",
+  "image": "https://i.ytimg.com/vi/8IfIXQ2y2TM/hqdefault.jpg",
+  "provider": "https://www.youtube.com/",
+  "href": "https://www.youtube.com/watch?v=8IfIXQ2y2TM",
+  "typeOfEmbed": "youtube"
+}
+[/block]
+
 We use a common messaging protocol that all components (LMs, SMs, and motor systems) adhere to. This makes it possible for all components to communicate with each other and to combine them arbitrarily. The CMP defines what information the outputs of SMs and LMs need to contain.
 
 In short, a CMP-compliant output contains _features at a pose_. The pose contains a location in 3D space (naturally including 1D or 2D space) and represents where the sensed features are relative to the body, or another common reference point such as a landmark in the environment. The pose also includes information about the feature's 3D rotation. Additionally, the output can contain features that are independent of the object's pose such as color, texture, temperature (from the SM) or object ID (from the LM).
