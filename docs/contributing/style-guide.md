@@ -5,15 +5,19 @@ title: Style Guide
 
 We follow the [PEP8](https://peps.python.org/pep-0008/) Python style guide.
 
+Additional style guidelines are enforced by [Ruff](https://docs.astral.sh/ruff/) and configured in [pyproject.toml](https://github.com/thousandbrainsproject/tbp.monty/blob/main/pyproject.toml).
+
+To quickly check if your code is formatted correctly, run `ruff check` in the `tbp.monty` directory.
+
 ## Code Formatting
 
-We use **ruff** to check proper code formatting with a **line length of 88**.
+We use [Ruff](https://docs.astral.sh/ruff/) to check proper code formatting with a **line length of 88**.
 
-A convenient way to ensure your code is formatted correctly is using the ruff formatter. If you use VSCode, you can get the ruff formatter extension and set it to format on save (modified lines only) so your code always looks nice and matches our style requirements.
+A convenient way to ensure your code is formatted correctly is using the [ruff formatter](https://docs.astral.sh/ruff/formatter/). If you use VSCode, you can get the [Ruff VSCode extension](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff) and set it to format on save (modified lines only) so your code always looks nice and matches our style requirements.
 
 ## Code Docstrings
 
-Doc strings should begin with a one-line summary, which ends with a period. For more details, see [PEP 257](https://peps.python.org/pep-0257/) docstring guide.
+We adopted the Google Style for docstrings. For more details, see the [Google Python Style Guide - 3.8 Comments and Docstrings](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings).
 
 ## Libraries
 
@@ -24,6 +28,8 @@ After discovering that torch-to-numpy conversions (and the reverse) were a signi
 We still require the PyTorch library since we use it for certain things, such as multiprocessing. However, please use NumPy operations for any vector and matrix operations whenever possible. If you think you cannot work with NumPy and need to use Torch, consider opening an RFC first to increase the chances of your PR being merged.
 
 Another reason we discourage using PyTorch is to add a barrier for deep-learning to creep into Monty. Although we don't have a fundamental issue with contributors using deep learning, we worry that it will be the first thing someone's mind goes to when solving a problem (when you have a hammer...). We want contributors to think intentionally about whether deep-learning is the best solution for what they want to solve. Monty relies on very different principles than those most ML practitioners are used to, and so it is useful to think outside of the mental framework of deep-learning. More importantly, evidence that the brain can perform the long-range weight transport required by deep-learning's cornerstone algorithm - back-propagation - is extremely scarce. We are developing a system that, like the mammalian brain, should be able to use _local_ learning signals to rapidly update representations, while also remaining robust under conditions of continual learning. As a general rule therefore, please avoid Pytorch, and the algorithm that it is usually leveraged to support - back-propagation! 
+
+You can read more about our views on deep learning in Monty in our [FAQ](../how-monty-works/faq-monty.md#why-does-monty-not-make-use-of-deep-learning).
 
 ## Source Code Copyright and License Header
 
@@ -46,6 +52,58 @@ In other words, if you are creating a new file, add the copyright and license he
 
 > [!NOTE]
 > While we deeply value and appreciate every contribution, the source code file header is reserved for essential copyright and license information and will not be used for contributor acknowledgments.
+
+# GitHub Actions
+
+We use GitHub Actions to run our continuous integration workflows.
+
+## GitHub Actions Naming Convention
+
+### Workflow Name
+
+The workflow name is a human-readable descriptive Capitalized Case name, e.g.,
+
+```yml
+name: Docs
+```
+```yml
+name: Monty
+```
+
+```yml
+name: Tools
+```
+
+```yml
+name: Potato Stuff
+```
+
+### Job Name
+
+The job name when in position of a key in a `jobs:` dictionary is a human-readable snake_case ending with `_<workflow_name>`.
+
+When used as a value for the `name:` property, the job name is human-readable kebab-case ending with `-<workflow-name>`, e.g.,
+
+```yml
+jobs:
+  check_docs:
+    name: check-docs
+```
+```yml
+jobs:
+  install_monty:
+    name: install-monty
+```
+```yml
+jobs:
+  test_tools:
+    name: test-tools
+```
+```yml
+jobs:
+  check_style_potato_stuff:
+    name: check-style-potato-stuff
+```
 
 # Documentation Style Guide
 
@@ -88,7 +146,10 @@ For example, the following markdown creates the image below:
 ![caption text](../figures/docs-only-example.png)
 ```
 
-<div style="text-align:center"><img src="https://files.readme.io/5b9d5a186a651f0ddc17022c3a95e65400991aa56a6d8523abefabd4db1dc6c4-touch_vs_vision.png" /><caption>caption text</caption></div>
+<div style="display:flex; flex-direction:column; align-items:center">
+  <img width="300px" src="https://files.readme.io/5b9d5a186a651f0ddc17022c3a95e65400991aa56a6d8523abefabd4db1dc6c4-touch_vs_vision.png" />
+  <caption>caption text</caption>
+</div>
 
 > [!WARNING] 
 > Caption text is only visible on readme.com
