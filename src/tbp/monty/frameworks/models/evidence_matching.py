@@ -1777,7 +1777,7 @@ class EvidenceGraphLM(GraphLM):
         elif self.evidence_update_threshold == "x_percent_threshold":
             max_global_evidence = self.current_mlh["evidence"]
             x_percent_of_max = max_global_evidence / 100 * self.x_percent_threshold
-            return x_percent_of_max
+            return max_global_evidence - x_percent_of_max
         elif self.evidence_update_threshold == "all":
             return np.min(self.evidence[graph_id])
         else:
