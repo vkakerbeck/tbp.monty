@@ -146,8 +146,8 @@ class BasicWandbTableStatsHandler(WandbHandler):
 class DetailedWandbTableStatsHandler(BasicWandbTableStatsHandler):
     """Log LM stats and actions to wandb as tables.
 
-    This is a modified version of BasicWandbTableStatsHandler that, in additiob to the
-    stats logs the actions exectuted in each episode to wandb as tables (one table per
+    This is a modified version of BasicWandbTableStatsHandler that, in addition to the
+    stats, logs the actions exectuted in each episode to wandb as tables (one table per
     episode).
     """
 
