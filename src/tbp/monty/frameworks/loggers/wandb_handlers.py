@@ -153,7 +153,6 @@ class DetailedWandbTableStatsHandler(BasicWandbTableStatsHandler):
 
     def __init__(self):
         super().__init__()
-        self.wandb_table = None
 
     @classmethod
     def log_level(cls):
