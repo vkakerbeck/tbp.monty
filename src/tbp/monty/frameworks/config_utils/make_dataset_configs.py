@@ -26,7 +26,10 @@ from tbp.monty.frameworks.environments.two_d_data import (
     SaccadeOnImageFromStreamEnvironment,
 )
 from tbp.monty.frameworks.environments.ycb import SHUFFLED_YCB_OBJECTS
+from tbp.monty.frameworks.run_env import setup_env
 from tbp.monty.frameworks.utils.transform_utils import scipy_to_numpy_quat
+
+setup_env()
 
 # ---------
 # run / training / eval args
