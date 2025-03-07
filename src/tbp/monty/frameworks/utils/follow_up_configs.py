@@ -239,5 +239,8 @@ def create_eval_config_multiple_episodes(
             change_every_episode=True,
         )
     )
+    new_config["monty_config"]["motor_system_config"]["motor_system_args"][
+        "file_names_per_episode"
+    ] = file_names_per_episode
 
     return new_config
