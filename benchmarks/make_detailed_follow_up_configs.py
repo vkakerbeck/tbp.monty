@@ -22,7 +22,10 @@ sys.path.insert(
 from benchmarks.configs.load import load_configs
 from benchmarks.configs.names import NAMES
 from tbp.monty.frameworks.config_utils.cmd_parser import create_rerun_parser
-from tbp.monty.frameworks.utils.follow_up_configs import (
+from tbp.monty.frameworks.run_env import setup_env
+
+setup_env()
+from tbp.monty.frameworks.utils.follow_up_configs import (  # noqa: E402
     create_eval_config_multiple_episodes,
     recover_output_dir,
 )
