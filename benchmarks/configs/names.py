@@ -21,7 +21,7 @@ discussion, see: https://github.com/thousandbrainsproject/tbp.monty/pull/153.
 
 from dataclasses import dataclass, fields
 
-NAMES = list()
+from benchmarks.configs.follow_ups.names import NAMES
 
 
 @dataclass

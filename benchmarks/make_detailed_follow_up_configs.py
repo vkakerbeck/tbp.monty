@@ -95,6 +95,11 @@ if __name__ == "__main__":
     with open(file_path, "wb") as f:
         pickle.dump(follow_up_config, f)
 
+    # Add NAMES.extend(["follow_up_name"]) to the follow_ups/names.py file so it can be
+    # loaded by run.py
+    with open(follow_up_dir / "names.py", "a") as f:
+        f.write(f'\nNAMES.extend(["{follow_up_name}"])')
+
     print("\n\n")
     print(f"Config to rerun all episodes saved in {follow_up_dir}/{follow_up_name}")
     print("-" * 50)
