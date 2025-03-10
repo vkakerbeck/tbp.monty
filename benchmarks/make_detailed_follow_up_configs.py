@@ -114,6 +114,28 @@ if __name__ == "__main__":
     print(command)
     print("To print the config to verify it is correct, add the -p flag")
 
+    # Check that config doesn't use goal state generator (actions.txt file doesn't
+    # store those jumps)
+    if follow_up_config["monty_config"]["motor_system_config"]["motor_system_args"][
+        "use_goal_state_driven_actions"
+    ]:
+        print(
+            "Warning: config uses goal state generator. This will not work for ",
+            "exact replication because actions.txt file does not store those jumps.",
+        )
+    # Check that config doesn't add noise to sensor data
+    for sensor_module_config in follow_up_config["monty_config"][
+        "sensor_module_configs"
+    ].values():
+        if (
+            "noise_params" in sensor_module_config["sensor_module_args"].keys()
+            and sensor_module_config["sensor_module_args"]["noise_params"]
+        ):
+            print(
+                "Warning: config adds noise to sensor data. This will not work for ",
+                "exact replication because sensor data will be different.",
+            )
+
     # Possible optimizations:
     # -- output dir is being parsed here and inside create_eval_episode, refactor
     # -- use wandb resume_run option
