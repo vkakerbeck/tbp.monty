@@ -19,6 +19,7 @@ sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.expanduser(os.path.realpath(__file__))))
 )
 # Load all experiment configurations from local project
+from benchmarks.configs.follow_ups.names import NAMES as FOLLOW_UP_NAMES
 from benchmarks.configs.load import load_configs
 from benchmarks.configs.names import NAMES
 from tbp.monty.frameworks.config_utils.cmd_parser import create_rerun_parser
@@ -97,8 +98,9 @@ if __name__ == "__main__":
 
     # Add NAMES.extend(["follow_up_name"]) to the follow_ups/names.py file so it can be
     # loaded by run.py
-    with open(follow_up_dir / "names.py", "a") as f:
-        f.write(f'\nNAMES.extend(["{follow_up_name}"])')
+    if follow_up_name not in FOLLOW_UP_NAMES:
+        with open(follow_up_dir / "names.py", "a") as f:
+            f.write(f'\nNAMES.extend(["{follow_up_name}"])')
 
     print("\n\n")
     print(f"Config to rerun all episodes saved in {follow_up_dir}/{follow_up_name}")
