@@ -909,14 +909,8 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
 
         # NOTE: detailed wandb logging is currently removed as default. If the handler
         # is added back, the handler should be removed in unit tests again. (also in the
-        # test_reproduce_single_episode_with_multiple_episode_function)
-        # Detailed wandb logging should be automatically built in, though we will remove
-        # it to avoid logging tests to wandb
-        # self.assertEqual(
-        #     eval_cfg_2["logging_config"]["wandb_handlers"][-1],
-        #     DetailedWandbMarkedObsHandler,
-        # )
-        # eval_cfg_2["logging_config"]["wandb_handlers"].pop()
+        # test_reproduce_single_episode_with_multiple_episode_function). For original
+        # code see https://github.com/thousandbrainsproject/tbp.monty/pull/208
 
         # capsule3DSolid is used as the lone eval object; make sure it is listed once
         # per episode
