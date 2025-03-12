@@ -20,7 +20,7 @@ sys.path.insert(
 )
 # Load all experiment configurations from local project
 from benchmarks.configs.follow_ups.names import NAMES as FOLLOW_UP_NAMES
-from benchmarks.configs.load import load_configs
+from benchmarks.configs.load import load_config
 from benchmarks.configs.names import NAMES
 from tbp.monty.frameworks.config_utils.cmd_parser import create_rerun_parser
 from tbp.monty.frameworks.run_env import setup_env
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     rerun_episodes = cmd_args.episodes
 
     # Load results from experiment and find episodes of interest
-    CONFIGS = load_configs([experiment])
+    CONFIGS = load_config(experiment)
     config = CONFIGS[experiment]
     output_dir = recover_output_dir(config, experiment)
 
