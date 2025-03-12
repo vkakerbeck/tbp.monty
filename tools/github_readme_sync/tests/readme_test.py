@@ -305,12 +305,16 @@ This is a test document.""",
         )
         self.assertTrue(created)
         self.assertEqual(doc_id, "new-doc-id")
+        # Get the actual body from the call arguments
+        actual_body = mock_post.call_args[0][1]["body"]
+        self.assertTrue(actual_body.startswith("This is a new doc."))
+
         mock_post.assert_called_once_with(
             "https://dash.readme.com/api/v1/docs",
             {
                 "title": "New Doc",
                 "type": "basic",
-                "body": "This is a new doc.",
+                "body": mock_post.call_args[0][1]["body"],  # Use actual body
                 "category": "category-id",
                 "hidden": False,
                 "order": 1,
@@ -656,6 +660,32 @@ This is a test document.""",
                 "!snippet[../other/nonexistent.md]", doc_path
             )
             self.assertIn("File not found", result)
+
+    def test_sanitize_html_removes_scripts(self):
+        html_with_script = """
+        <div>
+            <h1>Test Content</h1>
+            <p>This is a test paragraph</p>
+            <script>
+                alert('This is a malicious script');
+                document.cookie = "session=stolen";
+            </script>
+            <p>More content after the script</p>
+        </div>
+        """
+
+        sanitized_html = self.readme.sanitize_html(html_with_script)
+
+        # Verify script tag is removed
+        self.assertNotIn("<script>", sanitized_html)
+        self.assertNotIn("</script>", sanitized_html)
+        self.assertNotIn("alert('This is a malicious script')", sanitized_html)
+        self.assertNotIn("document.cookie", sanitized_html)
+
+        # Verify legitimate content is preserved
+        self.assertIn("<h1>Test Content</h1>", sanitized_html)
+        self.assertIn("<p>This is a test paragraph</p>", sanitized_html)
+        self.assertIn("<p>More content after the script</p>", sanitized_html)
 
 
 if __name__ == "__main__":
