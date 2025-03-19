@@ -100,14 +100,7 @@ if __name__ == "__main__":
     # loaded by run.py
     if follow_up_name not in FOLLOW_UP_NAMES:
         with open(follow_up_dir / "names.py", "a") as f:
-            f.write(f'\nNAMES.extend(["{follow_up_name}"])')
-    # Add terminating \n at the end of the file if it isn't already there
-    with open(follow_up_dir / "names.py", "r+") as f:
-        f.seek(0, 2)  # Go to the end of the file
-        f.seek(f.tell() - 1)  # Go back one character
-        last_char = f.read(1)
-        if last_char != "\n":
-            f.write("\n")
+            f.write(f'NAMES.extend(["{follow_up_name}"])\n')
 
     print("\n\n")
     print(f"Config to rerun all episodes saved in {follow_up_dir}/{follow_up_name}")
