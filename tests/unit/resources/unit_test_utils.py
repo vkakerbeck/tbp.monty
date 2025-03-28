@@ -14,6 +14,9 @@ import unittest
 import numpy as np
 from scipy.spatial.transform import Rotation
 
+from tbp.monty.frameworks.config_utils.make_dataset_configs import (
+    make_sensor_positions_on_grid,
+)
 from tbp.monty.frameworks.models.states import State
 
 
@@ -51,6 +54,11 @@ class BaseGraphTestCases:
                 State(**fo_2),
                 State(**fo_3),
             ]
+
+            self.lm_offsets = make_sensor_positions_on_grid(
+                n_sensors=5,
+                add_view_finder=False
+            )
 
             # Create a symmetric synthetic object, where the location of the last
             # feature differs from the base-synthetic object, resulting in
