@@ -118,7 +118,7 @@ class OmniglotEnvironment(EmbodiedEnvironment):
         Returns:
             observation (dict).
         """
-        amount = 1 if action.rotation_degrees < 1 else action.rotation_degrees
+        amount = max(action.rotation_degrees, 1)
         self.step_num += int(amount)
         query_loc = self.locations[self.step_num % self.max_steps]
         patch = self.get_image_patch(
