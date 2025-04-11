@@ -7,7 +7,7 @@ Monty aims to implement a **general-purpose algorithm for understanding and inte
 ## What Kind of Applications can Monty Be Used For?
 **Monty is a sensorimotor modeling system. It is NOT made for learning from static datasets** (although some can be framed to introduce movement, such as the Omniglot example below). Any application where you want to use Monty should have some concept of movement and how movement will change the state of the agent and what is being observed.
 
-> ⚠️ Monty currently expects movement to be in 3D Euclidean space
+> ⚠️ Monty Currently Expects Movement to be in 3D Euclidean Space
 In the current implementation, movement should happen in 3D (or less) space and be tracked using Euclidean location coordinates. Although we are convinced that the basic principles of Monty will also apply to abstract spaces ([potentially embedded in 3D space](https://thousandbrains.discourse.group/t/abstract-concept-in-monty/533/4)) and we know that the [brain uses different mechanisms to encode space](https://youtu.be/zRRazfFstvY), the current implementation relies on 3D Euclidean space.
 
 # Customizing Monty for Your Application
@@ -15,11 +15,11 @@ The diagram below shows the base abstract classes in Monty. For general informat
 The Experiment class coordinates the experiment (learning and evaluation). It initializes and controls Monty and the environment and coordinates the interaction between them.
 The environment class is wrapped in a DataSet class, which can be accessed using a DataLoader. An experiment can have two data loaders associated with it: one for training and one for evaluation.
 
-> ⚠️ Subject to change in the near future
+> ⚠️ Subject to Change in the Near Future
  The use of `DataSet` and `DataLoader` follows common PyTorch conventions. However, since Monty is not made for static datasets, we plan to refactor this to be more analogous to environment interfaces used, for instance, in reinforcement learning.
  Additionally, we are working on cleaning up the data access between the motor system, data loader, and dataset (grey arrows).
 
-![Class structure in tbp.monty. Each class can be customized independently, allowing for easy modification and testing of individual components.](../../figures/how-to-use-monty/monty_class_diagram.png#width=400px)
+![Class structure in tbp.monty. Each class can be customized independently, allowing for easy modification and testing of individual components.](../../figures/how-to-use-monty/monty_class_diagram.png#width=500px)
 
 Information flow in Monty implements a sensorimotor loop. Observations from the environment are first processed by the sensor module. The resulting CMP-compliant output is then used by the learning modules to model and recognize what it is sensing. The learning modules can suggest an action (`GoalState`) to the motor system at each step. The motor system decides which action to execute and translates it into motor commands. The data loader then uses this action to extract the next observation from the dataset, which in turn gets it from the environment. The next observation is sent to the sensor module(s) and the loop repeats.
 
@@ -85,7 +85,7 @@ Think about how your experiment should be structured. What defines an episode? W
 
 ## Example 1: Omniglot
 As one of Monty's strengths is the ability to learn from small amounts of data, one interesting application is the [Omniglot dataset](https://github.com/brendenlake/omniglot). It contains drawings of 1623 characters from 50 alphabets. Each of the characters is drawn 20 times by different people, as shown below.
-![Dataset example](../../figures/how-to-use-monty/omniglot_character_exp.png)
+![Example character from the Omniglot dataset in its 20 variations.](../../figures/how-to-use-monty/omniglot_character_exp.png)
 
 Since this is a static dataset, and Monty is a sensorimotor learning system, we first have to define how movement looks on this dataset. A sensor module in Monty always receives a small patch as input and the learning module then integrates the extracted features and locations over time to learn and infer complete objects. So, in this case, we can take a small patch on the character (as shown on the right in the figure below) and move this patch further along the strokes at each step. Following the strokes is easy in this case as the Omniglot dataset also contains the temporal sequence of x,y, and z coordinates in which the characters were drawn. If this information were unavailable, the patch could be moved arbitrarily or use heuristics such as following the sensed principal curvature directions.
 ![An observation at each step is a small patch on the character.](../../figures/how-to-use-monty/omniglot_obs_exp.png#width=400px)
@@ -105,7 +105,7 @@ Learning and inference on Omniglot characters can be implemented by writing two 
    - Defines initialization of basic variables such as episode and epoch counters in the `__init__` function
    - Defines the `post_episode` function, which calls `cycle_object` to call the environment's `switch_to_object` function. Using the episode and epoch counters, it keeps track of which character needs to be shown next.
 
-![Custom classes for character recognition on the Omniglot dataset](../../figures/how-to-use-monty/omniglot_custom_classes.png#width=400px)
+![Custom classes for character recognition on the Omniglot dataset](../../figures/how-to-use-monty/omniglot_custom_classes.png#width=500px)
 
 An experiment config for training on the Omniglot dataset can then look like this:
 ```
@@ -268,13 +268,13 @@ In this application we test Monty's object recognition skills on 2.5D images, wh
 In this use case, we assume that Monty has already learned 3D models of the objects, and we just test its inference capabilities. For training, we scanned a set of real-world objects to get 3D models of them using photogrammetry. You can find instructions to download this `numenta_lab` dataset [here](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world). We then render those 3D models in Habitat and learn them by moving a sensor patch over them, just as we do with the YCB dataset. We train Monty in the 3D simulator because in the 2D image setup, Monty has no way of moving around the object and, therefore, would have a hard time learning complete 3D models.
 
 ![Dataset: The `numenta_lab` dataset is a collection of 12 real-world objects (left). They are scanned and turned into 3D models using photogrammetry.](../../figures/how-to-use-monty/MMW_dataset.png)
-![Training: We move a sensor patch over the 3D model using the Habitat simulator.](../../figures/how-to-use-monty/patchon3dmug.gif#width=400px)
+![Training: We move a sensor patch over the 3D model using the Habitat simulator.](../../figures/how-to-use-monty/patchon3dmug.gif#width=500px)
 
 To run this pre-training yourself, you can use the [only_surf_agent_training_numenta_lab_obj](https://github.com/thousandbrainsproject/tbp.monty/blob/2518a246214d8a487e1054da8ac57269e5014399/benchmarks/configs/pretraining_experiments.py#L237) config. Alternatively, you can download the pre-trained models using the [benchmark experiment instructions](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
 
 For inference, we use the RGBD images taken with the iPad camera. Movement is defined as a small patch on the image moving up, down, left, and right. At the beginning of an episode, the depth image is converted into a 3D point cloud with one point per pixel. The sensor's location at every step is then determined by looking up the current center pixel location in that 3D point cloud. Each episode presents Monty with one image, and Monty takes as many steps as needed to make a confident classification of the object and its pose.
 
-![Inference: We move a patch over an RGBD image to recognize the object and it's pose.](../../figures/how-to-use-monty/patchon2dimage.gif#width=400px)
+![Inference: We move a patch over an RGBD image to recognize the object and it's pose.](../../figures/how-to-use-monty/patchon2dimage.gif#width=500px)
 
 This can be implemented using two custom classes:
 1. `SaccadeOnImageEnvironment`:
@@ -288,7 +288,7 @@ This can be implemented using two custom classes:
    - Defines the `post_episode` function, which calls `cycle_object` to call the environment's `switch_to_object` function. Using the episode and epoch counters, it keeps track of which image needs to be shown next.
 
 
-![Custom classes for object recognition in RGBD images](../../figures/how-to-use-monty/MMW_custom_classes.png#width=400px)
+![Custom classes for object recognition in RGBD images](../../figures/how-to-use-monty/MMW_custom_classes.png#width=500px)
 
 An experiment config can then look like this:
 ```
