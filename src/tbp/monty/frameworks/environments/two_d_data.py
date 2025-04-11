@@ -111,13 +111,14 @@ class OmniglotEnvironment(EmbodiedEnvironment):
         different points on the second pass.
 
         Args:
-            _action: Not used at the moment since we just follow the draw path.
-            amount: Amount of elements in move path to move at once.
+            action: Not used at the moment since we just follow the draw path. However,
+            we do use the rotation_degrees to determine the amount of pixels to move at
+            each step.
 
         Returns:
             observation (dict).
         """
-        amount = 1 if action.rotation_degrees < 1 else action.rotation_degrees
+        amount = max(action.rotation_degrees, 1)
         self.step_num += int(amount)
         query_loc = self.locations[self.step_num % self.max_steps]
         patch = self.get_image_patch(
