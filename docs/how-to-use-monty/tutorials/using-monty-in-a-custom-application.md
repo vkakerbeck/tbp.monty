@@ -189,6 +189,9 @@ evidence_on_omniglot = dict(
 )
 ```
 
+> 📘 Follow Along
+> To run the above experiment, you first need to download the [Omniglot dataset](https://github.com/brendenlake/omniglot). You can do this by running `cd ~/tbp/data` and `git clone https://github.com/brendenlake/omniglot.git`. You will need to unzip the `omniglot/python/images_background.zip` and `omniglot/python/strokes_background.zip` files.
+
 TODO: add instructions for running the experiment.
   
 ## Example 2: Monty Meets World
