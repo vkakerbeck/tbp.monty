@@ -4,16 +4,16 @@ title: Using Monty in a Custom Application
 # Introduction
 Monty aims to implement a **general-purpose algorithm for understanding and interacting with the world**. It was designed to be very modular so that the same Monty configuration can be tested in many different environments and various Monty configurations can be compared in the same environment. Up to now, the tutorials have demonstrated Monty in a simulated environment (HabitatSim) where a sensor explores 3D objects and recognizes their ID and pose. Here, we will show you how to use Monty in other environments.
 
-## What Kind of Applications Can Monty be Used for?
+## What Kind of Applications can Monty Be Used For?
 **Monty is a sensorimotor modeling system. It is NOT made for learning from static datasets** (although some can be framed to introduce movement, such as the Omniglot example below). Any application where you want to use Monty should have some concept of movement and how movement will change the state of the agent and what is being observed.
 
 > ⚠️ Monty currently expects movement to be in 3D Euclidean space
-In the current implementation, movement should happen in 3D (or less) space and be tracked using Euclidian location coordinates. Although we are convinced that the basic principles of Monty will also apply to abstract spaces ([potentially embedded in 3D space](https://thousandbrains.discourse.group/t/abstract-concept-in-monty/533/4)) and we know that the [brain uses different mechanisms to encode space](https://youtu.be/zRRazfFstvY), the current implementation relies on 3D Euclidean space.
+In the current implementation, movement should happen in 3D (or less) space and be tracked using Euclidean location coordinates. Although we are convinced that the basic principles of Monty will also apply to abstract spaces ([potentially embedded in 3D space](https://thousandbrains.discourse.group/t/abstract-concept-in-monty/533/4)) and we know that the [brain uses different mechanisms to encode space](https://youtu.be/zRRazfFstvY), the current implementation relies on 3D Euclidean space.
 
 # Customizing Monty for Your Application
 The diagram below shows the base abstract classes in Monty. For general information on how to customize those classes, see our guide on [Customizing Monty](../customizing-monty.md).
 The Experiment class coordinates the experiment (learning and evaluation). It initializes and controls Monty and the environment and coordinates the interaction between them.
-The environment class is wrapped in a DataSet class, which can be accessed using a DataLoader. An experiment can have two dataloders associated with it: one for training and one for evaluation.
+The environment class is wrapped in a DataSet class, which can be accessed using a DataLoader. An experiment can have two data loaders associated with it: one for training and one for evaluation.
 
 > ⚠️ Subject to change in the near future
  The use of `DataSet` and `DataLoader` follows common PyTorch conventions. However, since Monty is not made for static datasets, we plan to refactor this to be more analogous to environment interfaces used, for instance, in reinforcement learning.
@@ -52,7 +52,7 @@ obs = {
 }
 ```
 
-Related to defining how actions change observations, you will also need to define how actions change the state of the agent. This is what the `get_state()` function returns. The returned state needs to be a dictionary with an entry per agent in the environment that contains the agent's position and orientation relative to some global reference point. For each sensor associated with that agent, a subdictionary should return the sensor's position and orientation relative to the agent.
+Related to defining how actions change observations, you will also need to define how actions change the state of the agent. This is what the `get_state()` function returns. The returned state needs to be a dictionary with an entry per agent in the environment that contains the agent's position and orientation relative to some global reference point. For each sensor associated with that agent, a sub-dictionary should return the sensor's position and orientation relative to the agent.
 
 For example, if you have one agent with two sensors, the state dictionary could look like this:
 ```
@@ -270,7 +270,7 @@ In this use case, we assume that Monty has already learned 3D models of the obje
 ![Dataset: The `numenta_lab` dataset is a collection of 12 real-world objects (left). They are scanned and turned into 3D models using photogrammetry.](../../figures/how-to-use-monty/MMW_dataset.png)
 ![Training: We move a sensor patch over the 3D model using the Habitat simulator.](../../figures/how-to-use-monty/patchon3dmug.gif#width=400px)
 
-To run this pretraining yourself, you can use the [only_surf_agent_training_numenta_lab_obj](https://github.com/thousandbrainsproject/tbp.monty/blob/2518a246214d8a487e1054da8ac57269e5014399/benchmarks/configs/pretraining_experiments.py#L237) config. Alternatively, you can download the pre-trained models using the [benchmark experiment instructions](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
+To run this pre-training yourself, you can use the [only_surf_agent_training_numenta_lab_obj](https://github.com/thousandbrainsproject/tbp.monty/blob/2518a246214d8a487e1054da8ac57269e5014399/benchmarks/configs/pretraining_experiments.py#L237) config. Alternatively, you can download the pre-trained models using the [benchmark experiment instructions](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
 
 For inference, we use the RGBD images taken with the iPad camera. Movement is defined as a small patch on the image moving up, down, left, and right. At the beginning of an episode, the depth image is converted into a 3D point cloud with one point per pixel. The sensor's location at every step is then determined by looking up the current center pixel location in that 3D point cloud. Each episode presents Monty with one image, and Monty takes as many steps as needed to make a confident classification of the object and its pose.
 
@@ -321,7 +321,7 @@ For more configs to test on different subsets of the Monty Meets World dataset (
 > 📘 Follow Along
 > To run this experiment, you first need to download our 2D image dataset called `worldimages`. You can find instructions for this [here](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
 >
-> You will also need to [download the pre-trained models](https://thousandbrainsproject.readme.io/docs/getting-started#42-download-pretrained-models). Alternatively, you can run pretraining yourself by running `python benchmarks/run.py -e only_surf_agent_training_numenta_lab_obj`. Running pretraining requires the Habitat simulator and [downloading the `numenta_lab` 3D mesh dataset](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
+> You will also need to [download the pre-trained models](https://thousandbrainsproject.readme.io/docs/getting-started#42-download-pretrained-models). Alternatively, you can run pre-training yourself by running `python benchmarks/run.py -e only_surf_agent_training_numenta_lab_obj`. Running pre-training requires the Habitat simulator and [downloading the `numenta_lab` 3D mesh dataset](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
 
  Analogous to the previous tutorials, you can copy the config above into the `benchmarks/configs/my_experiments.py` file. You must also add `monty_meets_world_2dimage_inference: dict` to the `MyExperiments` class in `benchmarks/configs/names.py`. Finally, you will need to add the following imports at the top of the `my_experiments.py` file:
 ```

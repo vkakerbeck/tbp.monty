@@ -11,7 +11,7 @@ title: Using Monty for Robotics
 - Using monty meets world app as example (double check it still works)
 - Add images of app setup + link to demo video
 
-# Example 2?: Ultrasound (only conceptual)
+# Example 2?: Ultrasound (Only Conceptual)
 
 ## Custom Classes
 - Diagram of custom classes for this + link to code
