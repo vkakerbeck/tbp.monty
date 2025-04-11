@@ -2,39 +2,259 @@
 title: Using Monty in a Custom Application
 ---
 # Introduction
-
+Monty aims to implement a general purpose algorithm for understanding and interacting with the world. It was designed To be very modular so that the same Monty configuration can be tested in many different environments or various Monty configurations can be compared in the same environment. Up to now, the tutorials have demonstrated Monty in a simulated environment (HabitatSim) where a sensor explores 3D objects and recognizes their ID and pose. Here we will show how to use Monty in other environments.
 
 ## What Kind of Applications can Monty be Used for?
+Monty a sensorimotor modeling system. It is not made for learning from static datasets (although some can be framed in a way that introduce movement, such as the Omniglot example). Any application where you want to use Monty should have some concept of movement and how movement will change what is being observed.
 
-## Things you Need to Define
-- Explain what to think through and what things to define (movement/actions, observations, pose, episode, epoch, labels/training)
-
-## Example 1: Monty Meets World
-- Images of MMW example
-- Explain how we define all the things listed above
-
-## Example 2: Omniglot
-- Images of Omniglot
-- Explain how we define all the things listed above
+> ⚠️ Monty currently expects movement to be in 3D eucledian space
+In the current implementation, movement should happen in 3D (or less) space and be tracked using eucledian location coordinates. Although we are convinced that the basic principles of Monty will also apply to abstract spaces ([potentially embedded in 3D space](https://thousandbrains.discourse.group/t/abstract-concept-in-monty/533/4)) and we know that the [brain uses different mechanisms to encode space](https://youtu.be/zRRazfFstvY), the current implementation relies of 3D eucledian space.
 
 # Customizing Monty for Your Application
-- Class diagram overview with those to customize highlighted
+The diagram below shows the base abstract classes in Monty. For general information on how to customize those classes, see our guide on [Customizing Monty](../customizing-monty.md).
+The Experiment class is what coordinates the experiment (learning and evaluation). It initializes and controls Monty as well as the environment and coordinates the interaction between the two.
+The environment class is wrapped in a DataSet class, which can be accessed using a DataLoader. An experiment can have two dataloders associated with it; one for training and one for testing.
 
-## Example 1: Monty Meets World
-- Explain which custom classes to implement, using MontyMeetsWorld benchmarks as example
-- Class diagram of custom mmw classes
+> ⚠️ Subject to change in the near future
+ The use of `DataSet` and `DataLoader` follows common PyTorch convention, however, since Monty is not made for static datasets we plan to refactor this to be more analogous to environment intefaces used for instance in reinforcement learning.
+ Additionally, we are working on cleaning up the data access between motor system, dataloader and dataset (grey arrows).
 
-## Example 2: Omniglot
-- same structure as above
+![Class structure in tbp.monty. Each class can be customized independently, allowing for easy modification and testing of individual components.](../../figures/how-to-use-monty/monty_class_diagram.png#width=400px)
 
-## Custom Environment, Dataset and Dataloader
+Information flow in Monty implements a sensorimotor loop. Observations from the environment are first processed by the sensor module. The resulting CMP compliant output is then used by the learning modules to model and recognize what it is sensing. At each step, the learning modules can suggest an action (`GoalState`) to the motor system. The motor system decides which action to execute and translates it into motor commands. The dataloader then uses this action to extract the next observation from the dataset, which in turn gets it from the environment. The next observation is sent to the sensor module(s) and the loop repeats. 
 
-## Custom Sensor Module
+![Information flow in Monty. Note, this is a simplified view as there can also be model-free policies that bypass the learning module.](../../figures/how-to-use-monty/monty_information_flow_simplified.png)
 
-## Custom Motor System
+Additionally, the DataLoader and Environment can implement specific functions to be executed at different points in the experiment. Such as resetting the agent position and showing a new object at the beginning of a new episode.
 
-## Specifying the Experiment Config
-- Use monty meets world benchmarks for this
-- Add reference box to how to download mmw dataset & pretrained models
+To use Monty in a custom environment, you usually need to customize the `DataLoader` and `EmbodiedEnvironment` classes. If you look back at the previous tutorials you will see that for those Habitat experiments we've been using the `EnvironmentDataLoaderPerObject` and the `HabitatEnvironment`. The diagram below shows some of the key elements that need to be defined for these two classes. Its best to start thinking about the environment setup first as this will force you to think through how to phrase your application in the right way for Monty to tackle.
+![Key elements to define for a custom environment and data loader](../../figures/how-to-use-monty/defining_env_and_dataloader.png)
+
+### EmbodiedEnvironment
+The first thing to figure out is how movement should be defined in your environment. What actions are possible and how do these actions change the agent's state and observations?
+
+If you are working with an existing environment, such as used for reinforcement learning (for example `gym` environments or the Habitat environment we are using), you might just need to wrap this into the `.step()` function of your custom `EmbodiedEnvironment` class such that when `env.step(action)` is called, an observation is returned. If you work with an application that isn't already setup like that, defining how actions lead to the next observation may be a little more involved. You can look at the `OmniglotEnvironment` or `SaccadeOnImageEnvironment` as examples for this.
+
+The observations should be returned as a nested dictionary with one entry per agent in the environment. Each agent should have sub dictionaries with observations for each of it's sensors. For example, if there is one agent with two sensors that each sense two types of values, it would look like this:
+
+```
+obs = {
+    "agent_id_0": {
+        "patch_0": {
+            "depth": depth_sensed_by_patch_0,
+            "rgba": rgba_sensed_by_patch_0
+        },
+        "patch_1": {
+            "depth": depth_sensed_by_patch_1,
+            "semantic": semantic_sensed_by_patch_1,
+        },
+    }
+}
+```
+
+Related to defining how actions change observations, you will also need to define how actions change the state of the agent. This is what the `get_state()` function returns. The returned state needs to be a dictionary with an entry per agent in the environment that contains the agent's position and orientation relative to the world. For each sensor associated with that agent, a subdictionary should return the sensors position and orientation relative to the agent.
+
+For example, if you have one agent with two sensors, the state dictionary could look like this:
+```
+state = {
+    "agent_id_0": {
+        "sensors": {
+            "patch_0.depth": {
+                "rotation": current_depth_sensor_orientation,
+                "position": current_depth_sensor_location,
+            },
+            "patch_0.rgba": {
+                "rotation": current_rgba_sensor_orientation,
+                "position": current_rgba_sensor_orientation,
+            },
+        },
+        "rotation": current_agent_orientation,
+        "position": current_agent_location,
+    }
+}
+```
+
+Lastly, you need to define what happens when the environment is initialized (`__init__()`), when it is reset (`reset()`, usually at the end of an episode), and when it is closed (`close()`, at the end of an experiment). Resetting could include loading a new scene, resetting the agent position, or changing the arrangement of objects in the environment. It might also reset some of the environment's internal variables, such as a step counter. Note that, as customary for RL environments, the `reset()` function is also expected to return an observation.
+
+### DataLoader
+The `EnvironmentDataLoader` manages retrieveing observations from the `EnvironmentDataset` given actions. The `EnvironmentDataset` in turn wraps around the `EmbodiedEnvironment` and applies basic transforms to the raw observations from the environment.
+
+The `EnvironmentDataLoader` should define all the key events at which the environment needs to be accessed or modified. This includes initializing the environment (`__init__()`), retrieving the next observation (`__next__()`), and things that happen at the beginning or end of episodes and epochs (`pre_episode()`, `post_episode()`, `pre_epoch()`, `post_epoch()`). Note that not all of those are relevant for every application. 
+
+Think about how your experiment should be structured. What defines an episode? What happens with the environment at the beginning or end of each episode? What happens at the beginning or end of epochs? Is there anything that needs to happen at every step besides retrieving the observation and environment state?
+
+## Example 1: Omniglot
+As one of Monty's strength's is the ability to learn from small amounts of data, one interesting application to look at is the [Omniglot dataset](https://github.com/brendenlake/omniglot). It contains drawings of 1623 characters from 50 alphabets. Each of the characters is drawn 20 times by different people as shown below.
+![Dataset example](../../figures/how-to-use-monty/omniglot_character_exp.png)
+
+As this is a static dataset and Monty is a sensorimotor learning system, we first have to define how movement looks like on this dataset. A sensor module in Monty always receives a small patch as input and the learning module then integrates the extracted features and locations over time to learn and infer complete objects. So in this case, we can take a small patch on the character (as shown on the right in the figure below) and move this patch a bit further along the strokes at each step. Following the strokes is easy in this case as the Omniglot dataset also stores the temporal sequence of x,y,z coordinates in which the characters were drawn. If this information were not available, the patch could be moved arbitrarily or use heuristics such as following the sensed principle curvature directions.
+![An observation at each step is a small patch on the character.](../../figures/how-to-use-monty/omniglot_obs_exp.png#width=400px)
+
+At each step, the sensor module will extract a location and pose in a common reference frame and send it to the learning module. To define the pose at each location, we extract a [point normal and two principal curvature directions](https://thousandbrainsproject.readme.io/docs/observations-transforms-sensor-modules#point-normals-and-principle-curvatures) from a gaussian smoother image of the patch. The learning module then stores those relative locations and orientations in the model of the respective character and can use them to recognize a character during inference.
+![The learned models store poses at locations relative to each other. Pose is defined by point normal and curvature directions.](../../figures/how-to-use-monty/omniglot_model_exp.png#width=400px)
+
+Learning and inference on Omniglot characters can be implemented by writing two custom classes:
+1. `OmniglotEnvironment`:
+   - Defines initialization of all basic variables in the `__init__(patch_size, data_path)` function. 
+   - In this example we define the action space as `None` because we give Monty no choice in how to move. The step function just returns the next observation by following the predefined stroke order in the dataset.
+   - Defines the `step(action)` function which uses the current `step_num` in the episode to determine where in the stroke sequence we are and extracts a patch around that location. It then returns a gaussian smoothed version of this patch as the observation.
+   - Defines `get_state()` which returns the current x, y, z location on the character as a state dict (z is always 0 since we are in 2D space here).
+   - Defines `reset()` to reset the `step_num` counter and return the first observation.
+   - Helper functions such as `switch_to_object` and `load_new_character_data` to load a new character, `get_image_patch(img, loc, patch_size)` to extract the patch, and `motor_to_locations` to convert the movement information from the Omniglot dataset into locations on the character image.
+2. `OmniglotDataLoader`:
+   - Defines initialization of basic variables such as episode and epoch counters in the `__init__` function
+   - Defines the `post_episode` function which calls `cycle_object` to call the environment's `switch_to_object` function while keeping track of which character needs to be shown next using the episode and epoch counters.
+
+![Custom classes for object recognition in RGBD images](../../figures/how-to-use-monty/omniglot_custom_classes.png#width=400px)
+
+An experiment config can the look like this:
+```
+# TODO: test all this
+evidence_on_omniglot = dict(
+    experiment_class=MontyObjectRecognitionExperiment,
+    experiment_args=EvalExperimentArgs( # TODO: just set experiment args
+        # model_name_or_path=model_path_omniglot,
+        do_train=True,
+        do_eval=True,
+        n_train_epochs=1,
+        n_eval_epochs=1,
+    ),
+    logging_config=LoggingConfig(),
+    monty_config=PatchAndViewMontyConfig(
+        learning_module_configs=default_evidence_1lm_config,
+        monty_args=MontyArgs(min_eval_steps=min_eval_steps),
+        # move 20 pixels at a time
+        motor_system_config=MotorSystemConfigInformedNoTransStepS20(),
+    ),
+    monty_config=PatchAndViewMontyConfig(
+        learning_module_configs=dict(
+            learning_module_0=dict(
+                learning_module_class=EvidenceGraphLM,
+                learning_module_args=dict(
+                    # xyz values are in larger range so need to increase mmd
+                    max_match_distance=5,
+                    tolerances={
+                        "patch": {
+                            "principal_curvatures_log": np.ones(2),
+                            "pose_vectors": np.ones(3) * 45,
+                        }
+                    },
+                    # Point normal always points up so is not usefull
+                    feature_weights={
+                        "patch": {
+                            "pose_vectors": [0, 1, 0],
+                        }
+                    },
+                    # We assume the letter is presented upright
+                    initial_possible_poses=[[0, 0, 0]],
+                ),
+            )
+        ),
+        sensor_module_configs=dict(
+            sensor_module_0=dict(
+                sensor_module_class=HabitatDistantPatchSM,
+                sensor_module_args=dict(
+                    sensor_module_id="patch",
+                    features=[
+                        "pose_vectors",
+                        "pose_fully_defined",
+                        "on_object",
+                        "principal_curvatures_log",
+                    ],
+                    # Need to set this lower since curvature is generally lower
+                    pc1_is_pc2_threshold=1,
+                ),
+            ),
+            sensor_module_1=dict(
+                sensor_module_class=DetailedLoggingSM,
+                sensor_module_args=dict(
+                    sensor_module_id="view_finder",
+                ),
+            ),
+        ),
+        # TODO: test this
+        # motor_system_config=MotorSystemConfigInformedNoTransStepS1(),
+    ),
+    dataset_args=OmniglotDatasetArgs(),
+    train_dataloader_class=ED.OmniglotDataLoader,
+    # Train on the first version of each character (there are 20 drawings for each
+    # character in each alphabet, here we see one of them).
+    train_dataloader_args=OmniglotDataloaderArgs(versions=[1, 1, 1, 1, 1, 1]),
+    eval_dataloader_class=ED.OmniglotDataLoader,
+    # Using versions 1 means testing on same version of character as trained.
+    # Version 2 is a new drawing of the previously seen characters. In this
+    # small test setting these are 3 characters from 2 alphabets.
+    eval_dataloader_args=OmniglotDataloaderArgs(versions=[1, 1, 1, 1, 1, 1]),
+    # eval_dataloader_args=OmniglotDataloaderArgs(versions=[2, 2, 2, 2, 2, 2]),
+)
+```
+
+TODO: add instructions for running the experiment.
+  
+## Example 2: Monty Meets World
+Monty Meets World is the code name for our first demo of Monty on real-world data. For a video of this momentous moment, see our [project showcase page](https://thousandbrainsproject.readme.io/docs/project-showcase#monty-for-object-detection-with-the-ipad-camera).
+
+In this application we test Monty's object recognition skills on 2.5D images, which means a photograph that includes depth information. In this case, the pictures are taken with the iPad's TrueDepth camera (the user facing camera used for face recognition). 
+
+In this use case, we assume that Monty has already learned 3D models of the objects and we just test it's inference capabilities. For training, we scanned a set of real-world objects to get 3D models of them using photogrammetry. You can find instructions to download this `numenta_lab` dataset [here](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world). We then render those 3D models in Habitat and learn them by moving a sensor patch over them, just as we do with the YCB dataset. We train Monty in the 3D simulator because in the 2D image setup Monty has no way of moving around the object and therefor would have a hard time learning complete 3D models.
+
+![Dataset: The `numenta_lab` dataset is a collection of 12 real world objects (left). They are scanned and turned into 3D models using photogrammetry.](../../figures/how-to-use-monty/MMW_dataset.png)
+![Training: We move a sensor patch over the 3D model using the Habitat simulator.](../../figures/how-to-use-monty/patchon3dmug.gif#width=400px)
+
+To run this pretraining yourself, you can use the [only_surf_agent_training_numenta_lab_obj](https://github.com/thousandbrainsproject/tbp.monty/blob/2518a246214d8a487e1054da8ac57269e5014399/benchmarks/configs/pretraining_experiments.py#L237) config. Alternatively you can download the pretrained models using the [benchmark experiment instructions](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
+
+For inference, we use the RGBD images taken with the iPad camera. Movement is defined as a small patch on the image moving up, down, left and right. At the beginning of an episode, the depth image is converted into a 3D pointcloud with one point per pixel. The location of the sensor at every step is then determined by looking up the current center pixel location in that 3D point cloud. Each episode presents Monty with one image and Monty takes as many steps as needs to make a confident classification of the object and it's pose.
+
+![Inference: We move a patch over an RGBD image to recognize the object and it's pose.](../../figures/how-to-use-monty/patchon2dimage.gif#width=400px)
+
+This can be implemented using two custom classes:
+1. `SaccadeOnImageEnvironment`:
+   - Defines initialization of all basic variables in the `__init__(patch_size, data_path)` function. 
+   - Defines the `TwoDDataActionSpace` to move up, down, left and right on the image by a given amount of pixels.
+   - Defines the `step(action)` function which uses the sensor's current location, the given action and it's amount to determine the new location on the image and extract a patch. It updates `self.current_loc` and returns the sensor patch observations as a dictionary.
+   - Defines `get_state()` which returns the current state as a dictionary, which mostly contains `self.current_loc` and placeholders for the orientation as the sensor and agent orientation never changes.
+   - Helper functions such as `switch_to_object(scene_id, scene_version_id)` to load a new image, `get_3d_scene_point_cloud` to extract a 3D point cloud from the depth image, `get_next_loc(action_name, amount)` to determine valid next locations in pixel space, `get_3d_coordinates_from_pixel_indices(pixel_ids)` to get the 3D location from a pixel index, and `get_image_patch(loc)` to extract a patch at a location in the image. These functions are all used internally within the `__init__`, `step`, and `get_state` functions (except for the `switch_to_object` function which is called by the `SaccadeOnImageDataLoader`).
+2. `SaccadeOnImageDataLoader`:
+   - Defines initialization of basic variables such as episode and epoch counters in the `__init__` function
+   - Defines the `post_episode` function which calls `cycle_object` to call the environment's `switch_to_object` function while keeping track of which image needs to be shown next using the episode and epoch counters.
+
+
+![Custom classes for object recognition in RGBD images](../../figures/how-to-use-monty/MMW_custom_classes.png#width=400px)
+
+An experiment config can the look like this:
+```
+world_image_on_scanned_model = dict(
+    experiment_class=MontyObjectRecognitionExperiment,
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_numenta_lab_obj,
+        n_eval_epochs=1,
+    ),
+    logging_config=ParallelEvidenceLMLoggingConfig(wandb_group="benchmark_experiments"),
+    monty_config=PatchAndViewMontyConfig(
+        learning_module_configs=default_evidence_1lm_config,
+        monty_args=MontyArgs(min_eval_steps=min_eval_steps),
+        # move 20 pixels at a time
+        motor_system_config=MotorSystemConfigInformedNoTransStepS20(),
+    ),
+    dataset_class=ED.EnvironmentDataset,
+    dataset_args=WorldImageDatasetArgs(
+        env_init_args=EnvInitArgsMontyWorldStandardScenes()
+    ),
+    eval_dataloader_class=ED.SaccadeOnImageDataLoader,
+    eval_dataloader_args=WorldImageDataloaderArgs(
+        scenes=list(np.repeat(range(12), 4)),
+        versions=list(np.tile(range(4), 12)),
+    ),
+)
+```
+For more configs to test on different subsets of the Monty Meets World dataset (such as bright or dark images, hand intrusion, and multiple objects) you can find all benchmark configs for this scenario [here](../../../benchmarks/configs/monty_world_experiments.py).
+
+# Other Things You May Need to Customize
+If your application uses sensors that are different from our commonly used cameras and depth sensors or you want to extract specific features from your sensory input, you may need to define a custom sensor module. The sensor module receives the raw observations from the dataloader and converts them into the CMP, which contains features at poses. For more details on the process of converting raw oberservations into the CMP, see our [documentation on sensor modules](https://thousandbrainsproject.readme.io/docs/observations-transforms-sensor-modules).
+
+If your application requires a specific policy to move through the environment or you have a complex actuator to control, you might want to implement a custom `MotorSystem` or `MotorPolicy` class. For more details on our existing motor system and policies see our [documentation on Monty's policies](https://thousandbrainsproject.readme.io/docs/policy).
+
+Writing those custom classes works the same way as it does for the `DataLoader` and `EmbodiedEnvironment` class. For general information, see our documentation on [customizing Monty](https://thousandbrainsproject.readme.io/docs/customizing-monty).
 
 # Conclusion
+This tutorial was a bit more text than practical code. This is because every application is different and we try to convey the general principles here. The first step for any application is to think about if and how the task can be phrased as a sensorimotor environment. What is Monty's action space? How is movement defined? How does it change observations? How do movement and sensation determine the sensors current location and orientation in space. This will then help you figure out how to define a custom `EmbodiedEnvironment` and `DataLoader` and their associated `__init__`, `step`, `get_state`,`reset`, `pre_episode`, and `post_episode` functions. 
