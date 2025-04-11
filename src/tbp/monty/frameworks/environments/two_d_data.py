@@ -111,8 +111,9 @@ class OmniglotEnvironment(EmbodiedEnvironment):
         different points on the second pass.
 
         Args:
-            _action: Not used at the moment since we just follow the draw path.
-            amount: Amount of elements in move path to move at once.
+            action: Not used at the moment since we just follow the draw path. However,
+            we do use the rotation_degrees to determine the amount of pixels to move at
+            each step.
 
         Returns:
             observation (dict).
