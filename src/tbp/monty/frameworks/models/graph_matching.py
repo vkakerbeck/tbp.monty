@@ -21,10 +21,7 @@ from tbp.monty.frameworks.loggers.graph_matching_loggers import (
     DetailedGraphMatchingLogger,
     SelectiveEvidenceLogger,
 )
-from tbp.monty.frameworks.models.abstract_monty_classes import (
-    LearningModule,
-    LMMemory,
-)
+from tbp.monty.frameworks.models.abstract_monty_classes import LearningModule, LMMemory
 from tbp.monty.frameworks.models.buffer import FeatureAtLocationBuffer
 from tbp.monty.frameworks.models.goal_state_generation import GraphGoalStateGenerator
 from tbp.monty.frameworks.models.monty_base import MontyBase
@@ -501,11 +498,11 @@ class MontyForGraphMatching(MontyBase):
         provides locations associated with tangential movements; this can help ensure we
         e.g. avoid revisiting old locations.
         """
-        self.motor_system.processed_observations = infos
+        self.motor_system._policy.processed_observations = infos
 
         # TODO M clean up the below when refactoring the surface-agent policy
-        if hasattr(self.motor_system, "tangent_locs"):
-            last_action = self.motor_system.last_action()
+        if hasattr(self.motor_system._policy, "tangent_locs"):
+            last_action = self.motor_system._policy.last_action
 
             if last_action is not None:
                 if "orient_vertical" == last_action.name:
@@ -513,10 +510,10 @@ class MontyForGraphMatching(MontyBase):
                     # action, rather than some form of corrective movement; these
                     # movements are performed immediately after "orient_vertical"
                     # TODO generalize to multiple sensor modules
-                    self.motor_system.tangent_locs.append(
+                    self.motor_system._policy.tangent_locs.append(
                         self.sensor_modules[0].visited_locs[-1]
                     )
-                    self.motor_system.tangent_norms.append(
+                    self.motor_system._policy.tangent_norms.append(
                         self.sensor_modules[0].visited_normals[-1]
                     )
 
@@ -645,18 +642,19 @@ class GraphLM(LearningModule):
 
     def matching_step(self, observations):
         """Update the possible matches given an observation."""
+        first_movement_detected = self._agent_moved_since_reset()
         buffer_data = self._add_displacements(observations)
         self.buffer.append(buffer_data)
         self.buffer.append_input_states(observations)
 
-        if len(self.buffer) > 1:
-            not_moved = False
+        if first_movement_detected:
             logging.debug("performing matching step.")
         else:
-            not_moved = True
             logging.debug("we have not moved yet.")
 
-        self._compute_possible_matches(observations, not_moved=not_moved)
+        self._compute_possible_matches(
+            observations, first_movement_detected=first_movement_detected
+        )
 
         if len(self.get_possible_matches()) == 0:
             self.set_individual_ts(terminal_state="no_match")
@@ -769,6 +767,9 @@ class GraphLM(LearningModule):
         else:
             logging.info(f"{self.learning_module_id} did not recognize an object yet.")
         return self.terminal_state
+
+    def _agent_moved_since_reset(self):
+        return len(self.buffer) > 0
 
     # ------------------ Getters & Setters ---------------------
 
@@ -988,22 +989,23 @@ class GraphLM(LearningModule):
     # ======================= Private ==========================
 
     # ------------------- Main Algorithm -----------------------
-    def _compute_possible_matches(self, observations, not_moved=False):
+    def _compute_possible_matches(self, observations, first_movement_detected=True):
         """Use graph memory to get the current possible matches.
 
         Args:
             observations: Observations to use for computing possible matches.
-            not_moved: Whether the observations are not moved.
+            first_movement_detected: Whether the agent has moved since the buffer reset
+                signal.
         """
-        if not_moved:
+        if first_movement_detected:
             query = [
                 self._select_features_to_use(observations),
-                None,
+                self.buffer.get_current_displacement(input_channel="all"),
             ]
         else:
             query = [
                 self._select_features_to_use(observations),
-                self.buffer.get_current_displacement(input_channel="all"),
+                None,
             ]
 
         logging.debug(f"query: {query}")

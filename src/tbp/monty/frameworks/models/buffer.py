@@ -80,6 +80,8 @@ class FeatureAtLocationBuffer(BaseBuffer):
             # module (i.e. information was actually passed from the SM to the LM); note
             # this is incremented in a way that assumes a 1:1 mapping between SMs and
             # LMs
+            "matching_step_when_output_goal_set": [],
+            "goal_state_achieved": [],
         }
         self.start_time = time.time()
 
@@ -607,6 +609,15 @@ class BufferEncoder(json.JSONEncoder):
             cls._encoders[obj_type] = encoder
         else:
             raise ValueError(f"Invalid encoder: {encoder}")
+
+    @classmethod
+    def unregister(cls, obj_type: type) -> None:
+        """Unregister an encoder.
+
+        Args:
+            obj_type: The type to unregister the encoder for.
+        """
+        cls._encoders.pop(obj_type, None)
 
     @classmethod
     def _find(cls, obj: Any) -> Optional[Callable]:
