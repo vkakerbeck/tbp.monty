@@ -97,7 +97,7 @@ class OmniglotEnvironment(EmbodiedEnvironment):
         #      interface and how the class hierarchy is defined and used.
         raise NotImplementedError("OmniglotEnvironment does not support adding objects")
 
-    def step(self, _action, amount):
+    def step(self, action: Action):
         """Retrieve the next observation.
 
         Since the omniglot dataset includes stroke information (the order in which
@@ -117,8 +117,7 @@ class OmniglotEnvironment(EmbodiedEnvironment):
         Returns:
             observation (dict).
         """
-        if amount < 1:
-            amount = 1
+        amount = 1 if action.rotation_degrees < 1 else action.rotation_degrees
         self.step_num += int(amount)
         query_loc = self.locations[self.step_num % self.max_steps]
         patch = self.get_image_patch(
