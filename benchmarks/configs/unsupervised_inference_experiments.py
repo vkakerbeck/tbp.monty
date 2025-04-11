@@ -80,6 +80,9 @@ surf_monty_config = copy.deepcopy(
 surf_monty_config.learning_module_configs["learning_module_0"][
     "learning_module_class"
 ] = LM_CLASS
+surf_monty_config.sensor_module_configs["sensor_module_1"]["sensor_module_args"][
+    "save_raw_obs"
+] = False
 surf_monty_config.monty_class = MONTY_CLASS
 surf_monty_config.monty_args.min_eval_steps = EVAL_STEPS
 unsupervised_inference_distinctobj_surf_agent.update(
@@ -97,6 +100,9 @@ dist_monty_config = copy.deepcopy(
 dist_monty_config.learning_module_configs["learning_module_0"][
     "learning_module_class"
 ] = LM_CLASS
+dist_monty_config.sensor_module_configs["sensor_module_1"]["sensor_module_args"][
+    "save_raw_obs"
+] = False
 dist_monty_config.monty_class = MONTY_CLASS
 dist_monty_config.monty_args.min_eval_steps = EVAL_STEPS
 unsupervised_inference_distinctobj_dist_agent.update(
