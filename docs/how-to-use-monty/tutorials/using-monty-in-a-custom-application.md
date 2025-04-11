@@ -223,7 +223,7 @@ This can be implemented using two custom classes:
 
 An experiment config can the look like this:
 ```
-world_image_on_scanned_model = dict(
+monty_meets_world_2dimage_inference = dict(
     experiment_class=MontyObjectRecognitionExperiment,
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_numenta_lab_obj,
@@ -248,6 +248,47 @@ world_image_on_scanned_model = dict(
 )
 ```
 For more configs to test on different subsets of the Monty Meets World dataset (such as bright or dark images, hand intrusion, and multiple objects) you can find all benchmark configs for this scenario [here](../../../benchmarks/configs/monty_world_experiments.py).
+
+> 📘 Follow Along
+> To run this experiment, you first need to download our 2D image dataset called `worldimages`. You can find instructions for this [here](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
+> 
+> You will also need to [download the pretrained models](https://thousandbrainsproject.readme.io/docs/getting-started#42-download-pretrained-models). Alternatively you can run pretraining yourself by running `python benchmarks/run.py -e only_surf_agent_training_numenta_lab_obj`. Running pretraining requires the Habitat simulator and [downloading the `numenta_lab` 3D mesh dataset](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world).
+
+ Analogous to the previous tutorials, you can then copy the above config into the `benchmarks/configs/my_experiments.py` file. You will also need to add `monty_meets_world_2dimage_inference: dict` to the `MyExperiments` class in `benchmarks/configs/names.py`. Finally, you will need to add the following imports at the top of the `my_experiments.py` file:
+```
+import os
+from dataclasses import asdict
+
+import numpy as np
+
+from benchmarks.configs.defaults import (
+    default_evidence_1lm_config,
+    min_eval_steps,
+    pretrained_dir,
+)
+from benchmarks.configs.names import MyExperiments
+from tbp.monty.frameworks.config_utils.config_args import (
+    MontyArgs,
+    MotorSystemConfigInformedNoTransStepS20,
+    ParallelEvidenceLMLoggingConfig,
+    PatchAndViewMontyConfig,
+)
+from tbp.monty.frameworks.config_utils.make_dataset_configs import (
+    EnvInitArgsMontyWorldStandardScenes,
+    EvalExperimentArgs,
+    WorldImageDataloaderArgs,
+    WorldImageDatasetArgs,
+)
+from tbp.monty.frameworks.environments import embodied_data as ED
+from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
+
+model_path_numenta_lab_obj = os.path.join(
+    pretrained_dir,
+    "surf_agent_1lm_numenta_lab_obj/pretrained/",
+)
+```
+
+To run the experiment, simply call `python benchmarks/run.py -e monty_meets_world_2dimage_inference`. If you don't want to log to wandb, you can add ` wandb_handlers=[]` to the `logging_config`. If you just want to run a quick test on a few of the images, simply adjust the `scenes` and `versions` parameters in the `eval_dataloader_args`. If you run the config as shown above, you should get the same performance as reported for the `world_image_on_scanned_model` experiment in the [Monty Meets World benchmark results](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#results-4).
 
 # Other Things You May Need to Customize
 If your application uses sensors that are different from our commonly used cameras and depth sensors or you want to extract specific features from your sensory input, you may need to define a custom sensor module. The sensor module receives the raw observations from the dataloader and converts them into the CMP, which contains features at poses. For more details on the process of converting raw oberservations into the CMP, see our [documentation on sensor modules](https://thousandbrainsproject.readme.io/docs/observations-transforms-sensor-modules).
