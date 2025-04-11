@@ -107,26 +107,44 @@ Learning and inference on Omniglot characters can be implemented by writing two 
 
 ![Custom classes for object recognition in RGBD images](../../figures/how-to-use-monty/omniglot_custom_classes.png#width=400px)
 
-An experiment config can the look like this:
+An experiment config for training on the omniglot dataset can the look like this:
 ```
-# TODO: test all this
-evidence_on_omniglot = dict(
-    experiment_class=MontyObjectRecognitionExperiment,
-    experiment_args=EvalExperimentArgs( # TODO: just set experiment args
+omniglot_training = dict(
+    experiment_class=MontySupervisedObjectPretrainingExperiment,
+    experiment_args=ExperimentArgs(
         # model_name_or_path=model_path_omniglot,
-        do_train=True,
-        do_eval=True,
         n_train_epochs=1,
+        do_eval=False,
+    ),
+    logging_config=PretrainLoggingConfig(
+        output_dir=pretrain_dir,
+    ),
+    monty_config=PatchAndViewMontyConfig(
+        # Take 1 step at a time, following the drawing path of the letter
+        motor_system_config=MotorSystemConfigInformedNoTransStepS1(),
+        sensor_module_configs=omniglot_sensor_module_config,
+    ),
+    dataset_class=ED.EnvironmentDataset,
+    dataset_args=OmniglotDatasetArgs(),
+    train_dataloader_class=ED.OmniglotDataLoader,
+    # Train on the first version of each character (there are 20 drawings for each
+    # character in each alphabet, here we see one of them).
+    train_dataloader_args=OmniglotDataloaderArgs(versions=[1, 1, 1, 1, 1, 1]),
+)
+```
+
+and a config for inference on those trained models could look like this:
+```
+omniglot_inference = dict(
+    experiment_class=MontyObjectRecognitionExperiment,
+    experiment_args=ExperimentArgs(
+        model_name_or_path=pretrain_dir + "/omniglot_training/pretrained/",
+        do_train=False,
         n_eval_epochs=1,
     ),
     logging_config=LoggingConfig(),
     monty_config=PatchAndViewMontyConfig(
-        learning_module_configs=default_evidence_1lm_config,
-        monty_args=MontyArgs(min_eval_steps=min_eval_steps),
-        # move 20 pixels at a time
-        motor_system_config=MotorSystemConfigInformedNoTransStepS20(),
-    ),
-    monty_config=PatchAndViewMontyConfig(
+        monty_class=MontyForEvidenceGraphMatching,
         learning_module_configs=dict(
             learning_module_0=dict(
                 learning_module_class=EvidenceGraphLM,
@@ -150,36 +168,10 @@ evidence_on_omniglot = dict(
                 ),
             )
         ),
-        sensor_module_configs=dict(
-            sensor_module_0=dict(
-                sensor_module_class=HabitatDistantPatchSM,
-                sensor_module_args=dict(
-                    sensor_module_id="patch",
-                    features=[
-                        "pose_vectors",
-                        "pose_fully_defined",
-                        "on_object",
-                        "principal_curvatures_log",
-                    ],
-                    # Need to set this lower since curvature is generally lower
-                    pc1_is_pc2_threshold=1,
-                ),
-            ),
-            sensor_module_1=dict(
-                sensor_module_class=DetailedLoggingSM,
-                sensor_module_args=dict(
-                    sensor_module_id="view_finder",
-                ),
-            ),
-        ),
-        # TODO: test this
-        # motor_system_config=MotorSystemConfigInformedNoTransStepS1(),
+        sensor_module_configs=omniglot_sensor_module_config,
     ),
+    dataset_class=ED.EnvironmentDataset,
     dataset_args=OmniglotDatasetArgs(),
-    train_dataloader_class=ED.OmniglotDataLoader,
-    # Train on the first version of each character (there are 20 drawings for each
-    # character in each alphabet, here we see one of them).
-    train_dataloader_args=OmniglotDataloaderArgs(versions=[1, 1, 1, 1, 1, 1]),
     eval_dataloader_class=ED.OmniglotDataLoader,
     # Using versions 1 means testing on same version of character as trained.
     # Version 2 is a new drawing of the previously seen characters. In this
@@ -192,7 +184,82 @@ evidence_on_omniglot = dict(
 > 📘 Follow Along
 > To run the above experiment, you first need to download the [Omniglot dataset](https://github.com/brendenlake/omniglot). You can do this by running `cd ~/tbp/data` and `git clone https://github.com/brendenlake/omniglot.git`. You will need to unzip the `omniglot/python/images_background.zip` and `omniglot/python/strokes_background.zip` files.
 
-TODO: add instructions for running the experiment.
+To test this, go ahead and copy the configs above into the `benchmarks/configs/my_experiments.py` file. To make the configs complete, you will need to add the following imports, sensor module config and model_path at the top of the file.
+```
+import os
+from dataclasses import asdict
+
+import numpy as np
+
+from benchmarks.configs.names import MyExperiments
+from tbp.monty.frameworks.config_utils.config_args import (
+    LoggingConfig,
+    MotorSystemConfigInformedNoTransStepS1,
+    PatchAndViewMontyConfig,
+    PretrainLoggingConfig,
+)
+from tbp.monty.frameworks.config_utils.make_dataset_configs import (
+    ExperimentArgs,
+    OmniglotDataloaderArgs,
+    OmniglotDatasetArgs,
+)
+from tbp.monty.frameworks.environments import embodied_data as ED
+from tbp.monty.frameworks.experiments import (
+    MontyObjectRecognitionExperiment,
+    MontySupervisedObjectPretrainingExperiment,
+)
+from tbp.monty.frameworks.models.evidence_matching import (
+    EvidenceGraphLM,
+    MontyForEvidenceGraphMatching,
+)
+from tbp.monty.frameworks.models.sensor_modules import (
+    DetailedLoggingSM,
+    HabitatDistantPatchSM,
+)
+
+monty_models_dir = os.getenv("MONTY_MODELS")
+
+pretrain_dir = os.path.expanduser(os.path.join(monty_models_dir, "omniglot"))
+
+omniglot_sensor_module_config = dict(
+    sensor_module_0=dict(
+        sensor_module_class=HabitatDistantPatchSM,
+        sensor_module_args=dict(
+            sensor_module_id="patch",
+            features=[
+                "pose_vectors",
+                "pose_fully_defined",
+                "on_object",
+                "principal_curvatures_log",
+            ],
+            save_raw_obs=False,
+            # Need to set this lower since curvature is generally lower
+            pc1_is_pc2_threshold=1,
+        ),
+    ),
+    sensor_module_1=dict(
+        sensor_module_class=DetailedLoggingSM,
+        sensor_module_args=dict(
+            sensor_module_id="view_finder",
+            save_raw_obs=False,
+        ),
+    ),
+)
+```
+
+Finally, you will need to set the `experiments` variable at the bottom of the file to this:
+```
+experiments = MyExperiments(
+    omniglot_training=omniglot_training,
+    omniglot_inference=omniglot_inference,
+)
+```
+and add the two experiments into the `MyExperiment` class in `benchmarks/configs/names.py`.
+
+Now you can run training by calling `python benchmarks/run.py -e omniglot_training` and then inference on these models by calling `python benchmarks/run.py -e omniglot_inference`. You can check the `eval_stats.csv` file in `~/tbp/results/monty/projects/monty_runs/omniglot_inference/` to see how Monty did. If you copied the code as above, it should have recognized all 6 characters correctly.
+
+> ❗️ Generalization Performance on Omniglot is Bad Without Hierarchy
+> Note that we currently don't get good generalization performance on the Omniglot dataset. If you use the commented out dataset_args (`eval_dataloader_args=OmniglotDataloaderArgs(versions=[2, 2, 2, 2, 2, 2])`) in the inference config, which shows previously unseen versions of the characters, you will see that performance degrades a lot. This is because the Omniglot characters are fundamentally compositional objects (strokes relative to each other) and compositional objects can only be modeled by stacking two learning modules hierarchically. The above configs do not do this. Our research team is hard at work getting Monty to model compositional objects.
   
 ## Example 2: Monty Meets World
 Monty Meets World is the code name for our first demo of Monty on real-world data. For a video of this momentous moment, see our [project showcase page](https://thousandbrainsproject.readme.io/docs/project-showcase#monty-for-object-detection-with-the-ipad-camera).
