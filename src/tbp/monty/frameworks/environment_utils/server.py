@@ -59,5 +59,8 @@ class MontyRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    server = http.server.HTTPServer(("0.0.0.0", 8080), MontyRequestHandler)
+    ip_address = "0.0.0.0"  # Set this to your WiFi's IP address
+    port = 8080
+    server = http.server.HTTPServer((ip_address, port), MontyRequestHandler)
+    print(f"Waiting for data at {ip_address}:{port}...")
     server.serve_forever()
