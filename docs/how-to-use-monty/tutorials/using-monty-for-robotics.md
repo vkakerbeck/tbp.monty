@@ -16,6 +16,14 @@ In this application, we wrote a [MontyMeetsWorld iOS app](https://github.com/tho
 Monty is configured to use the `SaccadeOnImageFromStreamDataLoader`. The data loader's `pre_epoch` function calls `switch_to_scene` on the `SaccadeOnImageFromSteamEnvironment`, which does nothing until a new image is found in the dedicated folder. Once it detects that a new image was saved there, it loads this image, and the episode starts. The dataloader then moves a small patch over the image (the same way as in the non-streamed version explained in the [previous tutorial](./using-monty-in-a-custom-application.md)) and sends the observations from the moving patch to Monty until Monty recognizes the object. After that, it ends the current episode and returns to waiting for the next image, which will start the next episode.
 ![Custom classes for object recognition in RGBD images streamed from an iOS app.](../../figures/how-to-use-monty/MMW_stream_custom_classes.png#width=500px)
 
+> 📘 Follow Along
+> If you like to test the MontyMeetsWorld app, you can find code and run instructions [here](https://github.com/thousandbrainsproject/monty_lab/tree/main/monty_meets_world). To run the demo there are three main steps involved:
+> 1)  Open the MontyMeetsWorld project in XCode and run the iOS app on your iPad or iPhone (instructions in [this README](https://github.com/thousandbrainsproject/monty_lab/blob/main/monty_meets_world/README.md))
+> 2) Start a server on your laptop to listen for images streamed from the app by running `python src/tbp/monty/frameworks/environment_utils/server.py`
+> 3) Start a Monty experiment that will wait for an image to be received and then run an episode to recognize the object. Use this command in a separate terminal window (while the server script and app are running): `python benchmarks/run.py -e world_image_from_stream_on_scanned_model`
+>
+> Make sure to set your WiFi's IP address in the server.py script and the app settings on your device. Then, once the app, the server, and the Monty Experiment are running, you can show an object to the camera and press the `Save Image` button in the app.
+
 # Example 2: Ultrasound
 
 > 📘 This Example is Only Conceptual [For Now]
