@@ -12,6 +12,10 @@ import http.server
 import os
 import re
 
+from tbp.monty.frameworks.run_env import setup_env
+
+setup_env()
+
 # This class is used for the monty meets world demo to live stream data from the iPad
 # camera to a server that Monty can then read from.
 
