@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -19,8 +20,10 @@ from scipy.ndimage import gaussian_filter
 
 from tbp.monty.frameworks.actions.actions import Action
 from tbp.monty.frameworks.environment_utils.transforms import DepthTo3DLocations
-from tbp.monty.frameworks.environments.embodied_environment import EmbodiedEnvironment
-from tbp.monty.frameworks.environments.habitat import HabitatActionSpace
+from tbp.monty.frameworks.environments.embodied_environment import (
+    ActionSpace,
+    EmbodiedEnvironment,
+)
 
 __all__ = [
     "OmniglotEnvironment",
@@ -48,6 +51,13 @@ NUMENTA_OBJECTS = [
 ]
 
 
+class TwoDDataActionSpace(tuple, ActionSpace):
+    """Action space for 2D data environments."""
+
+    def sample(self):
+        return self.rng.choice(self)
+
+
 class OmniglotEnvironment(EmbodiedEnvironment):
     """Environment for Omniglot dataset."""
 
@@ -66,7 +76,7 @@ class OmniglotEnvironment(EmbodiedEnvironment):
         self.state = 0
         self.data_path = data_path
         if self.data_path is None:
-            self.data_path = os.path.expanduser("~/tbp/data/omniglot/python/")
+            self.data_path = os.path.join(os.environ["MONTY_DATA"], "omniglot/python/")
         self.alphabet_names = [
             a for a in os.listdir(self.data_path + "images_background") if a[0] != "."
         ]
@@ -82,7 +92,12 @@ class OmniglotEnvironment(EmbodiedEnvironment):
     def action_space(self):
         return None
 
-    def step(self, _action, amount):
+    def add_object(self, *args, **kwargs):
+        # TODO The NotImplementedError highlights an issue with the EmbodiedEnvironment
+        #      interface and how the class hierarchy is defined and used.
+        raise NotImplementedError("OmniglotEnvironment does not support adding objects")
+
+    def step(self, action: Action):
         """Retrieve the next observation.
 
         Since the omniglot dataset includes stroke information (the order in which
@@ -96,14 +111,16 @@ class OmniglotEnvironment(EmbodiedEnvironment):
         different points on the second pass.
 
         Args:
-            _action: Not used at the moment since we just follow the draw path.
-            amount: Amount of elements in move path to move at once.
+            action: Not used at the moment since we just follow the draw path. However,
+            we do use the rotation_degrees to determine the amount of pixels to move at
+            each step.
 
         Returns:
             observation (dict).
         """
-        if amount < 1:
-            amount = 1
+        amount = 1
+        if hasattr(action, "rotation_degrees"):
+            amount = max(action.rotation_degrees, 1)
         self.step_num += int(amount)
         query_loc = self.locations[self.step_num % self.max_steps]
         patch = self.get_image_patch(
@@ -155,6 +172,13 @@ class OmniglotEnvironment(EmbodiedEnvironment):
         self.character_id = character_id
         self.character_version = version_id
         self.current_image, self.locations = self.load_new_character_data()
+
+    def remove_all_objects(self):
+        # TODO The NotImplementedError highlights an issue with the EmbodiedEnvironment
+        #      interface and how the class hierarchy is defined and used.
+        raise NotImplementedError(
+            "OmniglotEnvironment does not support removing all objects"
+        )
 
     def reset(self):
         self.step_num = 0
@@ -252,8 +276,8 @@ class SaccadeOnImageEnvironment(EmbodiedEnvironment):
         self.state = 0
         self.data_path = data_path
         if self.data_path is None:
-            self.data_path = os.path.expanduser(
-                "~/tbp/data/worldimages/labeled_scenes/"
+            self.data_path = os.path.join(
+                os.environ["MONTY_DATA"], "worldimages/labeled_scenes/"
             )
         self.scene_names = [a for a in os.listdir(self.data_path) if a[0] != "."]
         self.current_scene = self.scene_names[0]
@@ -288,13 +312,20 @@ class SaccadeOnImageEnvironment(EmbodiedEnvironment):
     @property
     def action_space(self):
         # TODO: move this to other action space definitions and clean up.
-        return HabitatActionSpace(
+        return TwoDDataActionSpace(
             [
                 "look_up",
                 "look_down",
                 "turn_left",
                 "turn_right",
             ]
+        )
+
+    def add_object(self, *args, **kwargs):
+        # TODO The NotImplementedError highlights an issue with the EmbodiedEnvironment
+        #      interface and how the class hierarchy is defined and used.
+        raise NotImplementedError(
+            "SaccadeOnImageEnvironment does not support adding objects"
         )
 
     def step(self, action: Action):
@@ -389,6 +420,13 @@ class SaccadeOnImageEnvironment(EmbodiedEnvironment):
             self.current_scene_point_cloud,
             self.current_sf_scene_point_cloud,
         ) = self.get_3d_scene_point_cloud()
+
+    def remove_all_objects(self):
+        # TODO The NotImplementedError highlights an issue with the EmbodiedEnvironment
+        #      interface and how the class hierarchy is defined and used.
+        raise NotImplementedError(
+            "SaccadeOnImageEnvironment does not support removing all objects"
+        )
 
     def reset(self):
         """Reset environment and extract image patch.
@@ -662,8 +700,8 @@ class SaccadeOnImageFromStreamEnvironment(SaccadeOnImageEnvironment):
         self.state = 0
         self.data_path = data_path
         if self.data_path is None:
-            self.data_path = os.path.expanduser(
-                "~/tbp/data/worldimages/world_data_stream/"
+            self.data_path = os.path.join(
+                os.environ["MONTY_DATA"], "worldimages/world_data_stream/"
             )
         self.scene_names = [a for a in os.listdir(self.data_path) if a[0] != "."]
         self.current_scene = 0
@@ -693,7 +731,7 @@ class SaccadeOnImageFromStreamEnvironment(SaccadeOnImageEnvironment):
         # Instantiate once and reuse when checking action name in step()
         # TODO Use 2D-specific actions instead of overloading? Habitat actions
         # TODO Fix how inheritance is used here. We duplicate the below code because we
-        #      don't call super().__init__ while inherting
+        #      don't call super().__init__ while inheriting
         self._valid_actions = ["look_up", "look_down", "turn_left", "turn_right"]
 
     def switch_to_scene(self, scene_id):

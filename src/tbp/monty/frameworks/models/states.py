@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2023-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -7,7 +8,11 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+from typing import Any, Dict, Optional
+
 import numpy as np
+
+from tbp.monty.frameworks.models.buffer import BufferEncoder
 
 
 class State:
@@ -69,7 +74,7 @@ class State:
         if self.morphological_features is not None:
             for feature in self.morphological_features:
                 feat_val = self.morphological_features[feature]
-                if type(feat_val) == np.ndarray:
+                if isinstance(feat_val, np.ndarray):
                     feat_val = np.round(feat_val, 3)
                 if feature == "pose_vectors":
                     repr_string += f"       {feature}: \n"
@@ -81,7 +86,7 @@ class State:
         if self.non_morphological_features is not None:
             for feature in self.non_morphological_features:
                 feat_val = self.non_morphological_features[feature]
-                if type(feat_val) in [np.ndarray, np.float64]:
+                if isinstance(feat_val, (np.ndarray, np.float64)):
                     feat_val = np.round(feat_val, 3)
                 repr_string += f"       {feature}: {feat_val}\n"
         repr_string += (
@@ -184,9 +189,9 @@ class State:
         ), "pose should be defined by three orthonormal unit vectors but pose_vectors "
         f"shape is {self.morphological_features['pose_vectors'].shape}"
         assert "pose_fully_defined" in self.morphological_features.keys()
-        assert (
-            type(self.morphological_features["pose_fully_defined"]) == bool
-        ), "pose_fully_defined must be a boolean but type is "
+        assert isinstance(self.morphological_features["pose_fully_defined"], bool), (
+            "pose_fully_defined must be a boolean but type is "
+        )
         f"{type(self.morphological_features['pose_fully_defined'])}"
         assert self.location.shape == (
             3,
@@ -194,12 +199,12 @@ class State:
         assert (
             self.confidence >= 0 and self.confidence <= 1
         ), f"Confidence must be in [0,1] but is {self.confidence}"
-        assert (
-            type(self.use_state) == bool
-        ), f"use_state must be a boolean but is {type(self.use_state)}"
-        assert (
-            type(self.sender_id) == str
-        ), f"sender_id must be string but is {type(self.sender_id)}"
+        assert isinstance(self.use_state, bool), (
+            f"use_state must be a boolean but is {type(self.use_state)}"
+        )
+        assert isinstance(self.sender_id, str), (
+            f"sender_id must be string but is {type(self.sender_id)}"
+        )
         assert (
             self.sender_type in self.allowable_sender_types
         ), f"sender_type must be SM or LM but is\
@@ -207,7 +212,7 @@ class State:
 
 
 class GoalState(State):
-    """Specialization of State for goal states with null (None) values allowed.
+    """Specialization of :class:`State` for goal states with null (None) values allowed.
 
     Specialized form of state that still adheres to the cortical messaging protocol,
     but can have null (None) values associated with the location and morphological
@@ -216,45 +221,55 @@ class GoalState(State):
     Used by goal-state generators (GSGs) to communicate goal states to other GSGs, and
     to motor actuators.
 
-    The state variables generally have the same meanign as for the base State
+    The state variables generally have the same meaning as for the base :class:`State`
     class, and they represent the target values for the receiving system. Thus
     if a goal-state specifies a particular object ID (non-morphological feature)
     in a particular pose (location and morphological features), then the receiving
     system should attempt to achieve that state.
 
     Note however that for the goal-state, the confidence corresponds to the conviction
-        with which a GSG believes that the current goal-state should be acted upon.
-        Float bound in [0,1.0].
+    with which a GSG believes that the current goal-state should be acted upon. Float
+    bound in [0.0, 1.0].
     """
 
     def __init__(
         self,
-        location,
-        morphological_features,
-        non_morphological_features,
-        confidence,
-        use_state,
-        sender_id,
-        sender_type,
-        goal_tolerances,
+        location: Optional[np.ndarray],
+        morphological_features: Optional[Dict[str, Any]],
+        non_morphological_features: Optional[Dict[str, Any]],
+        confidence: float,
+        use_state: bool,
+        sender_id: str,
+        sender_type: str,
+        goal_tolerances: Optional[Dict[str, Any]],
+        info: Optional[Dict[str, Any]] = None,
     ):
         """Initialize a goal state.
 
         Args:
-            location: ?
-            morphological_features: ?
-            non_morphological_features: ?
-            confidence: ?
-            use_state: ?
-            sender_id: ?
-            sender_type: ?
+            location: the location to move to in global/body-centric coordinates, or
+              `None` if the location is not specified as part of the goal state.
+              For example, this may be a point on an object's surface or a location
+              nearby from which a sensor would have a good view of the target point.
+            morphological_features: dictionary of morphological features or `None`.
+              For example, it may include pose vectors, whether the pose is fully
+              defined, etc.
+            non_morphological_features: a dictionary containing non-morphological
+              features at the target location or `None`.
+            confidence: a float between 0 and 1 representing the confidence in the goal
+              state.
+            use_state: a boolean indicating whether the goal state should be used.
+            sender_id: the ID of the sender of the goal state (e.g., `"LM_0"`).
+            sender_type: the type of sender of the goal state (e.g., `"GSG"`).
             goal_tolerances: Dictionary of tolerances that GSGs use when determining
-                whether the current state of the LM matches the driving goal-state. As
-                such, a GSG can send a goal state with more or less strict tolerances
-                if certain elements of the state (e.g. the location of a mug vs its
-                orientation) are more or less important.
+                whether the current state of the LM matches the driving goal-state
+                or `None`. As such, a GSG can send a goal state with more or less
+                strict tolerances if certain elements of the state (e.g. the location
+                of a mug vs its orientation) are more or less important.
+            info: Optional metadata for logging purposes.
         """
         self.goal_tolerances = goal_tolerances
+        self.info = info or {}
 
         super().__init__(
             location,
@@ -287,10 +302,10 @@ class GoalState(State):
                     {self.morphological_features['pose_vectors'].shape}"
             assert "pose_fully_defined" in self.morphological_features.keys()
             assert (
-                type(self.morphological_features["pose_fully_defined"]) == bool
-            ) or self.morphological_features[
-                "pose_fully_defined"
-            ] is None, "pose_fully_defined must be a boolean or None but type is "
+                isinstance(self.morphological_features["pose_fully_defined"], bool)
+            ) or self.morphological_features["pose_fully_defined"] is None, (
+                "pose_fully_defined must be a boolean or None but type is "
+            )
             f"{type(self.morphological_features['pose_fully_defined'])}"
         if self.location is not None:
             assert self.location.shape == (
@@ -300,13 +315,40 @@ class GoalState(State):
         assert (
             self.confidence >= 0 and self.confidence <= 1
         ), f"Confidence must be in [0,1] but is {self.confidence}"
-        assert (
-            type(self.use_state) == bool
-        ), f"use_state must be a boolean but is {type(self.use_state)}"
-        assert (
-            type(self.sender_id) == str
-        ), f"sender_id must be string but is {type(self.sender_id)}"
+        assert isinstance(self.use_state, bool), (
+            f"use_state must be a boolean but is {type(self.use_state)}"
+        )
+        assert isinstance(self.sender_id, str), (
+            f"sender_id must be string but is {type(self.sender_id)}"
+        )
         # Note *only* GSGs should create GoalState objects
         assert (
             self.sender_type in self.allowable_sender_types
         ), f"sender_type must be GSG but is {self.sender_type}"
+        # info is optional, but it must be a dictionary.
+        assert isinstance(self.info, dict), "info must be a dictionary"
+
+
+def encode_goal_state(goal_state: GoalState) -> Dict[str, Any]:
+    """Encode a goal state into a dictionary.
+
+    Args:
+        goal_state: The goal state to encode.
+
+    Returns:
+        A dictionary containing the goal state's attributes.
+    """
+    return {
+        "location": goal_state.location,
+        "morphological_features": goal_state.morphological_features,
+        "non_morphological_features": goal_state.non_morphological_features,
+        "confidence": goal_state.confidence,
+        "use_state": goal_state.use_state,
+        "sender_id": goal_state.sender_id,
+        "sender_type": goal_state.sender_type,
+        "goal_tolerances": goal_state.goal_tolerances,
+        "info": goal_state.info,
+    }
+
+
+BufferEncoder.register(GoalState, encode_goal_state)

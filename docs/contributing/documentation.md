@@ -7,14 +7,41 @@ title: Documentation
 
 # Overview
 
-Our documentation is held in markdown files in the Monty repo under the [`/docs` folder](../../docs/). This documentation is synchronized to readme.com for viewing whenever a change is made. The order of sections, documents, and subdocuments is maintained by a hierarchy file called `/docs/hierarchy.md`. This is a fairly straightforward markdown document that is used to tell readme how to order the categories, documents and sub-documents.
+Our documentation is held in Markdown files in the Monty repo under the [`/docs` folder](https://github.com/thousandbrainsproject/tbp.monty/tree/main/docs/). This documentation is synchronized to readme.com for viewing whenever a change is made. The order of sections, documents, and subdocuments is maintained by a hierarchy file called `/docs/hierarchy.md`. This is a fairly straightforward Markdown document that is used to tell readme how to order the categories, documents and sub-documents.
 
 > 📘 Edits to the documentation need to be submitted in the form of PRs to the Monty repository.
 
+# Linting
+
+We use [Vale](https://vale.sh/) to lint our documentation. The linting process checks for spelling errors and ensures that headings follow the [APA title case style](https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case).
+
+The linting rules are defined in the `/.vale/` directory.
+
+## Adding New Words to the Dictionary
+
+You can add new words to the dictionary by adding them to `.vale/styles/config/vocabularies/TBP/accept.txt` - for more information see [Vale's documentation](https://vale.sh/docs/keys/vocab#file-format).
+
+## How to Install and Use Vale
+
+1. **Install Vale**
+  Download Vale from its [installation page](https://vale.sh/docs/install).
+
+2. **Run Vale**
+  Use the following command in your terminal to run Vale:
+
+    ```bash
+    vale .
+    ```
+
+    Example output:
+    ```
+    ➜  tbp.monty git:(main) vale .
+    ✔ 0 errors, 0 warnings and 0 suggestions in 141 files.
+    ```
 
 # Relative Links
 
-Links to other documents should use the standard markdown link syntax, and should be relative to the documents location.
+Links to other documents should use the standard Markdown link syntax, and should be relative to the documents location.
 
 ```markdown
 relative link in the same directory
@@ -28,7 +55,7 @@ These links will work even if you're on a designated version of the documentatio
 
 # Modifying a Document or Sub-Document
 
-This is the simplest flow.  To modify a document simply edit the markdown file in your forked version of the monty repository and commit the changes by following the normal [Pull Requests](pull-requests.md) process.
+This is the simplest flow.  To modify a document simply edit the Markdown file in your forked version of the Monty repository and commit the changes by following the normal [Pull Requests](pull-requests.md) process.
 
 # Creating a Document
 
@@ -40,7 +67,7 @@ To create a new document, create the new file in the category directory, then ad
 - [some-existing-doc](/my-category/placeholder-example-doc.md)
 ```
 
-Then, create your markdown document `/docs/my-category/new-placeholder-example-doc.md` and add the appropriate Frontmatter.
+Then, create your Markdown document `/docs/my-category/new-placeholder-example-doc.md` and add the appropriate Frontmatter.
 
 ```markdown
 ---
@@ -52,11 +79,11 @@ title: 'New Placeholder Example Doc'
 > 🚧 Quotes
 >
 >Please put the title in single quotes and, if applicable, escape any single quotes using two single quotes in a row.
-Exapmle: `title: 'My New Doc''s'`
+Example: `title: 'My New Doc''s'`
 
-> 🚧 Your title must match the url-safe slug
+> 🚧 Your title must match the URL-safe slug
 >
->So if your title is `My New Doc's` then your file name should be `my-new-docs.md`
+>If your title is `My New Doc's` then your file name should be `my-new-docs.md`
 
 Continue with the [Pull Requests](pull-requests.md) process.
 
@@ -82,7 +109,7 @@ Continue with the [Pull Requests](pull-requests.md) process.
 
 If the move is within a category or sub-pages within a page, you can simply edit the `hierarchy.md` file and update the locations by moving the lines around.
 
-If you are changing the parent path of a document (ie, sub-page -> page, or page -> sub-page, or page/sub-page -> new category, or sub-page -> new page, then along with updating the `hierarchy.md` file you also must update the folder structure to make sure the document is correctly located.  The sync tool will fail with a pre-check error saying there is a mismatch between the hierarchy file and the location on disk if they do not match up.
+If you are changing the parent path of a document (i.e., sub-page -> page, or page -> sub-page, or page/sub-page -> new category, or sub-page -> new page, then along with updating the `hierarchy.md` file you also must update the folder structure to make sure the document is correctly located.  The sync tool will fail with a pre-check error saying there is a mismatch between the hierarchy file and the location on disk if they do not match up.
 
 Continue with the [Pull Requests](pull-requests.md) process.
 

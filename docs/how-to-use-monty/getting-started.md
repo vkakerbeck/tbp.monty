@@ -7,6 +7,15 @@ description: How to get the code running.
 >
 > This is our open-source repository. We call it **Monty** after Vernon Mountcastle, who proposed cortical columns as a repeating functional unit across the neocortex.
 
+> [!WARNING]
+> This guide will not work on Windows or non-`x86_64/amd64` Linux.
+>
+> You can follow these GitHub issues for updates:
+> - [Windows](https://github.com/thousandbrainsproject/tbp.monty/issues/52)
+> - [Raspberry Pi](https://github.com/thousandbrainsproject/tbp.monty/issues/85)
+>
+> If you run into problems, please let us know by [opening a GitHub issue](https://github.com/thousandbrainsproject/tbp.monty/issues/new/choose) or [posting in the Monty Code section of our forum](https://thousandbrains.discourse.group/c/monty-code/6).
+
 # 1. Get the Code
 
 It is best practice (and required if you ever want to contribute code) first to **make a fork of our repository** and then make any changes on your local fork. To do this you can simply [visit our repository](https://github.com/thousandbrainsproject/tbp.monty) and click on the fork button as shown in the picture below. For more detailed instructions see the [GitHub documentation on Forks](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
@@ -22,7 +31,7 @@ Next, you need to **clone the repository onto your device**. To do that, open th
 > [!NOTE]
 > If you want the same setup as we use at the Thousand Brains Project by default, clone the repository at `${HOME}/tbp/`. If you don't have a `tbp` folder in your home directory yet you can run `cd ~; mkdir tbp; cd tbp` to create it. It's not required to clone the code in this folder but it is the path we assume in our tutorials.
 
-## 1.2 Make Sure Your Local Copy is Up-To-Date
+## 1.2 Make Sure Your Local Copy is Up-to-Date
 
 If you just forked and cloned this repository, you may skip this step, but any other time you get back to this code, you will want to synchronize it to work with the latest changes.
 
@@ -41,6 +50,9 @@ To setup Monty, **use the conda commands below**. Make sure to `cd` into the `tb
 
 Note that the commands are slightly different depending on whether you are setting up the environment on an Intel or ARM64 architecture, and whether you are using the zsh shell or another shell.
 
+> [!NOTE]
+> On Apple Silicon we rely on Rosetta to run Intel binaries on ARM64 and include the `softwareupdate --install-rosetta` command in the commands below.
+
 You can create the environment with the following commands:
 
 ```shell Intel (zsh shell)
@@ -54,12 +66,14 @@ conda init
 conda activate tbp.monty
 ```
 ```shell ARM64 (Apple Silicon) (zsh shell)
+softwareupdate --install-rosetta
 conda env create -f environment_arm64.yml --subdir=osx-64
 conda init zsh
 conda activate tbp.monty
 conda config --env --set subdir osx-64
 ```
 ```shell ARM64 (Apple Silicon) (other shells)
+softwareupdate --install-rosetta
 conda env create -f environment_arm64.yml --subdir=osx-64
 conda init
 conda activate tbp.monty
@@ -93,14 +107,18 @@ In your usual interaction with this code base, you will most likely run experime
 
 ## 4.1 Download the YCB Dataset
 
-A lot of our current experiments are based on the [YCB dataset](https://www.ycbbenchmarks.com/) which is a dataset of 77 3D objects that we render in habitat. To download the dataset, run `python -m habitat_sim.utils.datasets_download --uids ycb --data-path ~/tbp/data/habitat`.
+A lot of our current experiments are based on the [YCB dataset](https://www.ycbbenchmarks.com/) which is a dataset of 77 3D objects that we render in habitat. To download the dataset, run 
+
+```
+python -m habitat_sim.utils.datasets_download --uids ycb --data-path ~/tbp/data/habitat
+```
 
 ## 4.2 Download Pretrained Models
 
 | Models | Archive Format | Download Link |
 | --- | --- | --- |
-| pretrained_ycb_v9 | tgz |  [pretrained_ycb_v9.tgz](https://tbp-pretrained-models-public-c9c24aef2e49b897.s3.us-east-2.amazonaws.com/tbp.monty/pretrained_ycb_v9.tgz) |
-| pretrained_ycb_v9 | zip |  [pretrained_ycb_v9.zip](https://tbp-pretrained-models-public-c9c24aef2e49b897.s3.us-east-2.amazonaws.com/tbp.monty/pretrained_ycb_v9.zip) |
+| pretrained_ycb_v10 | tgz |  [pretrained_ycb_v10.tgz](https://tbp-pretrained-models-public-c9c24aef2e49b897.s3.us-east-2.amazonaws.com/tbp.monty/pretrained_ycb_v10.tgz) |
+| pretrained_ycb_v10 | zip |  [pretrained_ycb_v10.zip](https://tbp-pretrained-models-public-c9c24aef2e49b897.s3.us-east-2.amazonaws.com/tbp.monty/pretrained_ycb_v10.zip) |
 
 Unpack the archive in the `~/tbp/results/monty/pretrained_models/` folder. For example:
 
@@ -109,16 +127,16 @@ mkdir -p ~/tbp/results/monty/pretrained_models/
 
 cd ~/tbp/results/monty/pretrained_models/
 
-curl -L https://tbp-pretrained-models-public-c9c24aef2e49b897.s3.us-east-2.amazonaws.com/tbp.monty/pretrained_ycb_v9.tgz | tar -xzf -
+curl -L https://tbp-pretrained-models-public-c9c24aef2e49b897.s3.us-east-2.amazonaws.com/tbp.monty/pretrained_ycb_v10.tgz | tar -xzf -
 ```
 ```plaintext zip
 mkdir -p ~/tbp/results/monty/pretrained_models/
 
 cd ~/tbp/results/monty/pretrained_models/
 
-curl -O https://tbp-pretrained-models-public-c9c24aef2e49b897.s3.us-east-2.amazonaws.com/tbp.monty/pretrained_ycb_v9.zip
+curl -O https://tbp-pretrained-models-public-c9c24aef2e49b897.s3.us-east-2.amazonaws.com/tbp.monty/pretrained_ycb_v10.zip
 
-unzip pretrained_ycb_v9.zip
+unzip pretrained_ycb_v10.zip
 ```
 
 
@@ -126,7 +144,7 @@ The folder should then have the following structure:
 
 ```
 ~/tbp/results/monty/pretrained_models/
-|-- pretrained_ycb_v9/
+|-- pretrained_ycb_v10/
 |   |-- supervised_pre_training_5lms
 |   |-- supervised_pre_training_5lms_all_objects
 |   |-- ...
@@ -136,8 +154,8 @@ The folder should then have the following structure:
 > To unpack an archive you should be able to double click on it.
 >
 > To unpack via the command line, copy the archive into the `~/tbp/results/monty/pretrained_models/` folder and inside that folder run:
-> - for a `tgz` archive, `tar -xzf pretrained_ycb_v9.tgz`.
-> - for a `zip` archive, `unzip pretrained_ycb_v9.zip`.
+> - for a `tgz` archive, `tar -xzf pretrained_ycb_v10.tgz`.
+> - for a `zip` archive, `unzip pretrained_ycb_v10.zip`.
 
 ## [Optional] Set Environment Variables
 
@@ -149,7 +167,18 @@ If you did not save the pre-trained models in the `~/tbp/results/monty/pretraine
 export MONTY_MODELS=/path/to/your/pretrained/models/dir
 ```
 
-This path should point to the `pretrained_models` folder that contains the`pretrained_ycb_v9`folders.
+This path should point to the `pretrained_models` folder that contains the`pretrained_ycb_v10`folders.
+
+
+### MONTY_DATA
+
+If you did not save the data (e.g., YCB objects) in the `~/tbp/data` folder, you will need to set the **MONTY_DATA** environment variable.
+
+```shell
+export MONTY_DATA=/path/to/your/data
+```
+
+This path should point to the `data` folder, which contains data used for your experiments. Examples of data stored in this folder are the `habitat` folder containing YCB objects, the `worldimages` folder containing camera images for the 'Monty Meets Worlds' experiments, and the `omniglot' folder containing the Omniglot dataset.
 
 ### MONTY_LOGS
 

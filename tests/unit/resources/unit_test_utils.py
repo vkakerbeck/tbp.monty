@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -461,7 +462,7 @@ class BaseGraphTestCases:
                     self.assertEqual(paths1[obj], paths2[obj])
 
         def convert_to_numpy_and_check_equal(self, list1, list2):
-            if isinstance(list1[0], (list, np.ndarray)):
+            if len(list1) > 0 and isinstance(list1[0], (list, np.ndarray)):
                 for v1, v2 in zip(list1, list2):
                     self.convert_to_numpy_and_check_equal(v1, v2)
 
@@ -540,7 +541,7 @@ class BaseGraphTestCases:
                                         step_old[key3][f_idx], step_new[key3][f_idx]
                                     )
                             else:
-                                if type(step_old[key3]) == str:
+                                if isinstance(step_old[key3], str):
                                     # sm_id can not be compared as array
                                     self.assertEqual(step_old[key3], step_new[key3])
                                 else:

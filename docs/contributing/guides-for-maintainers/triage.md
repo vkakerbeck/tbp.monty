@@ -23,7 +23,7 @@ The desired cadence for Issue Triage is at least once per business day.
 
 A **Maintainer** will check the Issue for validity.
 
-Do not assign priorities or severities to Issues (see: [RFC 2 PR and Issue Review](https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0002_pr_and_issue_review.md#issue)).
+Do not assign priority or severity to Issues (see: [RFC 2 PR and Issue Review](https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0002_pr_and_issue_review.md#issue)).
 
 Do not assign **Maintainers** to Issues. Issues remain unassigned so that anyone can work on them (see: [RFC 2 PR and Issue Review](https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0002_pr_and_issue_review.md#feature-requests-1)).
 
@@ -64,7 +64,7 @@ The desired cadence for Pull Request Triage is at least once per business day.
 First, review any Pull Requests pending CLA.
 
 > [!NOTE]
->Pending CLA link (is pull request, is open, is not a draft, is not triaged, is pending cla)
+>Pending CLA link (is pull request, is open, is not a draft, is not triaged, is pending CLA)
 >
 > <https://github.com/thousandbrainsproject/tbp.monty/pulls?q=is%3Apr+is%3Aopen+-label%3Atriaged+draft%3Afalse+label%3Acla>
 
@@ -73,7 +73,7 @@ If the Pull Request CLA check is passing (you may need to rerun the CLA check), 
 ## 2. Triage
 
 > [!NOTE]
-> Triage link (is pull request, is open, is not a draft, is not triaged, is not pending cla)
+> Triage link (is pull request, is open, is not a draft, is not triaged, is not pending CLA)
 >
 > <https://github.com/thousandbrainsproject/tbp.monty/pulls?q=is%3Apr+is%3Aopen+-label%3Atriaged+draft%3Afalse+-label%3Acla>
 
@@ -81,7 +81,7 @@ First, check if the Pull Request CLA check is passing. If the check is not passi
 
 A **Maintainer** will check the Pull Request for validity.
 
-There are no priorities or severities applied to Pull Requests.
+There is no priority or severity applied to Pull Requests.
 
 A valid Pull Request is on-topic, well-formatted, contains expected information, does not depend on an unmerged Pull Request, and does not violate the code of conduct.
 

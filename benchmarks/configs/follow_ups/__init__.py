@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -10,6 +11,10 @@
 import os
 import pathlib
 import pickle
+
+from tbp.monty.frameworks.run_env import setup_env
+
+setup_env()
 
 current_dir = pathlib.Path(__file__).parent
 files = [file for file in os.listdir(current_dir) if file.endswith(".pkl")]

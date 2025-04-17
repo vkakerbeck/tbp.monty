@@ -13,7 +13,7 @@ Our model will have one surface agent connected to one sensor module connected t
 
 # Setting up the Experiment Config for Continual Learning
 
-To follow along, create a file called `unsupervised_continual_learning_tutorial.py` in the `benchmarks/configs/` folder and paste the code snippets into it.
+To follow along, open the `benchmarks/configs/my_experiments.py` file and paste the code snippets into it.
 
 ```python
 import os
@@ -29,13 +29,15 @@ from tbp.monty.frameworks.config_utils.make_dataset_configs import (
     EnvironmentDataloaderPerObjectArgs,
     ExperimentArgs,
     RandomRotationObjectInitializer,
-    SurfaceViewFinderMountHabitatDatasetArgs,
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
 from tbp.monty.frameworks.experiments import (
     MontyObjectRecognitionExperiment,
 )
 from tbp.monty.frameworks.models.evidence_matching import EvidenceGraphLM
+from tbp.monty.simulators.habitat.configs import (
+    SurfaceViewFinderMountHabitatDatasetArgs,
+)
 
 """
 Basic setup
@@ -147,26 +149,24 @@ surf_agent_2obj_unsupervised = dict(
 ```
 If you have read our previous tutorials on [pretraining](pretraining-a-model.md) or [running inference with a pretrained model](running-inference-with-a-pretrained-model.md), you may spot a few differences in this setup. For pretraining, we used the `MontySupervisedObjectPretrainingExperiment` class which also performs training (and not evaluation). While that was a training-only setup, it is different from our unsupervised continual learning config since it supplies object labels to learning modules. For running inference with a pretrained model, we used the `MontyObjectRecognitionExperiment` class but specified that we only wanted to perform evaluation (i.e., `do_train=False` and `do_eval=True`). In contrast, here we used the `MontyObjectRecognitionExperiment` with arguments `do_train=True` and `do_eval=False`. This combination of experiment class and `do_train`/`do_eval` arguments is specific to unsupervised continual learning. We have also increased `min_training_steps`, `object_evidence_threshold`, and `required_symmetry_evidence` to avoid early misclassification when there are fewer objects in memory.
 
-Besides these crucial changes, we have also made a few minor adjustments to simplify the rest of the the configs. First, we did not explicitly define our sensor module or motor system configs. This is because we are using `SurfaceAndViewMontyConfig`'s default sensor modules, motor system, and matrices that define connectivity between agents, sensors, and learning modules. Second, we are using a `RandomRotationObjectInitializer` which randomly rotates an object at the beginning of each episode rather than rotating an object by a specific user-defined rotation. Third, we are using the `CSVLoggingConfig`. This is equivalent to setting up a base `LoggingConfig` and specifying that we only want a `BasicCSVStatsHandler`, but it's a bit more succint. Monty has many config classes provided for this kind of convenience.
+Besides these crucial changes, we have also made a few minor adjustments to simplify the rest of the configs. First, we did not explicitly define our sensor module or motor system configs. This is because we are using `SurfaceAndViewMontyConfig`'s default sensor modules, motor system, and matrices that define connectivity between agents, sensors, and learning modules. Second, we are using a `RandomRotationObjectInitializer` which randomly rotates an object at the beginning of each episode rather than rotating an object by a specific user-defined rotation. Third, we are using the `CSVLoggingConfig`. This is equivalent to setting up a base `LoggingConfig` and specifying that we only want a `BasicCSVStatsHandler`, but it's a bit more succinct. Monty has many config classes provided for this kind of convenience.
 
 # Running the Unsupervised Continual Learning Experiment
 
-Finally, add the following lines to the bottom of the file:
+Finally, add your experiment to `MyExperiments` at the bottom of the file:
 
 ```python
-CONFIGS = dict(
+experiments = MyExperiments(
     surf_agent_2obj_unsupervised=surf_agent_2obj_unsupervised,
 )
+CONFIGS = asdict(experiments)
 ```
-Next, you will need to add the following lines to the `benchmarks/configs/__init__.py` file:
+Next you will need to declare your experiment name as part of the `MyExperiments` dataclass in the `benchmarks/configs/names.py` file:
 
 ```python
-from .unsupervised_continual_learning_tutorial import (
-    CONFIGS as UNSUPERVISED_CONTINUAL_LEARNING_TUTORIAL,
-)
-
-# Put this line after CONFIGS is initialized
-CONFIGS.update(UNSUPERVISED_CONTINUAL_LEARNING_TUTORIAL)
+@dataclass
+class MyExperiments:
+    surf_agent_2obj_unsupervised: dict
 ```
 To run this experiment, navigate to the `benchmarks/` folder in a terminal and call the `run.py` script with an experiment name as the -e argument like so:
 ```shell

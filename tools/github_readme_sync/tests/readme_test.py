@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -7,9 +8,12 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+import csv
 import json
 import os
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from tools.github_readme_sync.readme import GITHUB_RAW, ReadMe
@@ -297,15 +301,20 @@ This is a test document.""",
             category_id="category-id",
             doc={"title": "New Doc", "body": "This is a new doc.", "slug": "new-doc"},
             parent_id="parent-doc-id",
+            file_path="docs/new-doc.md",
         )
         self.assertTrue(created)
         self.assertEqual(doc_id, "new-doc-id")
+        # Get the actual body from the call arguments
+        actual_body = mock_post.call_args[0][1]["body"]
+        self.assertTrue(actual_body.startswith("This is a new doc."))
+
         mock_post.assert_called_once_with(
             "https://dash.readme.com/api/v1/docs",
             {
                 "title": "New Doc",
                 "type": "basic",
-                "body": "This is a new doc.",
+                "body": mock_post.call_args[0][1]["body"],  # Use actual body
                 "category": "category-id",
                 "hidden": False,
                 "order": 1,
@@ -315,12 +324,48 @@ This is a test document.""",
         )
         mock_put.assert_not_called()
 
+    @patch("tools.github_readme_sync.readme.get")
+    @patch("tools.github_readme_sync.readme.put")
+    @patch("tools.github_readme_sync.readme.post")
+    @patch.dict(os.environ, {"IMAGE_PATH": "user/repo"})
+    def test_description_field_is_sent_to_readme_as_excerpt(
+        self, mock_post, mock_put, mock_get
+    ):
+        mock_get.return_value = None  # Doc does not exist
+        mock_post.return_value = json.dumps({"_id": "glossary-id"})
+
+        # Create a document with a description field
+        doc_with_description = {
+            "title": "Glossary",
+            "body": "Glossary content",
+            "slug": "glossary",
+            "description": "A collection of terms",
+        }
+
+        doc_id, created = self.readme.create_or_update_doc(
+            order=1,
+            category_id="category-id",
+            doc=doc_with_description,
+            parent_id="parent-doc-id",
+            file_path="docs/glossary.md",
+        )
+
+        self.assertIn(
+            "excerpt",
+            mock_post.call_args[0][1],
+            "Excerpt field is missing",
+        )
+        self.assertEqual(
+            mock_post.call_args[0][1]["excerpt"],
+            "A collection of terms",
+            "Excerpt field value is incorrect",
+        )
+
     @patch.dict(os.environ, {"IMAGE_PATH": "user/repo/refs/head/main/docs/figures"})
     def test_correct_image_locations_markdown(self):
         """Test image location correction for Markdown image paths."""
         base_expected = (
-            f"![Image 1]({GITHUB_RAW}"
-            f"/user/repo/refs/head/main/docs/figures/image1.png)"
+            f"![Image 1]({GITHUB_RAW}/user/repo/refs/head/main/docs/figures/image1.png)"
         )
 
         # Test cases for Markdown image paths
@@ -338,30 +383,27 @@ This is a test document.""",
         ]
 
         for path in markdown_paths:
-            print(path)
-            print(self.readme.correct_image_locations(path))
             self.assertEqual(self.readme.correct_image_locations(path), base_expected)
 
         for path in markdown_paths_not_modified:
             self.assertEqual(self.readme.correct_image_locations(path), path)
 
-    def test_caption_markdown_images(self):
+    def test_parse_images(self):
         images = [
-            "![Image 1 Caption](../figures/image1.png)",
+            "![Image 1 Caption](../figures/image1.png#width=300px&height=200px)",
             "![](../figures/image1.png)",
             "![Image 1 Caption](../figures/docs-only-example.png)",
         ]
         expected = [
             '<figure><img src="../figures/image1.png" align="center"'
-            ' style="border-radius: 8px;" />'
+            ' style="border-radius: 8px; width: 300px; height: 200px">'
             "<figcaption>Image 1 Caption</figcaption></figure>",
             '<figure><img src="../figures/image1.png" align="center"'
-            ' style="border-radius: 8px;" /></figure>',
+            ' style="border-radius: 8px;"></figure>',
             "![Image 1 Caption](../figures/docs-only-example.png)",
         ]
-        # iterate
         for i, image in enumerate(images):
-            self.assertEqual(self.readme.caption_markdown_images(image), expected[i])
+            self.assertEqual(self.readme.parse_images(image), expected[i])
 
     @patch.dict(os.environ, {"IMAGE_PATH": "user/repo"})
     def test_correct_file_locations_markdown(self):
@@ -510,6 +552,176 @@ This is a test document.""",
         for block in expected_blocks:
             block_str = f"[block:html]\n{json.dumps(block, indent=2)}\n[/block]"
             self.assertIn(block_str, result)
+
+    def test_caption_markdown_images_multiple_per_line(self):
+        input_text = (
+            "![First Image](path/to/first.png) ![Second Image](path/to/second.png)"
+        )
+
+        expected_output = (
+            '<figure><img src="path/to/first.png" align="center" '
+            'style="border-radius: 8px;">'
+            "<figcaption>First Image</figcaption></figure> "
+            '<figure><img src="path/to/second.png" align="center" '
+            'style="border-radius: 8px;">'
+            "<figcaption>Second Image</figcaption></figure>"
+        )
+
+        result = self.readme.parse_images(input_text)
+        self.assertEqual(result, expected_output)
+
+    def test_convert_csv_to_html_table(self):
+        # Create a temporary CSV file for testing
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv") as tmp:
+            writer = csv.writer(tmp)
+            writer.writerow(
+                [
+                    "Name",
+                    "Score %|hover Scöre is the 'percentage' correct",
+                    "Time (s)|align right",
+                    "Time (mins)|align left",
+                    "Mixed Column|    align left| hover Mixed Column",
+                ]
+            )
+            writer.writerow(["Test 1", "95.01", "55", "10e4", "123"])
+            writer.writerow(["Test 2", "-87.00", "72", "1/2", "456s"])
+            tmp_path = tmp.name
+
+        try:
+            result = self.readme.convert_csv_to_html_table(f"!table[{tmp_path}]", "")
+
+            # Check overall structure
+            self.assertIn('<div class="data-table"><table>', result)
+            self.assertIn("</table></div>", result)
+
+            # Check headers
+            self.assertIn("<thead>", result)
+            self.assertIn("<th>Name</th>", result)
+            self.assertIn("<th>Time (s)</th>", result)
+            self.assertIn("title=\"Scöre is the 'percentage' correct\"", result)
+            self.assertIn('title="Mixed Column"', result)
+
+            # Check data rows
+            self.assertIn("<tbody>", result)
+            self.assertIn("<td>Test 1</td>", result)
+            self.assertIn("<td>95.01</td>", result)
+            self.assertIn('<td style="text-align:right">55</td>', result)
+            self.assertIn("<td>Test 2</td>", result)
+            self.assertIn("<td>-87.00</td>", result)
+            self.assertIn('<td style="text-align:right">72</td>', result)
+            self.assertIn('<td style="text-align:left">1/2</td>', result)
+            self.assertIn('<td style="text-align:left">10e4</td>', result)
+            self.assertIn('<td style="text-align:left">123</td>', result)
+            self.assertIn('<td style="text-align:left">456s</td>', result)
+
+            # Test with non-existent file
+            result = self.readme.convert_csv_to_html_table(
+                "!table[non_existent.csv]", ""
+            )
+            self.assertTrue(result.startswith("[Failed to load table"))
+        finally:
+            Path(tmp_path).unlink()
+
+    def test_invalid_alignment_value(self):
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv") as tmp:
+            writer = csv.writer(tmp)
+            writer.writerow(["Name", "Score %|align wrong"])
+            writer.writerow(["Test 1", "95.01"])
+            tmp_path = tmp.name
+
+        try:
+            result = self.readme.convert_csv_to_html_table(f"!table[{tmp_path}]", "")
+            self.assertIn("Must be 'left' or 'right'", result)
+        finally:
+            Path(tmp_path).unlink()
+
+    def test_convert_csv_to_html_table_relative_path(self):
+        # Create a temporary directory structure
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Create subdirectories
+            data_dir = os.path.join(tmp_dir, "data")
+            docs_dir = os.path.join(tmp_dir, "docs")
+            os.makedirs(data_dir)
+            os.makedirs(docs_dir)
+
+            # Create a CSV file in the data directory
+            csv_path = os.path.join(data_dir, "test.csv")
+            with open(csv_path, "w") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Header 1", "Header 2"])
+                writer.writerow(["Value 1", "Value 2"])
+
+            # Create a mock markdown file path in the docs directory
+            doc_path = os.path.join(docs_dir, "doc.md")
+
+            # Test relative path from doc to csv
+            result = self.readme.convert_csv_to_html_table(
+                f"!table[../../data/test.csv]", doc_path
+            )
+
+            # Check the table structure
+            self.assertIn('<div class="data-table"><table>', result)
+            self.assertIn("<thead>", result)
+            self.assertIn("<th>Header 1</th>", result)
+            self.assertIn("<th>Header 2</th>", result)
+            self.assertIn("<tbody>", result)
+            self.assertIn("<td>Value 1</td>", result)
+            self.assertIn("<td>Value 2</td>", result)
+            self.assertIn("</table></div>", result)
+
+    def test_insert_markdown_snippet(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            docs_dir = os.path.join(tmp_dir, "docs")
+            other_dir = os.path.join(tmp_dir, "other")
+            os.makedirs(docs_dir)
+            os.makedirs(other_dir)
+
+            source_md = os.path.join(other_dir, "source.md")
+            with open(source_md, "w") as f:
+                f.write(
+                    "# Test Header\nThis is test content\n* List item 1\n* List item 2"
+                )
+            doc_path = os.path.join(docs_dir, "doc.md")
+
+            result = self.readme.insert_markdown_snippet(
+                "!snippet[../../other/source.md]", doc_path
+            )
+
+            expected_content = (
+                "# Test Header\nThis is test content\n* List item 1\n* List item 2"
+            )
+            self.assertEqual(result, expected_content)
+
+            result = self.readme.insert_markdown_snippet(
+                "!snippet[../other/nonexistent.md]", doc_path
+            )
+            self.assertIn("File not found", result)
+
+    def test_sanitize_html_removes_scripts(self):
+        html_with_script = """
+        <div>
+            <h1>Test Content</h1>
+            <p>This is a test paragraph</p>
+            <script>
+                alert('This is a malicious script');
+                document.cookie = "session=stolen";
+            </script>
+            <p>More content after the script</p>
+        </div>
+        """
+
+        sanitized_html = self.readme.sanitize_html(html_with_script)
+
+        # Verify script tag is removed
+        self.assertNotIn("<script>", sanitized_html)
+        self.assertNotIn("</script>", sanitized_html)
+        self.assertNotIn("alert('This is a malicious script')", sanitized_html)
+        self.assertNotIn("document.cookie", sanitized_html)
+
+        # Verify legitimate content is preserved
+        self.assertIn("<h1>Test Content</h1>", sanitized_html)
+        self.assertIn("<p>This is a test paragraph</p>", sanitized_html)
+        self.assertIn("<p>More content after the script</p>", sanitized_html)
 
 
 if __name__ == "__main__":

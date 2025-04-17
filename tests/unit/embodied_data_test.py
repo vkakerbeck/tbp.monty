@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -33,6 +34,7 @@ from tbp.monty.frameworks.environments.two_d_data import (
     SaccadeOnImageFromStreamEnvironment,
 )
 from tbp.monty.frameworks.models.motor_policies import BasePolicy
+from tbp.monty.frameworks.models.motor_system import MotorSystem
 
 AGENT_ID = "agent_id_0"
 SENSOR_ID = "sensor_id_0"
@@ -69,6 +71,9 @@ class FakeEnvironmentRel(EmbodiedEnvironment):
     def action_space(self):
         return FakeActionSpace(EXPECTED_ACTIONS_DIST)
 
+    def add_object(self, *args, **kwargs):
+        return None
+
     def step(self, action):
         self._current_state += 1
         obs = {
@@ -80,6 +85,9 @@ class FakeEnvironmentRel(EmbodiedEnvironment):
 
     def get_state(self):
         return None
+
+    def remove_all_objects(self):
+        pass
 
     def reset(self):
         self._current_state = 0
@@ -102,6 +110,9 @@ class FakeEnvironmentAbs(EmbodiedEnvironment):
     def action_space(self):
         return FakeActionSpace(EXPECTED_ACTIONS_ABS)
 
+    def add_object(self, *args, **kwargs):
+        return None
+
     def step(self, action):
         self._current_state += 1
         obs = {
@@ -113,6 +124,9 @@ class FakeEnvironmentAbs(EmbodiedEnvironment):
 
     def get_state(self):
         return None
+
+    def remove_all_objects(self):
+        pass
 
     def reset(self):
         self._current_state = 0
@@ -139,12 +153,14 @@ class EmbodiedDataTest(unittest.TestCase):
         self.assertSequenceEqual(action_space_dist, EXPECTED_ACTIONS_DIST)
         self.assertIn(action_space_dist.sample(), EXPECTED_ACTIONS_DIST)
 
-        motor_system_config_dist = make_base_policy_config(
+        base_policy_config_dist = make_base_policy_config(
             action_space_type="distant_agent",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_dist = BasePolicy(rng=rng, **motor_system_config_dist.__dict__)
+        motor_system_dist = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_dist.__dict__)
+        )
 
         for i in range(1, DATASET_LEN):
             obs_dist, _ = dataset_dist[motor_system_dist()]
@@ -182,12 +198,14 @@ class EmbodiedDataTest(unittest.TestCase):
         self.assertSequenceEqual(action_space_abs, EXPECTED_ACTIONS_ABS)
         self.assertIn(action_space_abs.sample(), EXPECTED_ACTIONS_ABS)
 
-        motor_system_config_abs = make_base_policy_config(
+        base_policy_config_abs = make_base_policy_config(
             action_space_type="absolute_only",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_abs = BasePolicy(rng=rng, **motor_system_config_abs.__dict__)
+        motor_system_abs = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_abs.__dict__)
+        )
 
         for i in range(1, DATASET_LEN):
             obs_abs, _ = dataset_abs[motor_system_abs()]
@@ -220,12 +238,14 @@ class EmbodiedDataTest(unittest.TestCase):
             rng=rng,
         )
 
-        motor_system_config_dist = make_base_policy_config(
+        base_policy_config_dist = make_base_policy_config(
             action_space_type="distant_agent",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_dist = BasePolicy(rng=rng, **motor_system_config_dist.__dict__)
+        motor_system_dist = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_dist.__dict__)
+        )
 
         dataloader_dist = EnvironmentDataLoader(
             dataset_dist, motor_system_dist, rng=rng
@@ -250,12 +270,14 @@ class EmbodiedDataTest(unittest.TestCase):
             env_init_func=FakeEnvironmentAbs, env_init_args={}, rng=rng
         )
 
-        motor_system_config_abs = make_base_policy_config(
+        base_policy_config_abs = make_base_policy_config(
             action_space_type="absolute_only",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_abs = BasePolicy(rng=rng, **motor_system_config_abs.__dict__)
+        motor_system_abs = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_abs.__dict__)
+        )
 
         dataloader_abs = EnvironmentDataLoader(dataset_abs, motor_system_abs, rng)
         initial_state = next(dataloader_abs)
@@ -323,13 +345,15 @@ class EmbodiedDataTest(unittest.TestCase):
             rng=rng,
         )
 
-        motor_system_config_rel = make_base_policy_config(
+        base_policy_config_rel = make_base_policy_config(
             action_space_type="distant_agent",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
 
-        motor_system_rel = BasePolicy(rng=rng, **motor_system_config_rel.__dict__)
+        motor_system_rel = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_rel.__dict__)
+        )
 
         dataloader_rel = SaccadeOnImageDataLoader(
             scenes=[0, 0],
@@ -400,13 +424,15 @@ class EmbodiedDataTest(unittest.TestCase):
             rng=rng,
         )
 
-        motor_system_config_rel = make_base_policy_config(
+        base_policy_config_rel = make_base_policy_config(
             action_space_type="distant_agent",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
 
-        motor_system_rel = BasePolicy(rng=rng, **motor_system_config_rel.__dict__)
+        motor_system_rel = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_rel.__dict__)
+        )
 
         dataloader_rel = SaccadeOnImageFromStreamDataLoader(
             dataset=dataset_rel,

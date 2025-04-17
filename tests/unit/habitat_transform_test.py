@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -109,6 +110,7 @@ class HabitatTransformTest(unittest.TestCase):
             agent_id=AGENT_ID,
             sensor_ids=[SENSOR_ID],
             resolutions=[resolution],
+            use_semantic_sensor=True,
         )
         obs = transform(md_obs)
         module_obs = obs[AGENT_ID][SENSOR_ID]
@@ -171,6 +173,7 @@ class HabitatTransformTest(unittest.TestCase):
             resolutions=[resolution],
             world_coord=True,
             get_all_points=False,
+            use_semantic_sensor=True,
         )
 
         obs = transform(md_obs, state=mock_state)

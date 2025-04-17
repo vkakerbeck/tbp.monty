@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -17,6 +18,8 @@ def process_markdown(body: str, slug: str) -> dict:
         raise ValueError("No frontmatter found in the document")
     doc["title"] = frontmatter.get("title", "")
     doc["hidden"] = frontmatter.get("hidden", False)
+    if "description" in frontmatter:
+        doc["description"] = frontmatter.get("description", "")
 
     body = body.split("---\n", maxsplit=2)
     if len(body) > 2:

@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -25,10 +26,8 @@ from tbp.monty.frameworks.config_utils.config_args import (
     PretrainLoggingConfig,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
-    EnvInitArgsPatchViewMount,
     EnvironmentDataLoaderPerObjectTrainArgs,
     ExperimentArgs,
-    PatchViewFinderMountHabitatDatasetArgs,
     PredefinedObjectInitializer,
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
@@ -38,6 +37,10 @@ from tbp.monty.frameworks.experiments import (
 )
 from tbp.monty.frameworks.models.displacement_matching import DisplacementGraphLM
 from tbp.monty.frameworks.run_parallel import main as run_parallel
+from tbp.monty.simulators.habitat.configs import (
+    EnvInitArgsPatchViewMount,
+    PatchViewFinderMountHabitatDatasetArgs,
+)
 from tests.unit.graph_learning_test import MotorSystemConfigFixed
 
 
@@ -167,13 +170,12 @@ class RunParallelTest(unittest.TestCase):
         # Run training like normal in serial
         ###
         pprint("...Setting up serial experiment...")
-        self.exp = MontySupervisedObjectPretrainingExperiment()
-        self.exp.setup_experiment(self.supervised_pre_training)
-        self.exp.model.set_experiment_mode("train")
+        config = self.supervised_pre_training
+        with MontySupervisedObjectPretrainingExperiment(config) as exp:
+            exp.model.set_experiment_mode("train")
 
-        pprint("...Training in serial...")
-        self.exp.train()
-        self.exp.dataset.close()
+            pprint("...Training in serial...")
+            exp.train()
 
         ###
         # Run training with run_parallel
@@ -182,7 +184,7 @@ class RunParallelTest(unittest.TestCase):
         run_parallel(
             exp=self.supervised_pre_training,
             experiment="unittest_supervised_pre_training",
-            num_cpus=1,
+            num_parallel=1,
             quiet_habitat_logs=True,
             print_cfg=False,
             is_unittest=True,
@@ -238,19 +240,16 @@ class RunParallelTest(unittest.TestCase):
 
         # In serial like normal
         pprint("...Setting up serial experiment...")
-        self.eval_exp = MontyObjectRecognitionExperiment()
-        self.eval_exp.setup_experiment(self.eval_config)
-
-        pprint("...Evaluating in serial...")
-        self.eval_exp.evaluate()
-        self.eval_exp.dataset.close()
+        with MontyObjectRecognitionExperiment(self.eval_config) as eval_exp:
+            pprint("...Evaluating in serial...")
+            eval_exp.evaluate()
 
         # Using run_parallel
         pprint("...Setting up parallel experiment...")
         run_parallel(
             exp=self.eval_config,
             experiment="unittest_eval_eq",
-            num_cpus=1,
+            num_parallel=1,
             quiet_habitat_logs=True,
             print_cfg=False,
             is_unittest=True,
@@ -272,8 +271,14 @@ class RunParallelTest(unittest.TestCase):
         scsv = pd.read_csv(os.path.join(eval_dir, "eval_stats.csv"))
         pcsv = pd.read_csv(os.path.join(parallel_eval_dir, "eval_stats.csv"))
 
-        scsv.drop(columns="time", inplace=True)
-        pcsv.drop(columns="time", inplace=True)
+        # We have to drop these columns because they are not the same in the parallel
+        # and serial runs. In particular, 'stepwise_performance' and
+        # 'stepwise_target_object' are derived from the mapping between semantic IDs to
+        #  names which depend on the number of objects in the data loader, and data
+        # loaders only have one object in parallel experiments.
+        for col in ["time", "stepwise_performance", "stepwise_target_object"]:
+            scsv.drop(columns=col, inplace=True)
+            pcsv.drop(columns=col, inplace=True)
 
         self.assertTrue(pcsv.equals(scsv))
 
@@ -283,19 +288,16 @@ class RunParallelTest(unittest.TestCase):
 
         # In serial like normal
         pprint("...Setting up serial experiment...")
-        self.eval_exp_lt = MontyObjectRecognitionExperiment()
-        self.eval_exp_lt.setup_experiment(self.eval_config_lt)
-
-        pprint("...Evaluating in serial...")
-        self.eval_exp_lt.evaluate()
-        self.eval_exp_lt.dataset.close()
+        with MontyObjectRecognitionExperiment(self.eval_config_lt) as eval_exp_lt:
+            pprint("...Evaluating in serial...")
+            eval_exp_lt.evaluate()
 
         # Using run_parallel
         pprint("...Setting up parallel experiment...")
         run_parallel(
             exp=self.eval_config_lt,
             experiment="unittest_eval_lt",
-            num_cpus=1,
+            num_parallel=1,
             quiet_habitat_logs=True,
             print_cfg=False,
             is_unittest=True,
@@ -314,30 +316,25 @@ class RunParallelTest(unittest.TestCase):
         scsv_lt = pd.read_csv(os.path.join(eval_dir_lt, "eval_stats.csv"))
         pcsv_lt = pd.read_csv(os.path.join(parallel_eval_dir_lt, "eval_stats.csv"))
 
-        scsv_lt.drop(columns="time", inplace=True)
-        pcsv_lt.drop(columns="time", inplace=True)
+        # Remove columns that are not the same in the parallel and serial runs.
+        for col in ["time", "stepwise_performance", "stepwise_target_object"]:
+            scsv_lt.drop(columns=col, inplace=True)
+            pcsv_lt.drop(columns=col, inplace=True)
 
         self.assertTrue(pcsv_lt.equals(scsv_lt))
 
-        ###
-        # n_eval_epochs > len(rotations)
-        ###
-
         # In serial like normal
         pprint("...Setting up serial experiment...")
-        self.eval_exp_gt = MontyObjectRecognitionExperiment()
-        self.eval_exp_gt.setup_experiment(self.eval_config_gt)
-
-        pprint("...Evaluating in serial...")
-        self.eval_exp_gt.evaluate()
-        self.eval_exp_gt.dataset.close()
+        with MontyObjectRecognitionExperiment(self.eval_config_gt) as eval_exp_gt:
+            pprint("...Evaluating in serial...")
+            eval_exp_gt.evaluate()
 
         # Using run_parallel
         pprint("...Setting up parallel experiment...")
         run_parallel(
             exp=self.eval_config_gt,
             experiment="unittest_eval_gt",
-            num_cpus=1,
+            num_parallel=1,
             quiet_habitat_logs=True,
             print_cfg=False,
             is_unittest=True,
@@ -356,8 +353,9 @@ class RunParallelTest(unittest.TestCase):
         scsv_gt = pd.read_csv(os.path.join(eval_dir_gt, "eval_stats.csv"))
         pcsv_gt = pd.read_csv(os.path.join(parallel_eval_dir_gt, "eval_stats.csv"))
 
-        scsv_gt.drop(columns="time", inplace=True)
-        pcsv_gt.drop(columns="time", inplace=True)
+        for col in ["time", "stepwise_performance", "stepwise_target_object"]:
+            scsv_gt.drop(columns=col, inplace=True)
+            pcsv_gt.drop(columns=col, inplace=True)
 
         self.assertTrue(pcsv_gt.equals(scsv_gt))
 

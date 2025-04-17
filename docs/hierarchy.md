@@ -1,3 +1,4 @@
+<!-- vale off -->
 # overview: Overview
 - [welcome-to-the-thousand-brains-project-documentation](overview/welcome-to-the-thousand-brains-project-documentation.md)
 - [vision-of-the-thousand-brains-project](overview/vision-of-the-thousand-brains-project.md)
@@ -79,7 +80,7 @@
 - [learning-module-improvements](future-work/learning-module-improvements.md)
   - [contributing-learning-modules](future-work/learning-module-improvements/contributing-learning-modules.md)
   - [use-off-object-observations](future-work/learning-module-improvements/use-off-object-observations.md)
-  - [reinitialize-hypotheses-when-starting-to-recognize-a-new-object](future-work/learning-module-improvements/reinitialize-hypotheses-when-starting-to-recognize-a-new-object.md)
+  - [implement-and-test-rapid-evidence-decay-as-form-of-unsupervised-memory-resetting](future-work/learning-module-improvements/implement-and-test-rapid-evidence-decay-as-form-of-unsupervised-memory-resetting.md)
   - [improve-bounded-evidence-performance](future-work/learning-module-improvements/improve-bounded-evidence-performance.md)
   - [use-models-with-fewer-points](future-work/learning-module-improvements/use-models-with-fewer-points.md)
   - [make-it-possible-to-store-multiple-feature-maps-on-one-graph](future-work/learning-module-improvements/make-it-possible-to-store-multiple-feature-maps-on-one-graph.md)
@@ -95,13 +96,15 @@
 - [motor-system-improvements](future-work/motor-system-improvements.md)
   - [implement-switching-between-learning-and-inference-focused-policies](future-work/motor-system-improvements/implement-switching-between-learning-and-inference-focused-policies.md)
   - [bottom-up-exploration-policy-for-surface-agent](future-work/motor-system-improvements/bottom-up-exploration-policy-for-surface-agent.md)
-  - [top-down-exploration-policy](future-work/motor-system-improvements/top-down-exploration-policy.md)
+  - [model-based-exploration-policy](future-work/motor-system-improvements/model-based-exploration-policy.md)
   - [implement-efficient-saccades-driven-by-model-free-and-model-based-signals](future-work/motor-system-improvements/implement-efficient-saccades-driven-by-model-free-and-model-based-signals.md)
   - [learn-policy-using-rl](future-work/motor-system-improvements/learn-policy-using-rl.md)
   - [decompose-goals-into-subgoals-communicate](future-work/motor-system-improvements/decompose-goals-into-subgoals-communicate.md)
   - [interpret-goal-states-in-motor-system-switch-policies](future-work/motor-system-improvements/interpret-goal-states-in-motor-system-switch-policies.md)
   - [reuse-hypothesis-testing-policy-target-points](future-work/motor-system-improvements/reuse-hypothesis-testing-policy-target-points.md)
   - [implement-a-simple-cross-modal-policy-for-sensory-guidance](future-work/motor-system-improvements/implement-a-simple-cross-modal-policy-for-sensory-guidance.md)
+  - [model-based-policy-to-recognize-an-object-before-moving-on-to-a-new-object](future-work/motor-system-improvements/model-based-policy-to-recognize-an-object-before-moving-on-to-a-new-object.md)
+  - [policy-to-quickly-move-to-a-new-object](future-work/motor-system-improvements/policy-to-quickly-move-to-a-new-object.md)
 - [voting-improvements](future-work/voting-improvements.md)
   - [use-pose-for-voting](future-work/voting-improvements/use-pose-for-voting.md)
   - [outline-routing-protocol-attention](future-work/voting-improvements/outline-routing-protocol-attention.md)
@@ -131,4 +134,4 @@
 - [oss-communication-improvements](future-work/oss-communication-improvements.md)
   - [organize-start-podcast-series](future-work/oss-communication-improvements/organize-start-podcast-series.md)
   - [make-more-condensed-videos-about-the-project-monty](future-work/oss-communication-improvements/make-more-condensed-videos-about-the-project-monty.md)
-
+<!-- vale on -->

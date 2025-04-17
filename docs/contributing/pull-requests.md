@@ -1,17 +1,17 @@
 ---
 title: Pull Requests
 ---
-Monty uses Github Pull Requests to integrate code changes.
+Monty uses GitHub Pull Requests to integrate code changes.
 
-# Before making a pull request
+# Before Making a Pull Request
 
 ## Contributor License Agreement
 
-Before we can accept your contribution, you must sign the Contributor License Agreement (CLA). You can [view and sign the CLA now](https://na4.documents.adobe.com/public/esignWidget?wid=CBFCIBAA3AAABLblqZhA-C5ccSQcDGY-PiamH4HnZdj5p2I1oDc8FiBJ_23pReFeauFhfcIkC1XfzxC2qnBQ*) or wait until you submit your Pull Request.
+Before we can accept your contribution, you must sign the Contributor License Agreement (CLA). You can [view and sign the CLA now](https://github.com/thousandbrainsproject/cla/issues/new?template=01_sign_cla.yml&labels=signature+CLA+v1&title=Contributor+License+Agreement+v1+Signature) or wait until you submit your Pull Request.
 
 See the [Contributor License Agreement](pull-requests/contributor-license-agreement.md) page for more on the CLA.
 
-## First-time Contributor
+## First-Time Contributor
 
 Before submitting a Pull Request, you should set up your development environment to work with Monty. See the development [Getting Started](../how-to-use-monty/getting-started.md) guide for more information.
 
@@ -36,7 +36,7 @@ Before submitting a Pull Request, you should set up your development environment
    ```shell
    git push
    ```
-7. [Create a new Github Pull Request from your fork to the official Monty repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+7. [Create a new GitHub Pull Request from your fork to the official Monty repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 8. Respond to and address any comments on your Pull Request. See [Pull Request Flow](pull-requests/pull-request-flow.md) for what to expect.
 9. Once your Pull Request is approved, it will be merged by one of the Maintainers. Thank you for contributing! 🥳🎉🎊
 

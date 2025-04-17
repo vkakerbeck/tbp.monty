@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -18,6 +19,7 @@ from tools.github_readme_sync.readme import ReadMe
 
 def upload(new_hierarchy, file_path: str, rdme: ReadMe):
     logging.info(f"Uploading export folder: {file_path}")
+    logging.info(f"URL: https://thousandbrainsproject.readme.io/v{rdme.version}/docs")
     rdme.create_version_if_not_exists()
     to_be_deleted = get_all_categories_docs(rdme)
 
@@ -69,12 +71,13 @@ def process_children(
             category_id=cat_id,
             doc=doc,
             parent_id=parent_doc_id,
+            file_path=f"{file_path}/{path_prefix}{parent['slug']}",
         )
         print_child(path_prefix.count("/"), doc, created)
         set_do_not_delete(to_be_deleted, child["slug"])
 
         # If this child has children, call the function recursively
-        if "children" in child and child["children"]:
+        if child.get("children"):
             process_children(
                 parent=child,
                 cat_id=cat_id,
@@ -115,7 +118,7 @@ def print_child(level: int, doc: dict, created: bool):
     indent = INDENTATION_UNIT * level
     suffix = f"{GRAY}[created]{RESET}" if created else f"{GRAY}[updated]{RESET}"
     logging.info(
-        f"{color}{indent}{doc['title']} " f"{WHITE}/{doc['slug']} {GRAY}{suffix}{RESET}"
+        f"{color}{indent}{doc['title']} {WHITE}/{doc['slug']} {GRAY}{suffix}{RESET}"
     )
 
 

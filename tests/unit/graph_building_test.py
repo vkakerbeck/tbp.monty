@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -23,10 +24,8 @@ from tbp.monty.frameworks.config_utils.config_args import (
     PretrainLoggingConfig,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
-    EnvInitArgsPatchViewMount,
     EnvironmentDataLoaderPerObjectTrainArgs,
     ExperimentArgs,
-    PatchViewFinderMountHabitatDatasetArgs,
     PredefinedObjectInitializer,
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
@@ -37,6 +36,10 @@ from tbp.monty.frameworks.experiments import (
 from tbp.monty.frameworks.models.displacement_matching import DisplacementGraphLM
 from tbp.monty.frameworks.models.feature_location_matching import FeatureGraphLM
 from tbp.monty.frameworks.utils.graph_matching_utils import get_correct_k_n
+from tbp.monty.simulators.habitat.configs import (
+    EnvInitArgsPatchViewMount,
+    PatchViewFinderMountHabitatDatasetArgs,
+)
 
 
 class GraphLearningTest(unittest.TestCase):
@@ -221,23 +224,22 @@ class GraphLearningTest(unittest.TestCase):
 
     def build_and_save_supervised_graph(self):
         pprint("...parsing experiment...")
-        self.exp = MontySupervisedObjectPretrainingExperiment()
-        self.exp.setup_experiment(self.supervised_pre_training_in_habitat)
-        self.exp.model.set_experiment_mode("train")
+        config = self.supervised_pre_training_in_habitat
+        with MontySupervisedObjectPretrainingExperiment(config) as exp:
+            exp.model.set_experiment_mode("train")
 
-        pprint("...training...")
-        self.exp.train()
-        self.exp.dataset.close()
+            pprint("...training...")
+            exp.train()
+        return exp
 
     def build_and_save_supervised_graph_feat(self):
         pprint("...parsing experiment...")
-        self.exp = MontySupervisedObjectPretrainingExperiment()
-        self.exp.setup_experiment(self.spth_feat)
-        self.exp.model.set_experiment_mode("train")
+        with MontySupervisedObjectPretrainingExperiment(self.spth_feat) as exp:
+            exp.model.set_experiment_mode("train")
 
-        pprint("...training...")
-        self.exp.train()
-        self.exp.dataset.close()
+            pprint("...training...")
+            exp.train()
+        return exp
 
     def test_get_correct_k_n(self):
         # enough data points sampled, just add 1 to remove self connection
@@ -248,25 +250,25 @@ class GraphLearningTest(unittest.TestCase):
         self.assertEqual(get_correct_k_n(5, 2), None)
 
     def test_can_build_graph_habitat_supervised(self):
-        self.build_and_save_supervised_graph()
+        exp = self.build_and_save_supervised_graph()
         pprint("...Checking graphs...")
 
         self.assertListEqual(
             self.supervised_pre_training_in_habitat[
                 "train_dataloader_args"
             ].object_names,
-            self.exp.model.learning_modules[0].get_all_known_object_ids(),
+            exp.model.learning_modules[0].get_all_known_object_ids(),
             "Object ids of learned objects and graphs in memory.",
         )
-        for graph_id in self.exp.model.learning_modules[0].get_all_known_object_ids():
-            graph = self.exp.model.learning_modules[0].get_graph(
+        for graph_id in exp.model.learning_modules[0].get_all_known_object_ids():
+            graph = exp.model.learning_modules[0].get_graph(
                 graph_id, input_channel="first"
             )
             # Make sure that all features that are extracted by the SM are stored in
             # the graph.
             self.check_graph_formatting(
                 graph,
-                features_to_check=self.exp.model.sensor_modules[0].features,
+                features_to_check=exp.model.sensor_modules[0].features,
             )
             self.assertIsNot(
                 graph.edge_index,
@@ -278,99 +280,98 @@ class GraphLearningTest(unittest.TestCase):
                 3,
                 "Edge attributes don't store 3d displacements",
             )
-        self.exp.dataset.close()
 
     def test_can_load_disp_graph(self):
         self.build_and_save_supervised_graph()
         pprint("...parsing experiment...")
         config = copy.deepcopy(self.load_habitat_config)
-        self.exp = MontyObjectRecognitionExperiment()
-        self.exp.setup_experiment(config)
-        pprint("checking loaded graphs")
-        for graph_id in self.exp.model.learning_modules[0].get_all_known_object_ids():
-            graph = self.exp.model.learning_modules[0].get_graph(
-                graph_id, input_channel="first"
-            )
-            self.check_graph_formatting(
-                graph,
-                features_to_check=self.exp.model.sensor_modules[0].features,
-            )
-        pprint("...evaluating on loaded models...")
-        self.exp.evaluate()
-        self.exp.dataset.close()
+        with MontyObjectRecognitionExperiment(config) as exp:
+            pprint("checking loaded graphs")
+            for graph_id in exp.model.learning_modules[
+                0
+            ].get_all_known_object_ids():
+                graph = exp.model.learning_modules[0].get_graph(
+                    graph_id, input_channel="first"
+                )
+                self.check_graph_formatting(
+                    graph,
+                    features_to_check=exp.model.sensor_modules[0].features,
+                )
+            pprint("...evaluating on loaded models...")
+            exp.evaluate()
 
     def test_can_load_disp_graph_for_ppf_matching(self):
         self.build_and_save_supervised_graph()
         pprint("...parsing experiment...")
         config = copy.deepcopy(self.load_habitat_for_ppf)
-        self.exp = MontyObjectRecognitionExperiment()
-        self.exp.setup_experiment(config)
-        pprint("checking loaded graphs")
-        for graph_id in self.exp.model.learning_modules[0].get_all_known_object_ids():
-            graph = self.exp.model.learning_modules[0].get_graph(
-                graph_id, input_channel="first"
-            )
-            self.check_graph_formatting(
-                graph,
-                features_to_check=self.exp.model.sensor_modules[0].features,
-            )
-            self.assertEqual(
-                graph.edge_attr.shape[1],
-                4,
-                "Edge attributes don't store 4d PPF (should be added when loading)",
-            )
-        pprint("...evaluating on loaded models...")
-        self.exp.evaluate()
-        self.exp.dataset.close()
+        with MontyObjectRecognitionExperiment(config) as exp:
+            pprint("checking loaded graphs")
+            for graph_id in exp.model.learning_modules[
+                0
+            ].get_all_known_object_ids():
+                graph = exp.model.learning_modules[0].get_graph(
+                    graph_id, input_channel="first"
+                )
+                self.check_graph_formatting(
+                    graph,
+                    features_to_check=exp.model.sensor_modules[0].features,
+                )
+                self.assertEqual(
+                    graph.edge_attr.shape[1],
+                    4,
+                    "Edge attributes don't store 4d PPF (should be added when loading)",
+                )
+            pprint("...evaluating on loaded models...")
+            exp.evaluate()
 
     def test_can_load_disp_graph_for_feature_matching(self):
         self.build_and_save_supervised_graph()
         pprint("...parsing experiment...")
         config = copy.deepcopy(self.load_habitat_for_feat)
-        self.exp = MontyObjectRecognitionExperiment()
-        self.exp.setup_experiment(config)
-        pprint("checking loaded graphs")
-        for graph_id in self.exp.model.learning_modules[0].get_all_known_object_ids():
-            graph = self.exp.model.learning_modules[0].get_graph(
-                graph_id, input_channel="first"
-            )
-            self.check_graph_formatting(
-                graph,
-                features_to_check=self.exp.model.sensor_modules[0].features,
-            )
-            self.assertEqual(
-                graph.edge_attr.shape[1],
-                3,
-                "Edge attributes don't store 3d displacements",
-            )
-        pprint("...evaluating on loaded models...")
-        self.exp.evaluate()
-        self.exp.dataset.close()
+        with MontyObjectRecognitionExperiment(config) as exp:
+            pprint("checking loaded graphs")
+            for graph_id in exp.model.learning_modules[
+                0
+            ].get_all_known_object_ids():
+                graph = exp.model.learning_modules[0].get_graph(
+                    graph_id, input_channel="first"
+                )
+                self.check_graph_formatting(
+                    graph,
+                    features_to_check=exp.model.sensor_modules[0].features,
+                )
+                self.assertEqual(
+                    graph.edge_attr.shape[1],
+                    3,
+                    "Edge attributes don't store 3d displacements",
+                )
+            pprint("...evaluating on loaded models...")
+            exp.evaluate()
 
     def test_can_extend_and_save_feat_graph(self):
         self.build_and_save_supervised_graph_feat()
         config = copy.deepcopy(self.load_habitat_for_feat)
-        self.exp = MontyObjectRecognitionExperiment()
-        self.exp.setup_experiment(config)
-        pprint("checking loaded graphs")
-        for graph_id in self.exp.model.learning_modules[0].get_all_known_object_ids():
-            graph = self.exp.model.learning_modules[0].get_graph(
-                graph_id, input_channel="first"
-            )
-            self.check_graph_formatting(
-                graph,
-                features_to_check=self.exp.model.sensor_modules[0].features,
-            )
-            # TODO: not sure if we want this check. Right now it doesn't but I
-            # also don't see a reason why it couldn't in the future.
-            self.assertIs(
-                graph.edge_attr,
-                None,
-                "feature at location graph should not contain edges.",
-            )
-        pprint("...evaluating on loaded models...")
-        self.exp.train()
-        self.exp.dataset.close()
+        with MontyObjectRecognitionExperiment(config) as exp:
+            pprint("checking loaded graphs")
+            for graph_id in exp.model.learning_modules[
+                0
+            ].get_all_known_object_ids():
+                graph = exp.model.learning_modules[0].get_graph(
+                    graph_id, input_channel="first"
+                )
+                self.check_graph_formatting(
+                    graph,
+                    features_to_check=exp.model.sensor_modules[0].features,
+                )
+                # TODO: not sure if we want this check. Right now it doesn't but I
+                # also don't see a reason why it couldn't in the future.
+                self.assertIs(
+                    graph.edge_attr,
+                    None,
+                    "feature at location graph should not contain edges.",
+                )
+            pprint("...evaluating on loaded models...")
+            exp.train()
 
 
 if __name__ == "__main__":

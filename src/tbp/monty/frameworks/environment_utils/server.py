@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2023-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -22,7 +23,9 @@ class MontyRequestHandler(http.server.SimpleHTTPRequestHandler):
         data_type = "depth" if inc_filename == "depth.data" else "rgb"
 
         # check existing filenames in the directory
-        data_path = os.path.expanduser("~/tbp/data/worldimages/world_data_stream")
+        data_path = os.path.join(
+            os.environ["MONTY_DATA"], "worldimages/world_data_stream"
+        )
         file_list = [f for f in os.listdir(data_path) if not f.startswith(".")]
         if data_type == "depth":
             match = [re.search("depth_(.*).data", file) for file in file_list]

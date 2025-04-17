@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2023-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -29,20 +30,25 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
     NOTE: This is not really an experiment, it is more a pretraining step to generate
     models that can then be loaded at the beginning of an experiment.
     """
-
-    def setup_experiment(self, config):
+    def __init__(self, config):
         # If we just add "pretrained" to dir at save time, then logs are stored in one
         # place and models in another. Changing the config ensures every reference to
         # output_dir has "pretrained" added to it
         config = config_to_dict(config)
         output_dir = config["logging_config"]["output_dir"]
         config["logging_config"]["output_dir"] = os.path.join(output_dir, "pretrained")
+        super().__init__(config)
+
+    def setup_experiment(self, config):
         super().setup_experiment(config)
-        self.sensor_pos = np.array(
-            config["dataset_args"]["env_init_args"]["agents"][0]["agent_args"][
-                "positions"
-            ]
-        )
+        if "agents" in config["dataset_args"]["env_init_args"].keys():
+            self.sensor_pos = np.array(
+                config["dataset_args"]["env_init_args"]["agents"][0]["agent_args"][
+                    "positions"
+                ]
+            )
+        else:
+            self.sensor_pos = np.array([0, 0, 0])
 
     def run_episode(self):
         """Run a supervised episode on one object in one pose.

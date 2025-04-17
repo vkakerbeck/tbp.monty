@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -21,11 +22,11 @@ import datetime
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
 import sys
+from pathlib import Path
 
-source_path = os.path.abspath("../../../src")
-sys.path.insert(0, source_path)
+source_path = Path("../../../src").resolve()
+sys.path.insert(0, str(source_path))
 
 # -- Project information -----------------------------------------------------
 

@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2021-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -13,7 +14,7 @@ import json
 import logging
 import math
 import os
-from typing import Any, Callable, Dict, List, Tuple, Type, Union, cast
+from typing import Dict, List, Literal, Mapping, Tuple, Type, Union, cast
 
 import numpy as np
 import quaternion as qt
@@ -41,43 +42,69 @@ from tbp.monty.frameworks.utils.spatial_arithmetics import get_angle_beefed_up
 from tbp.monty.frameworks.utils.transform_utils import scipy_to_numpy_quat
 
 
-class MotorSystem(abc.ABC, Callable):
-    @property
-    @abc.abstractmethod
-    def last_action(self) -> Action:
-        pass
+class MotorPolicy(abc.ABC):
+    """The abstract scaffold for motor policies."""
 
-    @abc.abstractmethod
-    def update(self, actions):
-        # TODO: nobody is using this. Is this still valid?
-        pass
-
-    @abc.abstractmethod
-    def set_experiment_mode(self, mode):
-        pass
+    def __init__(self) -> None:
+        self.is_predefined = False
 
     @abc.abstractmethod
     def dynamic_call(self) -> Action:
-        """Use this method when actions are not predefined."""
+        """Use this method when actions are not predefined.
+
+        Returns:
+            (Action): The action to take.
+        """
         pass
 
+    @property
     @abc.abstractmethod
-    def predefined_call(self) -> Tuple[Union[str, None], Any]:
-        """Use this method when actions are not predefined."""
+    def last_action(self) -> Action:
+        """Returns the last action taken by the motor policy."""
         pass
 
     @abc.abstractmethod
     def post_action(self, action: Action) -> None:
-        """This method will automatically be called at the end of __call__."""
+        """This post action hook will automatically be called at the end of __call__.
+
+        Args:
+            action (Action): The action to process the hook for.
+        """
+        pass
+
+    @abc.abstractmethod
+    def post_episode(self) -> None:
+        """Post episode hook."""
+        pass
+
+    @abc.abstractmethod
+    def pre_episode(self) -> None:
+        """Pre episode hook."""
+        pass
+
+    @abc.abstractmethod
+    def predefined_call(self) -> Action:
+        """Use this method when actions are predefined.
+
+        Returns:
+            (Action): The action to take.
+        """
+        pass
+
+    @abc.abstractmethod
+    def set_experiment_mode(self, mode: Literal["train", "eval"]) -> None:
+        """Sets the experiment mode.
+
+        Args:
+            mode (Literal["train", "eval"]): The experiment mode to set.
+        """
         pass
 
     def __call__(self) -> Action:
-        """Defines the structure for __call__.
-
-        Selects dynamic or predfined call, and then calls post_action.
+        """Select either dynamic or predefined call.
 
         Returns:
-            Action to take.
+            (Action): The action to take.
         """
         if self.is_predefined:
             action = self.predefined_call()
@@ -87,7 +114,7 @@ class MotorSystem(abc.ABC, Callable):
         return action
 
 
-class BasePolicy(MotorSystem):
+class BasePolicy(MotorPolicy):
     def __init__(
         self,
         rng,
@@ -110,6 +137,7 @@ class BasePolicy(MotorSystem):
             file_name: Path to file with predefined actions. Defaults to None.
             file_names_per_episode: ?. Defaults to None.
         """
+        super().__init__()
         ###
         # Define instance attributes
         ###
@@ -139,6 +167,9 @@ class BasePolicy(MotorSystem):
         # is in addition to, rather than in replacement of, file_name
         if file_names_per_episode is not None:
             self.file_names_per_episode = file_names_per_episode
+            # Have to set this here bc file_names_per_episode is used for loading in
+            # post_episode so won't do anything for the first episode.
+            file_name = file_names_per_episode[0]
             self.is_predefined = True
 
         if file_name is not None:
@@ -210,11 +241,9 @@ class BasePolicy(MotorSystem):
         else:
             return False
 
+    @property
     def last_action(self) -> Action:
         return self.action
-
-    def update(self, *args):
-        pass
 
     def state_dict(self):
         return {"timestep": self.timestep, "episode_step": self.episode_step}
@@ -223,7 +252,7 @@ class BasePolicy(MotorSystem):
         self.timestep = state_dict["timestep"]
         self.episode_step = state_dict["episode_step"]
 
-    def set_experiment_mode(self, mode):
+    def set_experiment_mode(self, mode: Literal["train", "eval"]) -> None:
         pass
 
 
@@ -370,9 +399,10 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
             observation_shape[0] // 2, observation_shape[1] // 2
         ]
         if initial_pose:
-            assert (
-                depth_at_center > 0
-            ), "Object must be initialized such that the agent can visualize it by moving forward"  # noqa: E501
+            assert depth_at_center > 0, (
+                "Object must be initialized such that "
+                "agent can visualize it by moving forward"
+            )
             # TODO investigate - I think this may have always been passing in the
             # original surface-agent policy implementation because the surface
             # sensor clips at 1.0, so even if the object isn't strictly visible (or
@@ -430,7 +460,7 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
         An Action.undo of some sort would be a better solution, however it is not
         yet clear to me what to do for actions that do not support undo.
         """
-        last_action = self.last_action()
+        last_action = self.last_action
 
         if isinstance(last_action, LookDown):
             return LookDown(
@@ -551,7 +581,11 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
     ###
 
     def move_close_enough(
-        self, raw_observation, view_sensor_id, target_semantic_id, multi_objects_present
+        self,
+        raw_observation: Mapping,
+        view_sensor_id: str,
+        target_semantic_id: int,
+        multiple_objects_present: bool,
     ) -> Tuple[Union[Action, None], bool]:
         """At beginning of episode move close enough to the object.
 
@@ -563,42 +597,36 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
             view_sensor_id: The ID of the view sensor
             target_semantic_id: The semantic ID of the primary target object in the
                 scene.
-            multi_objects_present: Whether there are multiple objects present in the
+            multiple_objects_present: Whether there are multiple objects present in the
                 scene. If so, we do additional checks to make sure we don't get too
                 close to these when moving forward
 
         Returns:
             Tuple[Union[Action, None], bool]: The next action to take and whether the
-                episode is done
+                episode is done.
 
         Raises:
             ValueError: If the object is not visible
         """
-        view = raw_observation[self.agent_id][view_sensor_id]["semantic"]
-        points_on_target_obj = (
-            raw_observation[self.agent_id][view_sensor_id]["semantic"]
-            == target_semantic_id
-        )
+        # Reconstruct 2D semantic map.
+        depth_image = raw_observation[self.agent_id][view_sensor_id]["depth"]
+        semantic_3d = raw_observation[self.agent_id][view_sensor_id]["semantic_3d"]
+        semantic_image = semantic_3d[:, 3].reshape(depth_image.shape).astype(int)
+
+        if not multiple_objects_present:
+            semantic_image[semantic_image > 0] = target_semantic_id
+
+        points_on_target_obj = semantic_image == target_semantic_id
+        n_points_on_target_obj = points_on_target_obj.sum()
 
         # For multi-object experiments, handle the possibility that object is no
-        # longer visible
-        if multi_objects_present and (
-            len(
-                raw_observation[self.agent_id][view_sensor_id]["depth"][
-                    points_on_target_obj
-                ]
-            )
-            == 0
-        ):
+        # longer visible.
+        if multiple_objects_present and n_points_on_target_obj == 0:
             logging.debug("Object not visible, cannot move closer")
             return None, True
 
-        if len(points_on_target_obj) > 0:
-            closest_point_on_target_obj = np.min(
-                raw_observation[self.agent_id][view_sensor_id]["depth"][
-                    points_on_target_obj
-                ]
-            )
+        if n_points_on_target_obj > 0:
+            closest_point_on_target_obj = np.min(depth_image[points_on_target_obj])
             logging.debug(
                 "closest target object point: " + str(closest_point_on_target_obj)
             )
@@ -608,23 +636,19 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
             )
 
         perc_on_target_obj = get_perc_on_obj_semantic(
-            view, sematic_id=target_semantic_id
+            semantic_image, semantic_id=target_semantic_id
         )
         logging.debug("% on target object: " + str(perc_on_target_obj))
 
         # Also calculate closest point on *any* object so that we don't get too close
         # and clip into objects; NB that any object will have a semantic ID > 0
-        points_on_any_obj = (
-            raw_observation[self.agent_id][view_sensor_id]["semantic"] > 0
-        )
-        closest_point_on_any_obj = np.min(
-            raw_observation[self.agent_id][view_sensor_id]["depth"][points_on_any_obj]
-        )
+        points_on_any_obj = semantic_image > 0
+        closest_point_on_any_obj = np.min(depth_image[points_on_any_obj])
         logging.debug("closest point on any object: " + str(closest_point_on_any_obj))
 
         if perc_on_target_obj < self.good_view_percentage:
             if closest_point_on_target_obj > self.desired_object_distance:
-                if multi_objects_present and (
+                if multiple_objects_present and (
                     closest_point_on_any_obj < self.desired_object_distance / 4
                 ):
                     logging.debug(
@@ -642,8 +666,12 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
             return None, True  # done
 
     def orient_to_object(
-        self, raw_observation, view_sensor_id, target_semantic_id
-    ) -> Tuple[List[Action], bool]:
+        self,
+        raw_observation: Mapping,
+        sensor_id: str,
+        target_semantic_id: int,
+        multiple_objects_present: bool,
+    ) -> List[Action]:
         """Rotate sensors so that they are centered on the object using a view finder.
 
         The view finder needs to be in the same position as the sensor patch
@@ -651,58 +679,104 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
 
         Args:
             raw_observation: raw observations of the view finder
-            view_sensor_id: view finder id (str)
+            sensor_id: view finder id (str)
             target_semantic_id: the integer corresponding to the semantic ID
                 of the target object that we will try to fixate on
+            multiple_objects_present: whether there are multiple objects present in the
+                scene.
 
         Returns:
-            Two actions to execute to put the patch on the object
+            A (possibly empty) list of actions and a bool that indicates whether we
+            are already on the target object. If we are not on the target object, the
+            list of actions is of length two and is composed of actions needed to get
+            us onto the target object.
         """
-        sem_obs = raw_observation[self.agent_id][view_sensor_id]["semantic"]
-        sem3d_obs = raw_observation[self.agent_id][view_sensor_id]["semantic_3d"]
-        obs_dim = sem_obs.shape
+        # Reconstruct 2D semantic map.
+        depth_image = raw_observation[self.agent_id][sensor_id]["depth"]
+        obs_dim = depth_image.shape[0:2]
+        sem3d_obs = raw_observation[self.agent_id][sensor_id]["semantic_3d"]
+        sem_obs = sem3d_obs[:, 3].reshape(obs_dim).astype(int)
+
+        if not multiple_objects_present:
+            sem_obs[sem_obs > 0] = target_semantic_id
 
         logging.debug("Searching for object")
-
-        # Check if the central pixel is on-object.
-        y_mid, x_mid = obs_dim[0] // 2, obs_dim[1] // 2
-        if sem_obs[y_mid, x_mid] == target_semantic_id:
-            logging.debug("Already centered on the object")
-            return [], True
-
         relative_location = self.find_location_to_look_at(
-            sem3d_obs, image_shape=obs_dim, target_semantic_id=target_semantic_id
+            sem3d_obs,
+            image_shape=obs_dim,
+            target_semantic_id=target_semantic_id,
+            multiple_objects_present=multiple_objects_present,
+            sensor_id=sensor_id,
         )
-        down_amount, left_amount = self.compute_look_amounts(relative_location)
-
-        return (
-            [
-                LookDown(agent_id=self.agent_id, rotation_degrees=down_amount),
-                TurnLeft(agent_id=self.agent_id, rotation_degrees=left_amount),
-            ],
-            False,
+        down_amount, left_amount = self.compute_look_amounts(
+            relative_location, sensor_id
         )
+        return [
+            LookDown(agent_id=self.agent_id, rotation_degrees=down_amount),
+            TurnLeft(agent_id=self.agent_id, rotation_degrees=left_amount),
+        ]
 
-    def compute_look_amounts(self, relative_location):
+    def compute_look_amounts(
+        self,
+        relative_location: np.ndarray,
+        sensor_id: str,
+    ) -> Tuple[float, float]:
         """Compute the amount to look down and left given a relative location.
 
-        TODO: rotate/translate the relative location so that this works regardless
-        of the camera location and rotation.
+        This function computes the amount needed to look down and left in order
+        for the sensor to be aimed at the target. The returned amounts are relative
+        to the agent's current position and rotation.
+
+        TODO: Test whether this function works when the agent is facing in the
+        positive z-direction. It may be fine, but there were some adjustments to
+        accommodate the z-axis positive direction pointing opposite the body's initial
+        orientation (e.g., using negative  `z` in
+        `left_amount = -np.degrees(np.arctan2(x_rot, -z_rot)))`.
+
+        Args:
+            relative_location: the x,y,z coordinates of the target with respect
+            to the sensor.
+            sensor_id: the ID of the sensor used to produce the relative location.
 
         Returns:
-            down_amount: Amount to look down.
-            left_amount: Amount to look left.
+            down_amount: Amount to look down (degrees).
+            left_amount: Amount to look left (degrees).
         """
-        down_amount = np.degrees(np.arctan2(relative_location[1], relative_location[2]))
-        left_amount = np.degrees(np.arctan2(relative_location[0], relative_location[2]))
+        # Get the sensor's rotation relative to the world.
+        agent_state = self.get_agent_state()
+        # - The agent's rotation relative to the world.
+        agent_rotation = agent_state["rotation"]
+        # - The sensor's rotation relative to the agent.
+        sensor_rotation = agent_state["sensors"][f"{sensor_id}.depth"]["rotation"]
+        # - The sensor's rotation relative to the world.
+        sensor_rotation_rel_world = agent_rotation * sensor_rotation
+
+        # Invert the location to align it with sensor's rotation.
+        w, x, y, z = qt.as_float_array(sensor_rotation_rel_world)
+        rotation = rot.from_quat([x, y, z, w])
+        rotated_location = rotation.inv().apply(relative_location)
+
+        # Calculate the necessary rotation amounts.
+        x_rot, y_rot, z_rot = rotated_location
+        left_amount = -np.degrees(np.arctan2(x_rot, -z_rot))
+        distance_horiz = np.sqrt(x_rot**2 + z_rot**2)
+        down_amount = -np.degrees(np.arctan2(y_rot, distance_horiz))
+
         return down_amount, left_amount
 
-    def find_location_to_look_at(self, sem3d_obs, image_shape, target_semantic_id):
+    def find_location_to_look_at(
+        self,
+        sem3d_obs: np.ndarray,
+        image_shape: Tuple[int, int],
+        target_semantic_id: int,
+        multiple_objects_present: bool,
+        sensor_id: str,
+    ) -> np.ndarray:
         """Takes in a semantic 3D observation and returns an x,y,z location.
 
         The location is on the object and surrounded by pixels that are also on
         the object. This is done by smoothing the on_object image and then
-        taking the maximum of this smoothed image
+        taking the maximum of this smoothed image.
 
         Args:
             sem3d_obs: the location of each pixel and the semantic ID associated
@@ -710,13 +784,20 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
             image_shape: the shape of the camera image
             target_semantic_id: the semantic ID of the target object we'd like to
                 saccade on to
+            multiple_objects_present: whether there are multiple objects present in the
+                scene.
+            sensor_id: the ID of the sensor to use for the search. Used for computing
+                the relative location of the new target.
 
         Returns:
-            relative_location: the x,y,z distance from camera to pixel with max
-                smoothed on_object value
+            relative_location: the x,y,z coordinates of the target with respect
+            to the sensor.
         """
         sem3d_obs_image = sem3d_obs.reshape((image_shape[0], image_shape[1], 4))
         on_object_image = sem3d_obs_image[:, :, 3]
+
+        if not multiple_objects_present:
+            on_object_image[on_object_image > 0] = target_semantic_id
 
         on_object_image = on_object_image == target_semantic_id
         on_object_image = on_object_image.astype(float)
@@ -724,22 +805,25 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
         # TODO add unit test that we make sure find_location_to_look at functions
         # as expected, which can otherwise break if e.g. on_object_image is passed
         # as an int or boolean rather than float
+        kernel_size = on_object_image.shape[0] // 16
         smoothed_on_object_image = scipy.ndimage.gaussian_filter(
-            on_object_image, 2, mode="constant"
+            on_object_image, kernel_size, mode="constant"
         )
         idx_loc_to_look_at = np.argmax(smoothed_on_object_image * on_object_image)
         idx_loc_to_look_at = np.unravel_index(idx_loc_to_look_at, on_object_image.shape)
         location_to_look_at = sem3d_obs_image[
             idx_loc_to_look_at[0], idx_loc_to_look_at[1], :3
         ]
-        camera_location = self.get_agent_state()["sensors"]["view_finder.depth"][
+        camera_location = self.get_agent_state()["sensors"][f"{sensor_id}.depth"][
             "position"
         ]
         agent_location = self.get_agent_state()["position"]
-        relative_location = (camera_location + agent_location) - location_to_look_at
+        # Get the location of the object relative to sensor.
+        relative_location = location_to_look_at - (camera_location + agent_location)
+
         return relative_location
 
-    def get_sensors_perc_on_obj(self, observation):
+    def get_sensors_perc_on_obj(self, observation: Mapping) -> float:
         """Calculate how much percent of the sensor is on the object.
 
         Get the average percentage of pixels on the object for all sensors in the
@@ -754,6 +838,37 @@ class InformedPolicy(BasePolicy, JumpToGoalStateMixin):
             sensor_obs = observation[self.agent_id][sensor_id]["rgba"]
             perc_on_obj += get_perc_on_obj(sensor_obs) / len(self.guiding_sensors)
         return perc_on_obj
+
+    def is_on_target_object(
+        self,
+        observation: Mapping,
+        sensor_id: str,
+        target_semantic_id: int,
+        multiple_objects_present: bool,
+    ) -> bool:
+        """Check if a sensor is on the target object.
+
+        Args:
+            observation (Mapping): The raw observations from the dataloader.
+            sensor_id (str): The sensor to check.
+            target_semantic_id (int): The semantic ID of the target object.
+            multiple_objects_present (bool): Whether there are multiple objects
+                present in the scene.
+
+        Returns:
+            bool: Whether the sensor is on the target object.
+        """
+        # Reconstruct the 2D semantic/surface map embedded in 'semantic_3d'.
+        image_shape = observation[self.agent_id][sensor_id]["depth"].shape[0:2]
+        semantic_3d = observation[self.agent_id][sensor_id]["semantic_3d"]
+        semantic = semantic_3d[:, 3].reshape(image_shape).astype(int)
+        if not multiple_objects_present:
+            semantic[semantic > 0] = target_semantic_id
+
+        # Check if the central pixel is on the target object.
+        y_mid, x_mid = image_shape[0] // 2, image_shape[1] // 2
+        on_target_object = semantic[y_mid, x_mid] == target_semantic_id
+        return on_target_object
 
 
 class NaiveScanPolicy(InformedPolicy):
@@ -1116,7 +1231,7 @@ class SurfacePolicy(InformedPolicy):
         if not hasattr(self, "processed_observations"):
             return None
 
-        last_action = self.last_action()
+        last_action = self.last_action
 
         if isinstance(last_action, MoveForward):
             return self._orient_horizontal()
@@ -1252,9 +1367,9 @@ class SurfacePolicy(InformedPolicy):
         x, y, z = rotated_point_normal
 
         if "horizontal" == orienting:
-            return -np.degrees(np.arctan(x / z)) if z != 0 else -np.sign(x)*90.0
+            return -np.degrees(np.arctan(x / z)) if z != 0 else -np.sign(x) * 90.0
         if "vertical" == orienting:
-            return -np.degrees(np.arctan(y / z)) if z != 0 else -np.sign(y)*90.0
+            return -np.degrees(np.arctan(y / z)) if z != 0 else -np.sign(y) * 90.0
 
 
 ###
@@ -1314,7 +1429,7 @@ def get_perc_on_obj(rgba_obs):
     return per_on_obj
 
 
-def get_perc_on_obj_semantic(semantic_obs, sematic_id=0):
+def get_perc_on_obj_semantic(semantic_obs, semantic_id=0):
     """Get the percentage of pixels in the observation that land on the target object.
 
     If a semantic ID is provided, then only pixels on the target object are counted;
@@ -1325,17 +1440,17 @@ def get_perc_on_obj_semantic(semantic_obs, sematic_id=0):
 
     Args:
         semantic_obs: Semantic image observation.
-        sematic_id: Semantic ID of the target object.
+        semantic_id: Semantic ID of the target object.
 
     Returns:
         perc_on_obj: Percentage of pixels on the object.
     """
     res = semantic_obs.shape[0] * semantic_obs.shape[1]
-    if sematic_id == 0:
+    if semantic_id == 0:
         csum = np.sum(semantic_obs >= 1)
     else:
         # Count only pixels on the target (e.g. primary target) object
-        csum = np.sum(semantic_obs == sematic_id)
+        csum = np.sum(semantic_obs == semantic_id)
     per_on_obj = csum / res
     return per_on_obj
 
@@ -1603,7 +1718,7 @@ class SurfacePolicyCurvatureInformed(SurfacePolicy):
 
         # Before updating the representation and removing z-axis direction, check
         # for movements defined in the z-axis
-        if int(np.argmax(np.abs(rotated_form))) == int(2):
+        if int(np.argmax(np.abs(rotated_form))) == 2:
             # TODO decide if in cases where the PC is defined in the z-direction
             # relative to the agent, it might actually make sense to still follow it,
             # i.e. as it should representa a movement tangential to the surface, and
@@ -2116,9 +2231,9 @@ def projected_angle_from_vec(vector):
     for test_theta in test_thetas:
         test_vec = projected_vec_from_angle(test_theta)
         recovered = math.atan2(test_vec[0], test_vec[1])
-        assert (
-            abs(test_theta - recovered) < 0.01
-        ), f"Issue with angle recovery for : {test_theta} vs. {recovered}"
+        assert abs(test_theta - recovered) < 0.01, (
+            f"Issue with angle recovery for : {test_theta} vs. {recovered}"
+        )
 
     return math.atan2(vector[0], vector[1])
 

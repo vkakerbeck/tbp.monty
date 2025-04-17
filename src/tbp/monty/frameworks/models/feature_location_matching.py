@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -576,7 +577,7 @@ class FeatureGraphLM(GraphLM):
             List of possible, unique, recent paths
         """
         possible_paths = self.get_possible_paths()[object_id]
-        if type(possible_paths[0]) == torch.Tensor:
+        if isinstance(possible_paths[0], torch.Tensor):
             possible_paths = [path.clone().numpy() for path in possible_paths]
 
         if len(np.array(possible_paths).shape) == 1:
