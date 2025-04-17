@@ -59,9 +59,11 @@ class MontyRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    ip_address = "0.0.0.0"  # Set this to your WiFi's IP address
-    assert ip_address != "0.0.0.0", (
-        "Please set the IP address to your WiFi's IP address."
+    # throw an error if the ip address is not set
+    ip_address = os.environ.get("MONTY_SERVER_IP_ADDRESS")
+    assert ip_address is not None, (
+        "MONTY_SERVER_IP_ADDRESS must be set. Set it to your WiFi's IP address by "
+        "running `export MONTY_SERVER_IP_ADDRESS=<your_wifi_ip_address>`",
     )
     port = 8080
     server = http.server.HTTPServer((ip_address, port), MontyRequestHandler)
