@@ -1698,7 +1698,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
         with MontyObjectRecognitionExperiment(config) as exp:
             pprint("...training...")
             # self.exp.train()
-            objects = [self.fake_obs_learn, self.fake_obs_house]
+            objects = [self.fake_obs_learn, self.fake_obs_house_3d]
             graph_lms = self.get_5lm_gm_with_fake_object(objects)
 
             # train_stats = pd.read_csv(
