@@ -146,6 +146,16 @@ class BaseGraphTestCases:
 
             self.fake_obs_house_trans = [State(**obs_dic) for obs_dic in config_list]
 
+            fo_house_5 = copy.deepcopy(fo_house)
+            fo_house_5["location"] = np.array([0.5, 1.5, 1.0])
+            self.fake_obs_house_3d = [
+                State(**fo_house),
+                State(**fo_house_1),
+                State(**fo_house_2),
+                State(**fo_house_3),
+                State(**fo_house_5),
+            ]
+
             self.placeholder_target = {
                 "object": "placeholder",
                 "quat_rotation": [1, 0, 0, 0],
