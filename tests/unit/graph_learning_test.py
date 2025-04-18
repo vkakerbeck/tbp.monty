@@ -1723,13 +1723,17 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
 
             exp.pre_epoch()
 
-            for _episode, obj in enumerate(lm_dict["objects"]):
-                sm_outputs = []
+            num_objects = len(lm_dict["objects"])
+
+            for episode in range(num_objects):
                 exp.pre_episode()
                 monty.pre_episode(self.placeholder_target)
-                for step, observation in enumerate(obj["obs"]):  # noqa: B007
-                    for _ in graph_lms:
-                        sm_outputs.append(observation)
+                num_obs = len(lm_dict["objects"][episode]["obs"])
+                for step in range(num_obs):
+                    sm_outputs = []
+                    for lm_dict in graph_lms:
+                        lm_obs = lm_dict["objects"][episode]["obs"][step]
+                        sm_outputs.append(lm_obs)
                     monty.sensor_module_outputs = sm_outputs
                     monty._step_learning_modules()
                     monty._vote()
