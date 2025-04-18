@@ -164,7 +164,7 @@ class FeatureGraphLM(GraphLM):
                         k = vote_data["pos_location_votes"][possible_obj].shape[0]
                         print(f"only received {k} votes")
                     else:
-                        # TODO: k should not be > num_lms
+                        # TODO: k should not be > num_lms - 1
                         k = 4
                     vote_location_tree = KDTree(
                         vote_data["pos_location_votes"][possible_obj],
