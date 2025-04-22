@@ -8,7 +8,7 @@ Before sending information to the sensor module which extracts features and pose
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **MissingToMaxDepth**          | Habitat depth sensors return 0 when no mesh is present at a location. Instead, return max_depth.                                                                                                  |
 | **AddNoiseToRawDepthImage**    | Add gaussian noise to raw sensory input.                                                                                                                                                          |
-| **DepthTo3DLocations**         | Transform semantic and depth observations from camera coordinate (2D) into agent (or world) coordinate (3D). Also estimates whether we are on the object or not if no semantic sensor is present. |
+| **DepthTo3DLocations**         | Transform semantic and depth observations from camera coordinates (2D) into agent (or world) coordinates (3D). Also estimates whether we are on the object or not if no semantic sensor is present. |
 
 <br />
 
