@@ -3,7 +3,7 @@ title: Benchmark Experiments
 description: Performance of current implementation on our benchmark test suite.
 ---
 # General Notes
-These benchmark experiments are not common benchmarks from the AI field. There are a **set of experiments we have defined for ourselves to track our research progress**. The specifically evaluate capabilities that we have added or plan to add to Monty. 
+These benchmark experiments are not common benchmarks from the AI field. There are a **set of experiments we have defined for ourselves to track our research progress**. They specifically evaluate capabilities that we have added or plan to add to Monty. 
 
 You can find Monty experiment configs for all the following experiments in the [benchmarks](../../benchmarks/) folder. Note that the experiment parameters are not overly optimized for accuracy. **The parameters used here aim to strike a good balance between speed and accuracy** to allow our researchers to iterate quickly and evaluate algorithm changes regularly. If a particular use case requires higher accuracy or faster learning or inference, this can be achieved by adjusting learning module parameters.
 
