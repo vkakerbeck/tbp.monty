@@ -33,6 +33,9 @@ from tbp.monty.frameworks.utils.spatial_arithmetics import (
 class FeatureGraphLM(GraphLM):
     """Learning module that uses features at locations to recognize objects."""
 
+    # FIXME: hardcoding the number of LMs that we expect to be voting with
+    NUM_OTHER_LMS = 4
+
     def __init__(
         self,
         max_match_distance,
@@ -115,7 +118,7 @@ class FeatureGraphLM(GraphLM):
         """
         possible_matches = self.get_possible_matches()
         all_objects = self.get_all_known_object_ids()
-        object_id_vote = dict()
+        object_id_vote = {}
         for obj in all_objects:
             object_id_vote[obj] = obj in possible_matches
         logging.info(
@@ -159,13 +162,14 @@ class FeatureGraphLM(GraphLM):
 
                 # Check that object is still in matches after ID update
                 if possible_obj in self.possible_matches:
-                    # TODO: better way to dynamically adapt k
-                    if vote_data["pos_location_votes"][possible_obj].shape[0] < 5:
+                    if vote_data["pos_location_votes"][possible_obj].shape[0] < (
+                        self.NUM_OTHER_LMS
+                    ):
                         k = vote_data["pos_location_votes"][possible_obj].shape[0]
-                        print(f"only received {k} votes")
+                        logging.info(f"only received {k} votes")
                     else:
-                        k = 5
-
+                        # k should not be > num_lms - 1
+                        k = self.NUM_OTHER_LMS
                     vote_location_tree = KDTree(
                         vote_data["pos_location_votes"][possible_obj],
                         leaf_size=2,
@@ -337,7 +341,7 @@ class FeatureGraphLM(GraphLM):
         Args:
             query: current features at location.
         """
-        consistent_objects = dict()
+        consistent_objects = {}
         for graph_id in self.possible_matches:
             consistent = self._update_matches_using_features(
                 query[0], query[1], graph_id
