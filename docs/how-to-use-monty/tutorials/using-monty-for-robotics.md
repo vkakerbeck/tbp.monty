@@ -1,6 +1,9 @@
 ---
 title: Using Monty for Robotics
 ---
+> ❗️ This is an Advanced Tutorial
+> If you've arrived at this page and you're relatively new to Monty, then we would recommend you start by reading some of our other documentation first. Once you're comfortable with the core concepts of Monty, then we think you'll enjoy learning about how to apply it to robotics in the following tutorial!
+
 # Introduction
 As Monty is a sensorimotor learning system, robotics is one big field of applications that naturally comes to mind. This tutorial explains in more detail how Monty can be used for robotics applications outside a simulator. It builds on the [previous tutorial](./using-monty-in-a-custom-application.md), so if you haven't read it yet, we highly recommend starting there.
 
