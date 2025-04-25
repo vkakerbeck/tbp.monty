@@ -273,7 +273,7 @@ Now you can run training by calling `python benchmarks/run.py -e omniglot_traini
 ## Example 2: Monty Meets World
 Monty Meets World is the code name for our first demo of Monty on real-world data. For a video of this momentous moment (or is that Montymentous?), see our [project showcase page](https://thousandbrainsproject.readme.io/docs/project-showcase#monty-for-object-detection-with-the-ipad-camera).
 
-In this application we test Monty's object recognition skills on 2.5D images, which means a photograph that includes depth information. In this case, the pictures are taken with the iPad's TrueDepth camera (the user-facing camera used for face recognition).
+In this application we test Monty's object recognition skills on 2.5D images, which means a photograph that includes depth information (RGBD). In this case, the pictures are taken with the iPad's TrueDepth camera (the user-facing camera used for face recognition).
 
 In this use case, we assume that Monty has already learned 3D models of the objects, and we just test its inference capabilities. For training, we scanned a set of real-world objects using photogrammetry, providing us with 3D models of the objects. You can find instructions to download this `numenta_lab` dataset [here](https://thousandbrainsproject.readme.io/docs/benchmark-experiments#monty-meets-world). We then render those 3D models in Habitat and learn them by moving a sensor patch over them, just as we do with the YCB dataset. We train Monty in the 3D simulator because in the 2D image setup, Monty has no way of moving around the object and, therefore, would have a hard time learning complete 3D models.
 
