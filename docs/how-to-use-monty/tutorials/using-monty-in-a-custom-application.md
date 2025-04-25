@@ -99,7 +99,7 @@ At each step, the sensor module will extract a location and pose in a common ref
 Learning and inference on Omniglot characters can be implemented by writing two custom classes:
 1. `OmniglotEnvironment`:
    - Defines initialization of all basic variables in the `__init__(patch_size, data_path)` function.
-   - In this example, we define the action space as `None` because we give Monty no choice in how to move. The step function just returns the next observation by following the predefined stroke order in the dataset.
+   - In this example, we define the action space as `None` because we give Monty no choice in how to move. The step function just returns the next observation by following the predefined stroke order in the dataset. Note this will still be formulated as a sensorimotor task, as the retrieval of the next observation corresponds to a (pre-defined) movement and we get a relative displacement of the sensor.
    - Defines the `step(action)` function, which uses the current `step_num` in the episode to determine where we are in the stroke sequence and extracts a patch around that location. It then returns a Gaussian smoothed version of this patch as the observation.
    - Defines `get_state()`, which returns the current x, y, z location on the character as a state dict (z is always zero since we are in 2D space here).
    - Defines `reset()` to reset the `step_num` counter and return the first observation on a new character.
@@ -130,7 +130,11 @@ omniglot_training = dict(
 	dataset_args=OmniglotDatasetArgs(),
 	train_dataloader_class=ED.OmniglotDataLoader,
 	# Train on the first version of each character (there are 20 drawings for each
-	# character in each alphabet, here we see one of them).
+	# character in each alphabet, here we see one of them). The default
+	# OmniglotDataloaderArgs specify alphabets = [0, 0, 0, 1, 1, 1] and
+    # characters = [1, 2, 3, 1, 2, 3]) so in the first episode we will see version 1
+	# of character 1 in alphabet 0, in the next episode version 1 of character 2 in
+	# alphabet 0, and so on.
 	train_dataloader_args=OmniglotDataloaderArgs(versions=[1, 1, 1, 1, 1, 1]),
 )
 ```
