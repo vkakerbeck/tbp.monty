@@ -11,6 +11,9 @@ from typing import Any, Dict
 
 from scipy.spatial.transform import Rotation
 
+from tbp.monty.frameworks.models.evidence_matching import EvidenceGraphLM
+from tbp.monty.frameworks.utils.logging_utils import compute_pose_error
+
 
 class TheoreticalLimitLMLoggingMixin:
     """Mixin that adds theoretical limit and pose error logging for learning modules.
@@ -26,8 +29,20 @@ class TheoreticalLimitLMLoggingMixin:
 
     Compatible with:
         - EvidenceGraphLM
-        - NoResetEvidenceGraphLM
     """
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Ensure the mixin is used only with compatible learning modules.
+
+        Raises:
+            TypeError: If the mixin is used with a non-compatible learning module.
+        """
+        super().__init_subclass__(**kwargs)
+        if not any(issubclass(b, (EvidenceGraphLM)) for b in cls.__bases__):
+            raise TypeError(
+                "TheoreticalLimitLMLoggingMixin must be mixed in with a subclass of "
+                f"EvidenceGraphLM, got {cls.__bases__}"
+            )
 
     def _add_detailed_stats(self, stats: Dict[str, Any]) -> Dict[str, Any]:
         """Add detailed statistics to the logging dictionary.
@@ -71,8 +86,8 @@ class TheoreticalLimitLMLoggingMixin:
             self.possible_poses[self.primary_target]
         ).inv()
         target_rotation = Rotation.from_quat(self.primary_target_rotation_quat)
-        min_error = (hyp_rotations * target_rotation.inv()).magnitude().min()
-        return min_error
+        error = compute_pose_error(hyp_rotations, target_rotation)
+        return error
 
     def _mlh_target_object_pose_error(self) -> float:
         """Compute the actual rotation error between predicted and target pose.
@@ -85,5 +100,5 @@ class TheoreticalLimitLMLoggingMixin:
         """
         obj_rotation = self.get_mlh_for_object(self.primary_target)["rotation"].inv()
         target_rotation = Rotation.from_quat(self.primary_target_rotation_quat)
-        error = (obj_rotation * target_rotation.inv()).magnitude()
+        error = compute_pose_error(obj_rotation, target_rotation)
         return error

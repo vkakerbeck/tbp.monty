@@ -33,6 +33,9 @@ from tbp.monty.frameworks.utils.spatial_arithmetics import (
 class FeatureGraphLM(GraphLM):
     """Learning module that uses features at locations to recognize objects."""
 
+    # FIXME: hardcoding the number of LMs that we expect to be voting with
+    NUM_OTHER_LMS = 4
+
     def __init__(
         self,
         max_match_distance,
@@ -115,7 +118,7 @@ class FeatureGraphLM(GraphLM):
         """
         possible_matches = self.get_possible_matches()
         all_objects = self.get_all_known_object_ids()
-        object_id_vote = dict()
+        object_id_vote = {}
         for obj in all_objects:
             object_id_vote[obj] = obj in possible_matches
         logging.info(
@@ -159,13 +162,14 @@ class FeatureGraphLM(GraphLM):
 
                 # Check that object is still in matches after ID update
                 if possible_obj in self.possible_matches:
-                    # TODO: better way to dynamically adapt k
-                    if vote_data["pos_location_votes"][possible_obj].shape[0] < 5:
+                    if vote_data["pos_location_votes"][possible_obj].shape[0] < (
+                        self.NUM_OTHER_LMS
+                    ):
                         k = vote_data["pos_location_votes"][possible_obj].shape[0]
-                        print(f"only received {k} votes")
+                        logging.info(f"only received {k} votes")
                     else:
-                        k = 5
-
+                        # k should not be > num_lms - 1
+                        k = self.NUM_OTHER_LMS
                     vote_location_tree = KDTree(
                         vote_data["pos_location_votes"][possible_obj],
                         leaf_size=2,
@@ -190,7 +194,7 @@ class FeatureGraphLM(GraphLM):
                             self.possible_poses[possible_obj].pop(path_id)
                             removed_locations = np.vstack([removed_locations, location])
                     logging.info(
-                        f"removed {removed_locations.shape[0]-1} locations from "
+                        f"removed {removed_locations.shape[0] - 1} locations from "
                         f"possible matches for {possible_obj}"
                     )
                     # NOTE: could also use votes to add hypotheses -> increase
@@ -337,7 +341,7 @@ class FeatureGraphLM(GraphLM):
         Args:
             query: current features at location.
         """
-        consistent_objects = dict()
+        consistent_objects = {}
         for graph_id in self.possible_matches:
             consistent = self._update_matches_using_features(
                 query[0], query[1], graph_id
@@ -420,13 +424,13 @@ class FeatureGraphLM(GraphLM):
             self.possible_poses[graph_id] = new_possible_poses
             if len(self.possible_poses[graph_id]) < 10:
                 logging.info(
-                    f"possible poses after matching for \
-                        {graph_id}: {self.get_possible_poses()[graph_id]}"
+                    f"possible poses after matching for "
+                    f"{graph_id}: {self.get_possible_poses()[graph_id]}"
                 )
         self.possible_paths[graph_id] = new_possible_paths
         logging.debug(
-            f"possible paths after matching for \
-                {graph_id}: {len(self.possible_paths[graph_id])}"
+            f"possible paths after matching for "
+            f"{graph_id}: {len(self.possible_paths[graph_id])}"
         )
         return len(self.possible_paths[graph_id]) > 0
 
@@ -577,7 +581,7 @@ class FeatureGraphLM(GraphLM):
             List of possible, unique, recent paths
         """
         possible_paths = self.get_possible_paths()[object_id]
-        if type(possible_paths[0]) == torch.Tensor:
+        if isinstance(possible_paths[0], torch.Tensor):
             possible_paths = [path.clone().numpy() for path in possible_paths]
 
         if len(np.array(possible_paths).shape) == 1:

@@ -33,9 +33,9 @@ from tbp.monty.frameworks.config_utils.config_args import (
     SurfaceAndViewMontyConfig,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
-    EnvironmentDataLoaderPerObjectEvalArgs,
-    EnvironmentDataLoaderPerObjectTrainArgs,
     ExperimentArgs,
+    InformedEnvironmentDataLoaderEvalArgs,
+    InformedEnvironmentDataLoaderTrainArgs,
     PredefinedObjectInitializer,
 )
 from tbp.monty.frameworks.config_utils.policy_setup_utils import (
@@ -62,6 +62,9 @@ from tbp.monty.simulators.habitat.configs import (
     FiveLMMountHabitatDatasetArgs,
     PatchViewFinderMountHabitatDatasetArgs,
     SurfaceViewFinderMountHabitatDatasetArgs,
+)
+from tests.unit.feature_flags import (
+    create_config_with_get_good_view_positioning_procedure,
 )
 from tests.unit.resources.unit_test_utils import BaseGraphTestCases
 
@@ -119,12 +122,12 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
                 env_init_args=EnvInitArgsPatchViewMount(data_path=None).__dict__,
             ),
             train_dataloader_class=ED.InformedEnvironmentDataLoader,
-            train_dataloader_args=EnvironmentDataLoaderPerObjectTrainArgs(
+            train_dataloader_args=InformedEnvironmentDataLoaderTrainArgs(
                 object_names=["capsule3DSolid", "cubeSolid"],
                 object_init_sampler=PredefinedObjectInitializer(),
             ),
             eval_dataloader_class=ED.InformedEnvironmentDataLoader,
-            eval_dataloader_args=EnvironmentDataLoaderPerObjectEvalArgs(
+            eval_dataloader_args=InformedEnvironmentDataLoaderEvalArgs(
                 object_names=["capsule3DSolid"],
                 object_init_sampler=PredefinedObjectInitializer(),
             ),
@@ -307,7 +310,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
                 ),
             ),
             # always show objects in same orientation
-            train_dataloader_args=EnvironmentDataLoaderPerObjectTrainArgs(
+            train_dataloader_args=InformedEnvironmentDataLoaderTrainArgs(
                 object_names=["capsule3DSolid", "cubeSolid"],
                 object_init_sampler=PredefinedObjectInitializer(
                     rotations=[[0.0, 0.0, 0.0]]
@@ -318,14 +321,14 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
         feature_pred_tests_offset = copy.deepcopy(fixed_actions_feat)
         feature_pred_tests_offset.update(
             train_dataloader_class=ED.InformedEnvironmentDataLoader,
-            train_dataloader_args=EnvironmentDataLoaderPerObjectTrainArgs(
+            train_dataloader_args=InformedEnvironmentDataLoaderTrainArgs(
                 object_names=["capsule3DSolid", "cubeSolid"],
                 object_init_sampler=PredefinedObjectInitializer(
                     positions=[[0.0, 1.5, 0.0]]
                 ),
             ),
             eval_dataloader_class=ED.InformedEnvironmentDataLoader,
-            eval_dataloader_args=EnvironmentDataLoaderPerObjectEvalArgs(
+            eval_dataloader_args=InformedEnvironmentDataLoaderEvalArgs(
                 object_names=["capsule3DSolid"],
                 object_init_sampler=PredefinedObjectInitializer(),
             ),
@@ -396,7 +399,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
                 ),
             ),
             train_dataloader_class=ED.InformedEnvironmentDataLoader,
-            train_dataloader_args=EnvironmentDataLoaderPerObjectTrainArgs(
+            train_dataloader_args=InformedEnvironmentDataLoaderTrainArgs(
                 object_names=["capsule3DSolid"],
                 object_init_sampler=PredefinedObjectInitializer(
                     rotations=[[0, 0, 0]],
@@ -594,19 +597,19 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
                 if step == 0:
                     self.assertListEqual(
                         list(
-                            exp.model.learning_modules[
-                                0
-                            ].buffer.get_nth_displacement(0, input_channel="first")
+                            exp.model.learning_modules[0].buffer.get_nth_displacement(
+                                0, input_channel="first"
+                            )
                         ),
-                        list([0, 0, 0]),
+                        [0, 0, 0],
                         "displacement at step 0 should be 0.",
                     )
                 self.assertEqual(
                     step + 1,
                     len(
-                        exp.model.learning_modules[0].buffer.displacements[
-                            "patch"
-                        ]["displacement"]
+                        exp.model.learning_modules[0].buffer.displacements["patch"][
+                            "displacement"
+                        ]
                     ),
                     "buffer does not contain the right amount of displacements.",
                 )
@@ -686,9 +689,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
             pprint("...training...")
             exp.train()
             pprint("...loading and checking train statistics...")
-            train_stats = pd.read_csv(
-                os.path.join(exp.output_dir, "train_stats.csv")
-            )
+            train_stats = pd.read_csv(os.path.join(exp.output_dir, "train_stats.csv"))
             self.check_train_results(train_stats)
 
             pprint("...evaluating...")
@@ -707,9 +708,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
             pprint("...training...")
             exp.train()
             pprint("...loading and checking train statistics...")
-            train_stats = pd.read_csv(
-                os.path.join(exp.output_dir, "train_stats.csv")
-            )
+            train_stats = pd.read_csv(os.path.join(exp.output_dir, "train_stats.csv"))
 
             self.check_train_results(train_stats)
 
@@ -730,9 +729,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
             exp.train()
             pprint("...loading and checking train statistics...")
 
-            train_stats = pd.read_csv(
-                os.path.join(exp.output_dir, "train_stats.csv")
-            )
+            train_stats = pd.read_csv(os.path.join(exp.output_dir, "train_stats.csv"))
 
             self.check_train_results(train_stats)
 
@@ -797,9 +794,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
         ###
         # Check that basic csv stats are the same
         ###
-        original_eval_stats_file = os.path.join(
-            eval_exp_1.output_dir, "eval_stats.csv"
-        )
+        original_eval_stats_file = os.path.join(eval_exp_1.output_dir, "eval_stats.csv")
         new_eval_stats_file = os.path.join(
             eval_exp_1.output_dir, "eval_episode_0_rerun", "eval_stats.csv"
         )
@@ -904,9 +899,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
         ###
         # Check that basic csv stats are the same
         ###
-        original_eval_stats_file = os.path.join(
-            eval_exp_1.output_dir, "eval_stats.csv"
-        )
+        original_eval_stats_file = os.path.join(eval_exp_1.output_dir, "eval_stats.csv")
         new_eval_stats_file = os.path.join(
             eval_exp_1.output_dir, "eval_rerun_episodes", "eval_stats.csv"
         )
@@ -995,9 +988,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
         ###
         # Check that basic csv stats are the same
         ###
-        original_eval_stats_file = os.path.join(
-            eval_exp_1.output_dir, "eval_stats.csv"
-        )
+        original_eval_stats_file = os.path.join(eval_exp_1.output_dir, "eval_stats.csv")
         new_eval_stats_file = os.path.join(
             eval_exp_1.output_dir, "eval_rerun_episodes", "eval_stats.csv"
         )
@@ -1211,27 +1202,27 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
             exp.train()
             self.assertEqual(
                 len(
-                    exp.model.learning_modules[
-                        0
-                    ].buffer.get_all_locations_on_object(input_channel="patch")
+                    exp.model.learning_modules[0].buffer.get_all_locations_on_object(
+                        input_channel="patch"
+                    )
                 ),
                 len(
-                    exp.model.learning_modules[
-                        0
-                    ].buffer.get_all_features_on_object()["patch"]["pose_vectors"]
+                    exp.model.learning_modules[0].buffer.get_all_features_on_object()[
+                        "patch"
+                    ]["pose_vectors"]
                 ),
                 "Did not retrieve same amount of feature and locations on object.",
             )
             self.assertEqual(
                 sum(
-                    exp.model.learning_modules[
-                        0
-                    ].buffer.get_all_features_on_object()["patch"]["on_object"]
+                    exp.model.learning_modules[0].buffer.get_all_features_on_object()[
+                        "patch"
+                    ]["on_object"]
                 ),
                 len(
-                    exp.model.learning_modules[
-                        0
-                    ].buffer.get_all_features_on_object()["patch"]["on_object"]
+                    exp.model.learning_modules[0].buffer.get_all_features_on_object()[
+                        "patch"
+                    ]["on_object"]
                 ),
                 "not all retrieved features were collected on the object.",
             )
@@ -1244,9 +1235,9 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
             self.assertEqual(
                 num_matching_steps,
                 sum(
-                    exp.model.learning_modules[0].buffer.features["patch"][
-                        "on_object"
-                    ][:num_matching_steps]
+                    exp.model.learning_modules[0].buffer.features["patch"]["on_object"][
+                        :num_matching_steps
+                    ]
                 ),
                 "Number of match steps does not match with stored observations "
                 "on object",
@@ -1297,8 +1288,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
         self.assertEqual(
             len(detailed_stats["1"]["LM_0"]["possible_matches"]),
             train_stats.loc[1]["monty_matching_steps"],
-            "matching steps in detailed stats don't match with those in "
-            "train stats.",
+            "matching steps in detailed stats don't match with those in train stats.",
         )
         self.assertEqual(
             sum(np.array(detailed_stats["1"]["LM_0"]["patch"]["on_object"])),
@@ -1317,9 +1307,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
             exp.train()
             pprint("...loading and checking train statistics...")
 
-            train_stats = pd.read_csv(
-                os.path.join(exp.output_dir, "train_stats.csv")
-            )
+            train_stats = pd.read_csv(os.path.join(exp.output_dir, "train_stats.csv"))
             self.check_train_results(train_stats)
 
             pprint("...evaluating...")
@@ -1641,9 +1629,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
             pprint("...training...")
             exp.train()
 
-            train_stats = pd.read_csv(
-                os.path.join(exp.output_dir, "train_stats.csv")
-            )
+            train_stats = pd.read_csv(os.path.join(exp.output_dir, "train_stats.csv"))
             self.check_multilm_train_results(train_stats, num_lms=5, min_done=3)
 
             pprint("...evaluating...")
@@ -1663,9 +1649,7 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
             pprint("...training...")
             exp.train()
 
-            train_stats = pd.read_csv(
-                os.path.join(exp.output_dir, "train_stats.csv")
-            )
+            train_stats = pd.read_csv(os.path.join(exp.output_dir, "train_stats.csv"))
             # The following check is brittle and depends on sensor arrangement. Leaving
             # the rest of the test intact to detect run failures, but disabling checking
             # of particular results.
@@ -1681,6 +1665,71 @@ class GraphLearningTest(BaseGraphTestCases.BaseGraphTest):
         # LM but didn't want to dig too deep into that for now.
         self.check_multilm_eval_results(
             eval_stats, num_lms=5, min_done=3, num_episodes=1
+        )
+
+
+class GraphLearningTestWithGetGoodViewPositioningProcedure(GraphLearningTest):
+    def setUp(self):
+        super().setUp()
+        self.base_config = create_config_with_get_good_view_positioning_procedure(
+            self.base_config
+        )
+        self.surface_agent_eval_config = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.surface_agent_eval_config
+            )
+        )
+        self.ppf_config = create_config_with_get_good_view_positioning_procedure(
+            self.ppf_config
+        )
+        self.disp_config = create_config_with_get_good_view_positioning_procedure(
+            self.disp_config
+        )
+        self.feature_config = create_config_with_get_good_view_positioning_procedure(
+            self.feature_config
+        )
+        self.fixed_actions_disp = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.fixed_actions_disp
+            )
+        )
+        self.fixed_actions_ppf = create_config_with_get_good_view_positioning_procedure(
+            self.fixed_actions_ppf
+        )
+        self.fixed_actions_feat = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.fixed_actions_feat
+            )
+        )
+        self.feature_pred_tests_time_out = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.feature_pred_tests_time_out
+            )
+        )
+        self.feature_pred_tests_confused = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.feature_pred_tests_confused
+            )
+        )
+        self.feature_pred_tests_off_object = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.feature_pred_tests_off_object
+            )
+        )
+        self.feat_test_uniform_initial_poses = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.feat_test_uniform_initial_poses
+            )
+        )
+        self.ppf_displacement_5lm_config = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.ppf_displacement_5lm_config
+            )
+        )
+        self.feature_5lm_config = (
+            create_config_with_get_good_view_positioning_procedure(
+                self.feature_5lm_config
+            )
         )
 
 

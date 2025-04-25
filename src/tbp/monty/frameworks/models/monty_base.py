@@ -203,7 +203,7 @@ class MontyBase(Monty):
     def _step_learning_modules(self):
         for i in range(len(self.learning_modules)):
             sensory_inputs = self._collect_inputs_to_lm(i)
-            getattr(self.learning_modules[i], self.step_type, sensory_inputs)
+            getattr(self.learning_modules[i], self.step_type)(sensory_inputs)
 
     def _collect_inputs_to_lm(self, lm_id):
         """Use sm_to_lm_matrix and lm_to_lm_matrix to collect inputs to LM i.
@@ -437,11 +437,13 @@ class MontyBase(Monty):
         Returns:
             State of the agent.
         """
-        return self.motor_system._policy.get_agent_state()
+        # TODO: This is left in place for now to keep PR scope limited, but should be
+        #       refactored in the future to simplify this access pattern.
+        return self.motor_system._policy.get_agent_state(self.motor_system._state)
 
     @property
     def is_motor_only_step(self):
-        return self.motor_system._policy.is_motor_only_step
+        return self.motor_system._policy.is_motor_only_step(self.motor_system._state)
 
     @property
     def is_done(self):
@@ -494,9 +496,7 @@ class MontyBase(Monty):
     def switch_to_exploratory_step(self):
         self.step_type = "exploratory_step"
         self.is_seeking_match = False
-        logging.info(
-            "Going into exploratory mode after" f" {self.matching_steps} steps"
-        )
+        logging.info(f"Going into exploratory mode after {self.matching_steps} steps")
 
 
 class LearningModuleBase(LearningModule):

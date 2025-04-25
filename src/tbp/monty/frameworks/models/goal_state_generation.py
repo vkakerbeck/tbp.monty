@@ -246,8 +246,8 @@ class GraphGoalStateGenerator(GoalStateGenerator):
                     and state_b.morphological_features is not None
                 ):
                     raise NotImplementedError(
-                        "TODO M implement pose-vector comparisons that handle symmetry\
-                            of objects"
+                        "TODO M implement pose-vector comparisons that handle "
+                        "symmetry of objects"
                     )
                     # TODO M consider using an angular distance instead of Euclidean
                     # when we actually begin making use of this feature; try to ensure
@@ -470,7 +470,7 @@ class EvidenceGoalStateGenerator(GraphGoalStateGenerator):
         parent_lm,
         goal_tolerances=None,
         elapsed_steps_factor=10,
-        min_post_goal_success_steps=np.infty,
+        min_post_goal_success_steps=np.inf,
         x_percent_scale_factor=0.75,
         desired_object_distance=0.03,
         wait_growth_multiplier=2,
@@ -677,10 +677,10 @@ class EvidenceGoalStateGenerator(GraphGoalStateGenerator):
             second_mlh["rotation"].apply(transformed_current_loc)
             + second_mlh["location"]
         )
-        assert np.all(
-            transformed_current_loc == second_mlh["location"]
-        ), "Graph transformaiton to 2nd object reference frame not returning correct\
-            transformed location"
+        assert np.all(transformed_current_loc == second_mlh["location"]), (
+            "Graph transformation to 2nd object reference frame not returning correct "
+            "transformed location"
+        )
 
         # Perform kdtree search to identify the point with the most distant
         # nearest-neighbor

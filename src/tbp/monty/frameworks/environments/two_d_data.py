@@ -246,7 +246,7 @@ class OmniglotEnvironment(EmbodiedEnvironment):
     def motor_to_locations(self, motor):
         motor = [d[:, 0:2] for d in motor]
         motor = [space_motor_to_img(d) for d in motor]
-        locations = np.zeros((2))
+        locations = np.zeros(2)
         for stroke in motor:
             locations = np.vstack([locations, stroke])
         return locations[1:]
@@ -756,7 +756,7 @@ class SaccadeOnImageFromStreamEnvironment(SaccadeOnImageEnvironment):
         while not os.path.exists(current_rgb_path):
             if wait_count % 10 == 0:
                 # Print every 10 seconds
-                print("Waiting for new rgb data...")
+                print("Waiting for new RGBD data...")
             time.sleep(1)
             wait_count += 1
 

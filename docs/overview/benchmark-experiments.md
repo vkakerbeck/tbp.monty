@@ -2,6 +2,13 @@
 title: Benchmark Experiments
 description: Performance of current implementation on our benchmark test suite.
 ---
+# General Notes
+These benchmark experiments are not common benchmarks from the AI field. There are a **set of experiments we have defined for ourselves to track our research progress**. They specifically evaluate capabilities that we have added or plan to add to Monty. 
+
+You can find Monty experiment configs for all the following experiments in the [benchmarks](https://github.com/thousandbrainsproject/tbp.monty/tree/main/benchmarks) folder. Note that the experiment parameters are not overly optimized for accuracy. **The parameters used here aim to strike a good balance between speed and accuracy** to allow our researchers to iterate quickly and evaluate algorithm changes regularly. If a particular use case requires higher accuracy or faster learning or inference, this can be achieved by adjusting learning module parameters.
+
+If you want to evaluate Monty on external benchmarks, please have a look at our [application criteria](./application-criteria.md) and [challenging preconceptions](./vision-of-the-thousand-brains-project/challenging-preconceptions.md) pages first. Particularly, note that Monty is a sensorimotor system made to efficiently learn and infer by interacting with an environment. It is not designed for large, static datasets.
+
 # Object and Pose Recognition on the YCB Dataset
 
 ## What Do We Test?
@@ -114,7 +121,9 @@ More specifically, these experiments are run purely in evaluation mode (i.e., pr
 
 # Monty-Meets-World
 
-The following experiments evaluate a Monty model on real-world images derived from the RGBD camera of an iPad/iPhone device. The models that the Monty system leverages are based on photogrammetry scans of the same objects in the real world, and Monty learns on these in the simulated Habitat environment; this approach is taken because currently, we cannot track the movements of the iPad through space, and so Monty cannot leverage its typical sensorimotor learning to build the internal models.
+The following experiments evaluate a Monty model on real-world images derived from the RGBD camera of an iPad/iPhone device. The models that the Monty system leverages are based on photogrammetry scans of the same objects in the real world, and Monty learns on these in the simulated Habitat environment; this approach is taken because currently, we cannot track the movements of the iPad through space, and so Monty cannot leverage its typical sensorimotor learning to build the internal models. 
+
+For a really cool video of the first time Monty was tested in the real world, see the recording linked on our [project showcase page](../community/project-showcase.md#monty-for-object-detection-with-the-ipad-camera).
 
 These experiments have been designed to evaluate Monty's robustness to real-world data, and in this particular case, its ability to generalize from simulation to the real-world. In the world_image experiments, the model is evaluated on the aforementioned iPad extracted images, while in the randrot_noise_sim_on_scan_monty_world experiment, we evaluate the model in simulation at inference time, albeit with some noise added and with the distant agent fixed to a single location (i.e., no hypothesis-testing policy). This enables a reasonable evaluation of the sim-to-real change in performance. Furthermore, the world_image experiments are intended to capture a variety of possible adversarial settings.
 

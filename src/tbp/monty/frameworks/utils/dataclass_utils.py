@@ -68,9 +68,7 @@ def from_dataclass_dict(datadict):
     # Check for nested dataclass
     kwargs = {}
     for k, v in datadict.items():
-        if isinstance(v, dict):
-            v = from_dataclass_dict(v)
-        kwargs[k] = v
+        kwargs[k] = from_dataclass_dict(v) if isinstance(v, dict) else v
 
     if _DATACLASS_TYPE not in kwargs:
         # Not a dataclass dict
@@ -173,7 +171,7 @@ def config_to_dict(config):
 def get_subset_of_args(arguments, function):
     dict_args = config_to_dict(arguments)
     _fields = extract_fields(function)
-    common_fields = dict()
+    common_fields = {}
     for field in _fields:
         field_name = field[0]
         if field_name in dict_args:

@@ -21,6 +21,7 @@ from benchmarks.configs.defaults import (
 )
 from benchmarks.configs.names import MontyWorldExperiments
 from tbp.monty.frameworks.config_utils.config_args import (
+    EvalEvidenceLMLoggingConfig,
     MontyArgs,
     MotorSystemConfigInformedNoTransStepS20,
     ParallelEvidenceLMLoggingConfig,
@@ -94,7 +95,10 @@ world_image_from_stream_on_scanned_model = copy.deepcopy(world_image_on_scanned_
 world_image_from_stream_on_scanned_model.update(
     dataset_args=WorldImageFromStreamDatasetArgs(),
     eval_dataloader_class=ED.SaccadeOnImageFromStreamDataLoader,
-    eval_dataloader_args=dict(),
+    eval_dataloader_args={},
+    logging_config=EvalEvidenceLMLoggingConfig(
+        wandb_handlers=[], python_log_level="INFO"
+    ),
 )
 
 
