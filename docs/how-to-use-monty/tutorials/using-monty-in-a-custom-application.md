@@ -55,7 +55,7 @@ obs = {
 }
 ```
 
-Related to defining how actions change observations, you will also need to define how actions change the state of the agent. This is what the `get_state()` function returns. The returned state needs to be a dictionary with an entry per agent in the environment that contains the agent's position and orientation relative to some global reference point. For each sensor associated with that agent, a sub-dictionary should return the sensor's position and orientation relative to the agent.
+Related to defining how actions change observations, you will also need to define how actions change the state of the agent. This is what the `get_state()` function returns. The returned state needs to be a dictionary with an entry per agent in the environment. The entry should contain the agent's position and orientation relative to some global reference point. For each sensor associated with that agent, a sub-dictionary should return the sensor's position and orientation relative to the agent.
 
 For example, if you have one agent with two sensors, the state dictionary could look like this:
 ```
