@@ -38,7 +38,7 @@ The first thing to figure out is how movement should be defined in your environm
 
 If you are working with an existing environment, such as one used for reinforcement learning (for example, `gym` environments or the Habitat environment we are using), you might just need to wrap this into the `.step()` function of your custom `EmbodiedEnvironment` class such that when `env.step(action)` is called, an observation is returned. If you work with an application that isn't already set up like that, defining how actions lead to the next observation may be more involved. You can look at the `OmniglotEnvironment` or `SaccadeOnImageEnvironment` as examples (more details below).
 
-The observations should be returned as a nested dictionary with one entry per agent in the environment. Each agent should have sub-dictionaries with observations for each of its sensors. For example, if there is one agent with two sensors that each sense two types of values, it would look like this:
+The observations should be returned as a nested dictionary with one entry per agent in the environment. Each agent should have sub-dictionaries with observations for each of its sensors. For example, if there is one agent with two sensors that each sense two types of features, it would look like this:
 
 ```
 obs = {
