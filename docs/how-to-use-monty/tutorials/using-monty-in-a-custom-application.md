@@ -268,7 +268,7 @@ Now you can run training by calling `python benchmarks/run.py -e omniglot_traini
 > Note that we currently don't get good generalization performance on the Omniglot dataset. If you use the commented-out dataset_args (`eval_dataloader_args=OmniglotDataloaderArgs(versions=[2, 2, 2, 2, 2, 2])`) in the inference config, which shows previously unseen versions of the characters, you will see that performance degrades a lot. This is because the Omniglot characters are fundamentally compositional objects (strokes relative to each other), and compositional objects can only be modeled by stacking two learning modules hierarchically. The above configs do not do this. Our research team is hard at work getting Monty to model compositional objects.
  
 ## Example 2: Monty Meets World
-Monty Meets World is the code name for our first demo of Monty on real-world data. For a video of this momentous moment, see our [project showcase page](https://thousandbrainsproject.readme.io/docs/project-showcase#monty-for-object-detection-with-the-ipad-camera).
+Monty Meets World is the code name for our first demo of Monty on real-world data. For a video of this momentous moment (or is that Montymentous?), see our [project showcase page](https://thousandbrainsproject.readme.io/docs/project-showcase#monty-for-object-detection-with-the-ipad-camera).
 
 In this application we test Monty's object recognition skills on 2.5D images, which means a photograph that includes depth information. In this case, the pictures are taken with the iPad's TrueDepth camera (the user-facing camera used for face recognition).
 
