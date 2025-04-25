@@ -61,6 +61,8 @@ For example, if you have one agent with two sensors, the state dictionary could 
 ```
 state = {
 	"agent_id_0": {
+		"position": current_agent_location,
+		"rotation": current_agent_orientation,
     	"sensors": {
         	"patch_0.depth": {
             	"rotation": current_depth_sensor_orientation,
@@ -71,8 +73,6 @@ state = {
             	"position": current_rgba_sensor_orientation,
         	},
     	},
-    	"rotation": current_agent_orientation,
-    	"position": current_agent_location,
 	}
 }
 ```
