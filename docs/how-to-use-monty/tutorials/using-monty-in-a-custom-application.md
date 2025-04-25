@@ -103,7 +103,10 @@ Learning and inference on Omniglot characters can be implemented by writing two 
    - Defines the `step(action)` function, which uses the current `step_num` in the episode to determine where we are in the stroke sequence and extracts a patch around that location. It then returns a Gaussian smoothed version of this patch as the observation.
    - Defines `get_state()`, which returns the current x, y, z location on the character as a state dict (z is always zero since we are in 2D space here).
    - Defines `reset()` to reset the `step_num` counter and return the first observation on a new character.
-   - Helper functions such as `switch_to_object` and `load_new_character_data` to load a new character, `get_image_patch(img, loc, patch_size)` to extract the patch, and `motor_to_locations` to convert the movement information from the Omniglot dataset into locations on the character image.
+   - Helper functions such as 
+     - `switch_to_object` and `load_new_character_data` to load a new character
+     - `get_image_patch(img, loc, patch_size)` to extract the patch around a given pixel location
+     - `motor_to_locations` to convert the movement information from the Omniglot dataset into locations (pixel indices) on the character image
 2. `OmniglotDataLoader`:
    - Defines initialization of basic variables such as episode and epoch counters in the `__init__` function
    - Defines the `post_episode` function, which calls `cycle_object` to call the environment's `switch_to_object` function. Using the episode and epoch counters, it keeps track of which character needs to be shown next.
@@ -289,8 +292,14 @@ This can be implemented using two custom classes:
    - Defines the `TwoDDataActionSpace` to move up, down, left, and right on the image by a given amount of pixels.
    - Defines the `step(action)` function, which uses the sensor's current location, the given action, and its amount to determine the new location on the image and extract a patch. It updates `self.current_loc` and returns the sensor patch observations as a dictionary.
    - Defines `get_state()`, which returns the current state as a dictionary. The dictionary mostly contains `self.current_loc` and placeholders for the orientation, as the sensor and agent orientation never change.
-   - Helper functions such as `switch_to_object(scene_id, scene_version_id)` to load a new image, `get_3d_scene_point_cloud` to extract a 3D point cloud from the depth image, `get_next_loc(action_name, amount)` to determine valid next locations in pixel space, `get_3d_coordinates_from_pixel_indices(pixel_ids)` to get the 3D location from a pixel index, and `get_image_patch(loc)` to extract a patch at a location in the image. These functions are all used internally within the `__init__`, `step`, and `get_state` functions (except for the `switch_to_object` function, which is called by the `SaccadeOnImageDataLoader`).
-2. `SaccadeOnImageDataLoader`:
+   - Helper functions such as 
+     - `switch_to_object(scene_id, scene_version_id)` to load a new image
+     - `get_3d_scene_point_cloud` to extract a 3D point cloud from the depth image
+     - `get_next_loc(action_name, amount)` to determine valid next locations in pixel space
+     - `get_3d_coordinates_from_pixel_indices(pixel_ids)` to get the 3D location from a pixel index
+     - `get_image_patch(loc)` to extract a patch at a location in the image. 
+  	These functions are all used internally within the `__init__`, `step`, and `get_state` functions (except for the `switch_to_object` function, which is called by the `SaccadeOnImageDataLoader`).
+1. `SaccadeOnImageDataLoader`:
    - Defines initialization of basic variables such as episode and epoch counters in the `__init__` function.
    - Defines the `post_episode` function, which calls `cycle_object` to call the environment's `switch_to_object` function. Using the episode and epoch counters, it keeps track of which image needs to be shown next.
 
