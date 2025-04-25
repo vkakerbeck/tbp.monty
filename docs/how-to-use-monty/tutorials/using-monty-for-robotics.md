@@ -45,6 +45,6 @@ For the first test, we plan to recognize 3D objects inside a phantom (a clear ba
 Monty can use three types of action output to recognize the sensed objects efficiently. 1) it can move the patch over the full ultrasound image, akin to moving it over the full camera image from the iPad. 2) it can suggest a location in the room for the human operator to move the ultrasound probe to in order to get a different view. 3) it can adjust the settings of the probe, such as depth of field and gain. None of these are required for object recognition to work, but each one can make recognition more efficient and robust.
 
 # Conclusion
-The current solution for running Monty on robots is to stream the sensor data and action commands back and forth between the robot and a Monty instance running on a laptop. Outside of that, defining custom data loader and environments for Monty is analogous to how it was outlined in the [previous tutorial](./using-monty-in-a-custom-application.md).
+The current solution for running Monty on robots is to stream the sensor data and action commands back and forth between the robot and a Monty instance running on a laptop. Outside of that, defining a custom data loader and environments for Monty is analogous to how it was outlined in the [previous tutorial](./using-monty-in-a-custom-application.md).
 
 
