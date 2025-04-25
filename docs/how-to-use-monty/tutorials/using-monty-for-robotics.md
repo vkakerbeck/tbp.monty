@@ -20,7 +20,7 @@ Monty is configured to use the `SaccadeOnImageFromStreamDataLoader`. The data lo
 ![Custom classes for object recognition in RGBD images streamed from an iOS app.](../../figures/how-to-use-monty/MMW_stream_custom_classes.png#width=500px)
 
 > 📘 Follow Along
-> If you like to test the MontyMeetsWorld app, you can find code and run instructions [here](https://github.com/thousandbrainsproject/monty_lab/tree/main/monty_meets_world). To run the demo there are three main steps involved:
+> If you would like to test the MontyMeetsWorld app, you can find code and run instructions [here](https://github.com/thousandbrainsproject/monty_lab/tree/main/monty_meets_world). To run the demo there are three main steps involved:
 > 1)  Open the MontyMeetsWorld project in XCode and run the iOS app on your iPad or iPhone (instructions in [this README](https://github.com/thousandbrainsproject/monty_lab/blob/main/monty_meets_world/README.md))
 > 2) Start a server on your laptop to listen for images streamed from the app by running `python src/tbp/monty/frameworks/environment_utils/server.py`
 > 3) Start a Monty experiment that will wait for an image to be received and then run an episode to recognize the object. Use this command in a separate terminal window (while the server script and app are running): `python benchmarks/run.py -e world_image_from_stream_on_scanned_model`
