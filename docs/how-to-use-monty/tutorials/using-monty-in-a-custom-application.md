@@ -145,48 +145,48 @@ omniglot_training = dict(
 And a config for inference on those trained models could look like this:
 ```
 omniglot_inference = dict(
-	experiment_class=MontyObjectRecognitionExperiment,
-	experiment_args=ExperimentArgs(
-    	model_name_or_path=pretrain_dir + "/omniglot_training/pretrained/",
-    	do_train=False,
-    	n_eval_epochs=1,
-	),
-	logging_config=LoggingConfig(),
-	monty_config=PatchAndViewMontyConfig(
-    	monty_class=MontyForEvidenceGraphMatching,
-    	learning_module_configs=dict(
-        	learning_module_0=dict(
-            	learning_module_class=EvidenceGraphLM,
-            	learning_module_args=dict(
-                	# xyz values are in larger range so need to increase mmd
-                	max_match_distance=5,
-                	tolerances={
-                    	"patch": {
-                        	"principal_curvatures_log": np.ones(2),
-                        	"pose_vectors": np.ones(3) * 45,
-                    	}
-                	},
-                	# Point normal always points up, so they are not useful
-                	feature_weights={
-                    	"patch": {
-                        	"pose_vectors": [0, 1, 0],
-                    	}
-                	},
-                	# We assume the letter is presented upright
-                	initial_possible_poses=[[0, 0, 0]],
-            	),
-        	)
-    	),
-    	sensor_module_configs=omniglot_sensor_module_config,
-	),
-	dataset_class=ED.EnvironmentDataset,
-	dataset_args=OmniglotDatasetArgs(),
-	eval_dataloader_class=ED.OmniglotDataLoader,
-	# Using version 1 means testing on the same version of the character as trained.
-	# Version 2 is a new drawing of the previously seen characters. In this
-	# small test setting these are 3 characters from 2 alphabets.
-	eval_dataloader_args=OmniglotDataloaderArgs(versions=[1, 1, 1, 1, 1, 1]),
-	# eval_dataloader_args=OmniglotDataloaderArgs(versions=[2, 2, 2, 2, 2, 2]),
+    experiment_class=MontyObjectRecognitionExperiment,
+    experiment_args=ExperimentArgs(
+        model_name_or_path=pretrain_dir + "/omniglot_training/pretrained/",
+        do_train=False,
+        n_eval_epochs=1,
+    ),
+    logging_config=LoggingConfig(),
+    monty_config=PatchAndViewMontyConfig(
+        monty_class=MontyForEvidenceGraphMatching,
+        learning_module_configs=dict(
+            learning_module_0=dict(
+                learning_module_class=EvidenceGraphLM,
+                learning_module_args=dict(
+                    # xyz values are in larger range so need to increase mmd
+                    max_match_distance=5,
+                    tolerances={
+                        "patch": {
+                            "principal_curvatures_log": np.ones(2),
+                            "pose_vectors": np.ones(3) * 45,
+                        }
+                    },
+                    # Point normal always points up, so they are not useful
+                    feature_weights={
+                        "patch": {
+                            "pose_vectors": [0, 1, 0],
+                        }
+                    },
+                    # We assume the letter is presented upright
+                    initial_possible_poses=[[0, 0, 0]],
+                ),
+            )
+        ),
+        sensor_module_configs=omniglot_sensor_module_config,
+    ),
+    dataset_class=ED.EnvironmentDataset,
+    dataset_args=OmniglotDatasetArgs(),
+    eval_dataloader_class=ED.OmniglotDataLoader,
+    # Using version 1 means testing on the same version of the character as trained.
+    # Version 2 is a new drawing of the previously seen characters. In this small test
+    # setting these are 3 characters from 2 alphabets.
+    eval_dataloader_args=OmniglotDataloaderArgs(versions=[1, 1, 1, 1, 1, 1]),
+    # eval_dataloader_args=OmniglotDataloaderArgs(versions=[2, 2, 2, 2, 2, 2]),
 )
 ```
 
