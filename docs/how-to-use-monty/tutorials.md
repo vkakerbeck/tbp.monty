@@ -4,7 +4,7 @@ title: Tutorials
 These tutorials will help you get familiar with Monty. Topics and experiments increase in complexity as the tutorials progress, so we recommend going through them in order. You can also learn about contributing tutorials [here](../contributing/contributing-tutorials.md).
 
 # Getting Started
-The following tutorials are aimed at getting you familiar with the Monty code infrastructure, running experiments, and the general algorithm. They don't require you to write custom code and provide code for experiment configurations to follow along.
+The following tutorials are aimed at getting you familiar with the Monty code infrastructure, running experiments, and the general algorithm. They don't require you to write custom code, instead providing code for experiment configurations that you can follow along with.
 
 - [Running Your First Experiment](tutorials/running-your-first-experiment.md): Demonstrates basic layout of an experiment config and outlines experimental training loops.
 - [Pretraining a Model](tutorials/pretraining-a-model.md): Shows how to configure an experiment for supervised pretraining.
