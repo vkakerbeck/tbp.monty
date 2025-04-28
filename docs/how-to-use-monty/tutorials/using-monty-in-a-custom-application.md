@@ -94,9 +94,9 @@ Since this is a static dataset, and Monty is a sensorimotor learning system, we 
 ![An observation at each step is a small patch on the character.](../../figures/how-to-use-monty/omniglot_obs_exp.png#width=400px)
 
 At each step, the sensor module will extract a location and pose in a common reference frame and send it to the learning module. To define the pose at each location, we extract a [point normal and two principal curvature directions](https://thousandbrainsproject.readme.io/docs/observations-transforms-sensor-modules#point-normals-and-principle-curvatures) from a gaussian smoothed image of the patch. As you can see in the images below, the point normal will always point straight out of the image (as this is a 2D image, not a 3D object surface) and the first principal curvature direction aligns with the stroke direction while the second one is orthogonal to it. The learning module then stores those relative locations and orientations in the model of the respective character and can use them to recognize a character during inference.
-![The learned models store poses at locations relative to each other. Pose is defined by point normal and curvature directions.](../../figures/how-to-use-monty/omniglot_model_exp.png#width=400px)
+![The learned models store poses at locations relative to each other. Pose is defined by point normal and curvature directions.](../../figures/how-to-use-monty/omniglot_model_exp.png#width=600px)
 
-Learning and inference on Omniglot characters can be implemented by writing two custom classes:
+Learning and inference on Omniglot characters can be implemented by writing two custom classes, the `OmniglotEnvironment` and the `OmniglotDataLoader`:
 1. `OmniglotEnvironment`:
    - Defines initialization of all basic variables in the `__init__(patch_size, data_path)` function.
    - In this example, we define the action space as `None` because we give Monty no choice in how to move. The step function just returns the next observation by following the predefined stroke order in the dataset. Note this will still be formulated as a sensorimotor task, as the retrieval of the next observation corresponds to a (pre-defined) movement and we get a relative displacement of the sensor.
