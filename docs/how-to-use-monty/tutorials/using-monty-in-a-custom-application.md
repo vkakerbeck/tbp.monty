@@ -96,7 +96,7 @@ Since this is a static dataset, and Monty is a sensorimotor learning system, we 
 At each step, the sensor module will extract a location and pose in a common reference frame and send it to the learning module. To define the pose at each location, we extract a [point normal and two principal curvature directions](https://thousandbrainsproject.readme.io/docs/observations-transforms-sensor-modules#point-normals-and-principle-curvatures) from a gaussian smoothed image of the patch. As you can see in the images below, the point normal will always point straight out of the image (as this is a 2D image, not a 3D object surface) and the first principal curvature direction aligns with the stroke direction while the second one is orthogonal to it. The learning module then stores those relative locations and orientations in the model of the respective character and can use them to recognize a character during inference.
 ![The learned models store poses at locations relative to each other. Pose is defined by point normal and curvature directions.](../../figures/how-to-use-monty/omniglot_model_exp.png#width=600px)
 
-Learning and inference on Omniglot characters can be implemented by writing two custom classes, the `OmniglotEnvironment` and the `OmniglotDataLoader`:
+Learning and inference on Omniglot characters can be implemented by writing two custom classes, the [OmniglotEnvironment](https://github.com/thousandbrainsproject/tbp.monty/blob/4bc857580ae6ac015586af1a61b3e292a7827b6f/src/tbp/monty/frameworks/environments/two_d_data.py#L61) and the [OmniglotDataLoader](https://github.com/thousandbrainsproject/tbp.monty/blob/4bc857580ae6ac015586af1a61b3e292a7827b6f/src/tbp/monty/frameworks/environments/embodied_data.py#L920):
 1. `OmniglotEnvironment`:
    - Defines initialization of all basic variables in the `__init__(patch_size, data_path)` function.
    - In this example, we define the action space as `None` because we give Monty no choice in how to move. The step function just returns the next observation by following the predefined stroke order in the dataset. Note this will still be formulated as a sensorimotor task, as the retrieval of the next observation corresponds to a (pre-defined) movement and we get a relative displacement of the sensor.
@@ -286,7 +286,7 @@ For inference, we use the RGBD images taken with the iPad camera. Movement is de
 
 ![Inference: We move a patch over an RGBD image to recognize the object and it's pose.](../../figures/how-to-use-monty/patchon2dimage.gif#width=500px)
 
-This can be implemented using two custom classes:
+This can be implemented using two custom classes the [SaccadeOnImageEnvironment](https://github.com/thousandbrainsproject/tbp.monty/blob/4bc857580ae6ac015586af1a61b3e292a7827b6f/src/tbp/monty/frameworks/environments/two_d_data.py#L258) and [SaccadeOnImageDataLoader](https://github.com/thousandbrainsproject/tbp.monty/blob/4bc857580ae6ac015586af1a61b3e292a7827b6f/src/tbp/monty/frameworks/environments/embodied_data.py#L1014):
 1. `SaccadeOnImageEnvironment`:
    - Defines initialization of all basic variables in the `__init__(patch_size, data_path)` function.
    - Defines the `TwoDDataActionSpace` to move up, down, left, and right on the image by a given amount of pixels.
@@ -299,7 +299,7 @@ This can be implemented using two custom classes:
      - `get_3d_coordinates_from_pixel_indices(pixel_ids)` to get the 3D location from a pixel index
      - `get_image_patch(loc)` to extract a patch at a location in the image. 
   	These functions are all used internally within the `__init__`, `step`, and `get_state` functions (except for the `switch_to_object` function, which is called by the `SaccadeOnImageDataLoader`).
-1. `SaccadeOnImageDataLoader`:
+2. `SaccadeOnImageDataLoader`:
    - Defines initialization of basic variables such as episode and epoch counters in the `__init__` function.
    - Defines the `post_episode` function, which calls `cycle_object` to call the environment's `switch_to_object` function. Using the episode and epoch counters, it keeps track of which image needs to be shown next.
 
