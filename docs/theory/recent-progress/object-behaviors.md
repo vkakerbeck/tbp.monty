@@ -13,7 +13,8 @@ The world is both static and dynamic. Some features of the world have a fixed ar
 The Thousand Brains Theory (TBT) currently explains how an intelligent system learns the static structure of the world. In this document we describe how to extend the TBT to include behaviors. In the TBT, static objects are learned as a set of features at poses (location and orientation) in a reference frame. There is an assumption that the features are not changing or moving, therefore, the existing theory and implementation works well for representing static structure.
 
 The invention summarized here is that, to represent behaviors, we add a second reference frame. This second reference frame is used to represent behaviors. Static features are stored at locations in the first reference frame, and changing features are stored at locations in the second reference frame. Static structures are inferred in the first reference frame, and dynamic behaviors are inferred in the second reference frame. Because the two modeling systems are collocated (the same movement information is used to move through the two reference frames) but independent, behaviors learned by observing one object can be recognized on new objects. This method is very general and applies to every type of behavior we observe in the world.  
- ![][image1]
+
+![Behavior models (purple) use an analogous mechanism to morphology models (green). The main difference is that they store changes instead of static features and have a temporal dimension.](../../figures/theory/behavior_models.png#width=300px)
 
 ## Implementation \- Illustrated on the Example of the Neocortex
 
