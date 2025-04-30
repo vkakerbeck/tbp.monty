@@ -139,4 +139,5 @@
 # theory: Neuroscience Theory
 - [theory-overview](theory/theory-overview.md)
 - [recent-progress](theory/recent-progress.md)
+  - [object-behaviors](theory/recent-progress/object-behaviors.md)
 <!-- vale on -->
