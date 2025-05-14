@@ -58,6 +58,21 @@ from tbp.monty.simulators.habitat.configs import (
     SurfaceViewFinderMountHabitatDatasetArgs,
 )
 
+# A set of objects that can be obtained internationally and used to test Monty's
+# performance on those physical objects.
+TBP_ROBOT_LAB_OBJECTS = [
+    "numenta_mug",
+    "montys_brain",
+    "montys_heart",
+    "ramen_pack",
+    "hot_sauce",
+    "harissa_oil",
+    "tomato_soup_can",
+    "mustard_bottle",
+    "tuna_fish_can",
+    "potted_meat_can",
+]
+
 # FOR SUPERVISED PRETRAINING: 14 unique rotations that give good views of the object.
 train_rotations_all = get_cube_face_and_corner_views_rotations()
 
@@ -251,6 +266,25 @@ only_surf_agent_training_numenta_lab_obj.update(
     ),
 )
 
+tbp_robot_lab_dataset_args = SurfaceViewFinderMontyWorldMountHabitatDatasetArgs()
+tbp_robot_lab_dataset_args.env_init_args["data_path"] = os.path.join(
+    os.environ["MONTY_DATA"], "tbp_robot_lab"
+)
+only_surf_agent_training_tbp_robot_lab_obj = copy.deepcopy(
+    only_surf_agent_training_10obj
+)
+only_surf_agent_training_tbp_robot_lab_obj.update(
+    logging_config=PretrainLoggingConfig(
+        output_dir=fe_pretrain_dir,
+        run_name="surf_agent_1lm_tbp_robot_lab_obj",
+    ),
+    dataset_args=tbp_robot_lab_dataset_args,
+    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(0, 10, object_list=TBP_ROBOT_LAB_OBJECTS),
+        object_init_sampler=PredefinedObjectInitializer(rotations=train_rotations_all),
+    ),
+)
+
 # TODO: these don't use the graph_delta_thresholds of the one LM experiments. Do we
 # want to update that?
 supervised_pre_training_5lms = copy.deepcopy(supervised_pre_training_base)
@@ -285,5 +319,6 @@ experiments = PretrainingExperiments(
     only_surf_agent_training_10simobj=only_surf_agent_training_10simobj,
     only_surf_agent_training_allobj=only_surf_agent_training_allobj,
     only_surf_agent_training_numenta_lab_obj=only_surf_agent_training_numenta_lab_obj,
+    only_surf_agent_training_tbp_robot_lab_obj=only_surf_agent_training_tbp_robot_lab_obj,
 )
 CONFIGS = asdict(experiments)

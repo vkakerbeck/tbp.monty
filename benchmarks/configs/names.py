@@ -44,6 +44,8 @@ NAMES.extend(field.name for field in fields(MontyWorldExperiments))
 @dataclass
 class MontyWorldHabitatExperiments:
     randrot_noise_sim_on_scan_monty_world: dict
+    randrot_noise_dist_sim_on_scan_tbp_robot_lab_obj: dict
+    randrot_noise_surf_sim_on_scan_tbp_robot_lab_obj: dict
 
 
 NAMES.extend(field.name for field in fields(MontyWorldHabitatExperiments))
@@ -58,6 +60,7 @@ class PretrainingExperiments:
     only_surf_agent_training_10simobj: dict
     only_surf_agent_training_allobj: dict
     only_surf_agent_training_numenta_lab_obj: dict
+    only_surf_agent_training_tbp_robot_lab_obj: dict
 
 
 NAMES.extend(field.name for field in fields(PretrainingExperiments))
