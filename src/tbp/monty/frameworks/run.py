@@ -105,7 +105,6 @@ def main(all_configs, experiments=None):
         # Print config without running experiment
         if cmd_args is not None:
             if cmd_args.print_config:
-                print_config(exp_config)
                 continue
 
         os.makedirs(exp_config["logging_config"]["output_dir"], exist_ok=True)
