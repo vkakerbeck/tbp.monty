@@ -374,7 +374,8 @@ class GridObjectModel(GraphObjectModel):
         (
             feature_array,
             observation_feature_mapping,
-        ) = self._extract_feature_array(features)
+        ) = self._extract_feature_array(features)        
+        
         # TODO: part of init method?
         logging.info(f"building graph from {locations.shape[0]} observations")
         self._initialize_and_fill_grid(
@@ -393,6 +394,11 @@ class GridObjectModel(GraphObjectModel):
         object_location_rel_body,
         object_rotation,
     ):
+        
+        #location_rel_model = [0.09642857, 0, 0.04821429] # by skj
+        #object_location_rel_body = [0.09642857, 0, 0.05357143] # by skj
+        #print(object_location_rel_body) # by skj
+        
         """Add new locations and features into grids and rebuild graph."""
         rf_locations, rf_features = apply_rf_transform_to_points(
             locations=locations,
@@ -401,10 +407,14 @@ class GridObjectModel(GraphObjectModel):
             object_location_rel_body=object_location_rel_body,
             object_rotation=object_rotation,
         )
+        #print(locations)  # by skj
+        #print(rf_locations) # by skj
+        
         (
             feature_array,
             observation_feature_mapping,
         ) = self._extract_feature_array(rf_features)
+        
         logging.info(f"adding {locations.shape[0]} observations")
         self._update_grids(
             locations=rf_locations,
@@ -511,8 +521,8 @@ class GridObjectModel(GraphObjectModel):
         """Calculate and set location_scale_factor and location_offset."""
         # scale locations to integer mappings
         voxel_size = self._max_size / self._num_voxels_per_dim
-        # Find multiplier that turns voxel locations into round integer indices
-        self._location_scale_factor = 1 / voxel_size
+        # Find multiplier that turns voxel locations into round integer indices        
+        self._location_scale_factor = 1 / voxel_size        
         start_index = np.array(
             np.round(start_location * self._location_scale_factor), dtype=int
         )
@@ -559,8 +569,11 @@ class GridObjectModel(GraphObjectModel):
             (location_grid_ids >= 0) & (location_grid_ids < self._num_voxels_per_dim),
             axis=1,
         )
-        percent_in_bounds = sum(locations_in_bounds) / len(locations_in_bounds)
-        if percent_in_bounds < 0.9:
+        #print(f"location_grid_ids is {location_grid_ids}") # skj
+        #print(f"locations_in_bounds is {locations_in_bounds}") # skj
+        percent_in_bounds = sum(locations_in_bounds) / len(locations_in_bounds)        
+        
+        if percent_in_bounds < 0.9:        
             logging.info(
                 "Too many observations outside of grid "
                 f"({np.round(percent_in_bounds * 100, 2)}%). Skipping update of grids."
@@ -857,6 +870,9 @@ class GridObjectModel(GraphObjectModel):
         Returns:
             Grid ids for the locations.
         """
+        #print(f"self._location_scale_factor is {self._location_scale_factor}") # skj
+        #print(f"self._location_offset is {self._location_offset}") # skj
+        #print(locations) # skj
         location_grid_ids = np.array(
             np.round(locations * self._location_scale_factor) + self._location_offset,
             dtype=int,

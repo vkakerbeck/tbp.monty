@@ -287,3 +287,4 @@ experiments = PretrainingExperiments(
     only_surf_agent_training_numenta_lab_obj=only_surf_agent_training_numenta_lab_obj,
 )
 CONFIGS = asdict(experiments)
+

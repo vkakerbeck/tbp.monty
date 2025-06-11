@@ -267,12 +267,12 @@ class EvidenceGraphLM(GraphLM):
         feature_evidence_increment=1,
         max_nneighbors=3,
         initial_possible_poses="informed",
-        evidence_update_threshold="all",
-        vote_evidence_threshold=0.8,
+        evidence_update_threshold="all", 
+        vote_evidence_threshold=0.8, # by skj. default = 0.8
         past_weight=1,
         present_weight=1,
         vote_weight=1,
-        object_evidence_threshold=1,
+        object_evidence_threshold=1, # by skj. default = 1
         x_percent_threshold=10,
         path_similarity_threshold=0.1,
         pose_similarity_threshold=0.35,
@@ -1014,7 +1014,7 @@ class EvidenceGraphLM(GraphLM):
         rotated_displacements = channel_possible_poses.dot(displacement[input_channel])
         search_locations = channel_possible_locations + rotated_displacements
 
-        # Get indices of hypotheses with evidence > threshold
+        # Get indices of hypotheses with evidence > threshold        
         hyp_ids_to_test = np.where(channel_hypotheses_evidence >= evidence_threshold)[0]
         num_hypotheses_to_test = hyp_ids_to_test.shape[0]
         if num_hypotheses_to_test > 0:
@@ -1215,11 +1215,12 @@ class EvidenceGraphLM(GraphLM):
         logging.debug(
             f"Calculating evidence for {graph_id} using input from {input_channel}"
         )
-
+        
         pose_transformed_features = rotate_pose_dependent_features(
             features[input_channel],
             channel_possible_poses,
         )
+               
         # Get max_nneighbors nearest nodes to search locations.
         nearest_node_ids = self.get_graph(
             graph_id, input_channel
@@ -1234,16 +1235,19 @@ class EvidenceGraphLM(GraphLM):
             graph_id, input_channel
         )[nearest_node_ids]
         max_abs_curvature = get_relevant_curvature(features[input_channel])
+        
         custom_nearest_node_dists = get_custom_distances(
             nearest_node_locs,
             search_locations,
             pose_transformed_features["pose_vectors"][:, 0],
             max_abs_curvature,
         )
+        
         # shape=(H, K)
         node_distance_weights = self._get_node_distance_weights(
             custom_nearest_node_dists
         )
+        
         # Get IDs where custom_nearest_node_dists > max_match_distance
         mask = node_distance_weights <= 0
 
@@ -1960,6 +1964,7 @@ class EvidenceGraphMemory(GraphMemory):
             max_size=self.max_graph_size,
             num_voxels_per_dim=self.num_model_voxels_per_dim,
         )
+
         try:
             model.build_model(locations=locations, features=features)
 

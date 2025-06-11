@@ -822,3 +822,382 @@ def load_motor(fn):
 def space_motor_to_img(pt):
     pt[:, 1] = -pt[:, 1]
     return pt
+
+
+class TwoDimensionSaccadeOnImageEnvironment(EmbodiedEnvironment): # by skj for 2D image evaluation
+    """Environment for moving over a 2D image with depth channel.
+
+    Images should be stored in .png format for rgb and .data format for depth.
+    """
+
+    def __init__(self, patch_size=10, data_path=None):
+        """Initialize environment.
+
+        Args:
+            patch_size: height and width of patch in pixels, defaults to 64
+            data_path: path to the image dataset. If None its set to
+                ~/tbp/data/worldimages/labeled_scenes/
+        """
+        self.patch_size = patch_size
+        # Images are always presented upright so patch and agent rotation is always
+        # the same. Since we don't use this, value doesn't matter much.
+        self.rotation = qt.from_rotation_vector([np.pi / 2, 0.0, 0.0])
+        self.state = 0
+        self.data_path = data_path
+        if self.data_path is None:
+            self.data_path = os.path.join(os.environ["MONTY_DATA"], "mnist/samples/trainingSample")
+        self.number_names = [
+            a for a in os.listdir(self.data_path) if a[0] != "."
+        ]        
+
+        self.current_number = self.number_names[0]        
+        self.number_version = 1
+
+        self.current_image,self.current_loc = self.load_new_number_data()     
+           
+        self.move_area = self.get_move_area()
+        
+        # Get 3D scene point cloud array from depth image
+        self.current_scene_point_cloud =0
+        self.current_sf_scene_point_cloud =0
+         
+        
+        # Just for compatibility. TODO: find cleaner way to do this.
+        self._agents = [
+            type(
+                "FakeAgent",
+                (object,),
+                {"action_space_type": "distant_agent_no_translation"},
+            )()
+        ]
+
+        # Instantiate once and reuse when checking action name in step()
+        # TODO Use 2D-specific actions instead of overloading? Habitat actions
+        self._valid_actions = ["look_up", "look_down", "turn_left", "turn_right"]
+
+        self.voxel_scale = 1#0.15/28 # by skj MNIST : 28x28. all location should be within 0.3M range        
+    @property
+    def action_space(self):
+        # TODO: move this to other action space definitions and clean up.
+        return TwoDDataActionSpace(
+            [
+                "look_up",
+                "look_down",
+                "turn_left",
+                "turn_right",
+            ]
+        )
+
+    def add_object(self, *args, **kwargs):
+        # TODO The NotImplementedError highlights an issue with the EmbodiedEnvironment
+        #      interface and how the class hierarchy is defined and used.
+        raise NotImplementedError(
+            "SaccadeOnImageEnvironment does not support adding objects"
+        )
+
+    def step(self, action: Action):
+        """Retrieve the next observation.
+
+        Args:
+            action: moving up, down, left or right from current location.
+            amount: Amount of pixels to move at once.
+
+        Returns:
+            observation (dict).
+        """     
+        #print(self.step_num)   
+    
+        amount = 1        
+        self.step_num += amount
+        
+        query_loc = self.get_next_loc(action.name, amount)        
+        self.current_loc = query_loc  
+                
+        patch = self.get_image_patch(
+            self.current_image, self.current_loc, self.patch_size
+        )                
+        #print(action.name)
+
+        # patch : (H, W) uint8, 0=배경·>0=글자        
+        h, w = patch.shape               
+        
+        # 패치 왼쪽-위 모서리의 전역 위치
+        top  = self.current_loc[0] - self.patch_size // 2
+        left = self.current_loc[1] - self.patch_size // 2
+
+        yy, xx = np.mgrid[0:h, 0:w]        # 0‥h-1, 0‥w-1
+        yy = yy + top                      # 행(row) → 전역 y        
+        xx = xx + left                     # 열(col) → 전역 x        
+        xx = xx * self.voxel_scale 
+        yy = yy * self.voxel_scale 
+
+        zz = np.zeros_like(xx, dtype=np.float32)        
+        #print(yy)
+        # 글자(픽셀 값 > 0)를 semantic_id=1 로 표시
+        sem_id = (patch > 20).astype(np.float32)
+        semantic_3d = np.stack([xx, zz, yy, sem_id], axis=-1) \
+                .astype(np.float32) \
+                .reshape(-1, 4)   
+                
+        #print(semantic_3d)
+        #depth = 1.2 - gaussian_filter(np.array(~patch, dtype=float), sigma=0.5)
+        #depth = np.ones((patch.shape[0],patch.shape[1]))
+
+        sensor_frame_data = semantic_3d.copy()
+
+        # ── 4) 깊이 맵 : 0.5(전경) / 1.0(배경) ───────────────────────
+        depth = np.where(patch > 100, 0.2, 1.0).astype(np.float32)
+        #print(depth)
+        # ── 5) world_camera : 단순 평면이므로 단위 행렬 ───────────────
+        world_camera = np.eye(4, dtype=np.float32)
+        #print(self.current_loc)
+        
+        obs = {
+            "agent_id_0": {
+                "patch": {
+                    "depth": depth,
+                    "semantic_3d": semantic_3d,
+                    "sensor_frame_data": sensor_frame_data,
+                    "world_camera": world_camera,
+                    "rgba": np.stack([patch, patch, patch], axis=2),
+                    "pixel_loc": self.current_loc,
+                },
+                "view_finder": {
+                    "rgba": self.current_image,
+                    "semantic": np.array(patch, dtype=int),
+                },
+            }
+        }        
+        return obs
+
+    def get_state(self):
+        """Get agent state.
+
+        Returns:
+            The agent state.
+        """
+        loc = self.current_loc
+        # Provide LM w/ sensor position in 3D, body-centric coordinates
+        # instead of pixel indices
+        sensor_position =  np.array([loc[0],0 , loc[1]])        
+        
+        # NOTE: This is super hacky and only works for 1 agent with 1 sensor
+        state = {
+            "agent_id_0": {
+                "sensors": {
+                    "patch" + ".depth": {
+                        "rotation": self.rotation,
+                        "position": sensor_position,
+                    },
+                    "patch" + ".rgba": {
+                        "rotation": self.rotation,
+                        "position": sensor_position,
+                    },
+                },
+                "rotation": self.rotation,
+                "position": np.array([0, 0, 0]),
+            }
+        }
+        
+        return state
+
+    def switch_to_object(self, number_id, version_id):
+        self.current_number = self.number_names[number_id]        
+        self.number_version = version_id        
+        self.current_image, self.locations = self.load_new_number_data()
+        self.current_loc = self.locations
+
+    def remove_all_objects(self):
+        # TODO The NotImplementedError highlights an issue with the EmbodiedEnvironment
+        #      interface and how the class hierarchy is defined and used.
+        raise NotImplementedError(
+            "SaccadeOnImageEnvironment does not support removing all objects"
+        )
+
+    def reset(self):
+        self.step_num = 0               
+        patch = self.get_image_patch(
+            self.current_image, self.current_loc, self.patch_size
+        )                
+        #print(action.name)
+
+        # patch : (H, W) uint8, 0=배경·>0=글자        
+        h, w = patch.shape               
+        
+        # 패치 왼쪽-위 모서리의 전역 위치
+        top  = self.current_loc[0] - self.patch_size // 2
+        left = self.current_loc[1] - self.patch_size // 2
+
+        yy, xx = np.mgrid[0:h, 0:w]        # 0‥h-1, 0‥w-1
+        yy = yy + top                      # 행(row) → 전역 y        
+        xx = xx + left                     # 열(col) → 전역 x        
+        xx = xx * self.voxel_scale 
+        yy = yy * self.voxel_scale 
+
+        zz = np.zeros_like(xx, dtype=np.float32)        
+        #print(yy)
+        # 글자(픽셀 값 > 0)를 semantic_id=1 로 표시
+        sem_id = (patch > 100).astype(np.float32)
+        semantic_3d = np.stack([xx, zz, yy, sem_id], axis=-1) \
+                .astype(np.float32) \
+                .reshape(-1, 4)   
+                
+        #print(semantic_3d)
+        #depth = 1.2 - gaussian_filter(np.array(~patch, dtype=float), sigma=0.5)
+        #depth = np.ones((patch.shape[0],patch.shape[1]))
+
+        sensor_frame_data = semantic_3d.copy()
+
+        # ── 4) 깊이 맵 : 0.5(전경) / 1.0(배경) ───────────────────────
+        depth = np.where(patch > 100, 0.2, 1.0).astype(np.float32)
+        #print(depth)
+        # ── 5) world_camera : 단순 평면이므로 단위 행렬 ───────────────
+        world_camera = np.eye(4, dtype=np.float32)
+        #print(self.current_loc)
+        
+        obs = {
+            "agent_id_0": {
+                "patch": {
+                    "depth": depth,
+                    "semantic_3d": semantic_3d,
+                    "sensor_frame_data": sensor_frame_data,
+                    "world_camera": world_camera,
+                    "rgba": np.stack([patch, patch, patch], axis=2),
+                    "pixel_loc": self.current_loc,
+                },
+                "view_finder": {
+                    "rgba": self.current_image,
+                    "semantic": np.array(patch, dtype=int),
+                },
+            }
+        }    
+        return obs
+
+    def load_new_number_data(self):
+        img_char_dir = os.path.join(
+            self.data_path,            
+            self.current_number,
+        )
+        char_img_names = os.listdir(img_char_dir)[0].split("_")[0]
+        char_dir = "/" + char_img_names + "_" + str(self.number_version).zfill(1)         
+        current_image = load_img_skj(img_char_dir + char_dir + ".jpg")        
+        logging.info(f"Finished loading new image from {img_char_dir + char_dir}")
+        
+        img_shape = current_image.shape
+        start_location = [img_shape[0] // 2, img_shape[1] // 2]
+        
+        return current_image, start_location
+    
+    def load_depth_data(self, depth_path, height, width):
+        """Load depth image from .data file.
+
+        Returns:
+            The depth image.
+        """
+        depth = np.fromfile(depth_path, np.float32).reshape(height, width)
+        return depth
+
+    def process_depth_data(self, depth):
+        """Process depth data by reshaping, clipping and flipping.
+
+        Returns:
+            The processed depth image.
+        """
+        # Set nan values to 10m
+        depth[np.isnan(depth)] = 10
+
+        depth_clipped = depth.copy()
+        # Anything thats further away than 40cm is clipped
+        # TODO: make this a hyperparameter?
+        depth_clipped[depth > 0.4] = 10
+        # flipping image makes visualization more intuitive. If we want to have this
+        # in here we also have to comment in the flipping in the rgb image and probably
+        # flip left-right. It may be better to flip the image in the app, depending on
+        # sensor orientation (TODO).
+        current_depth_image = depth_clipped  # np.flipud(depth_clipped)
+        return current_depth_image
+
+    def load_rgb_data(self, rgb_path):
+        """Load RGB image and put into np array.
+
+        Returns:
+            The rgb image.
+        """
+        current_rgb_image = np.array(
+            PIL.Image.open(rgb_path)  # .transpose(PIL.Image.FLIP_TOP_BOTTOM)
+        )
+        return current_rgb_image
+
+    def get_move_area(self):
+        """Calculate area in which patch can move on the image.
+
+        Returns:
+            The move area.
+        """
+        obs_shape = 0
+        half_patch_size = self.patch_size // 2 + 1
+        move_area = np.array(
+            [
+                [half_patch_size, 28-half_patch_size], # 28 is image size
+                [half_patch_size, 28-half_patch_size],
+            ]
+        )
+        return move_area
+
+    def get_next_loc(self, action_name, amount):
+        """Calculate next location in pixel space given the current action.
+
+        Returns:
+            The next location in pixel space.
+        """           
+        new_loc = np.array(self.current_loc)        
+        if action_name == "look_up":
+            new_loc[0] -= amount
+        elif action_name == "look_down":
+            new_loc[0] += amount
+        elif action_name == "turn_left":
+            new_loc[1] -= amount
+        elif action_name == "turn_right":
+            new_loc[1] += amount
+        else:
+            logging.error(f"{action_name} is not a valid action, not moving.")
+        
+        # Make sure location stays within move area
+        if new_loc[0] < self.move_area[0][0]:
+            new_loc[0] = self.move_area[0][0]
+        elif new_loc[0] > self.move_area[0][1]:
+            new_loc[0] = self.move_area[0][1]
+        if new_loc[1] < self.move_area[1][0]:
+            new_loc[1] = self.move_area[1][0]
+        elif new_loc[1] > self.move_area[1][1]:
+            new_loc[1] = self.move_area[1][1]
+                
+        return new_loc
+
+    def get_image_patch(self, img, loc,patch_size):
+        """Extract 2D image patch from a location in pixel space.
+
+        Returns:
+            depth_patch: The depth patch.
+            rgb_patch: The rgb patch.
+            depth3d_patch: The depth3d patch.
+            sensor_frame_patch: The sensor frame patch.
+        """
+        loc = np.array(loc, dtype=int)
+        x_start = loc[0] - self.patch_size // 2
+        x_stop = loc[0] + self.patch_size // 2
+        y_start = loc[1] - self.patch_size // 2
+        y_stop = loc[1] + self.patch_size // 2
+        patch = img[x_start:x_stop, y_start:y_stop]
+        #print(x_start,x_stop,y_start,y_stop)
+        #print(patch)
+        return patch
+
+    def close(self):
+        self._current_state = None
+
+
+def load_img_skj(fn):
+    img = plt.imread(fn) 
+    #img = np.array(img, dtype=bool)
+    return img

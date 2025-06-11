@@ -273,6 +273,11 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
                 # performance. That makes it possible for some lms to have no match
                 # but still have an overall performance of correct (or other).
                 episode_performance = p
+        
+        if 'episode_performance' in locals(): # by skj
+            pass
+        else:
+            episode_performance = "no_match" 
 
         for p in self.performance_options:
             stats[f"episode_{p}"] = int(p == episode_performance)

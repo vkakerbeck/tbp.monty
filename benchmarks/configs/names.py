@@ -102,6 +102,12 @@ NAMES.extend(field.name for field in fields(UnsupervisedInferenceExperiments))
 @dataclass
 class MyExperiments:
     # Add your experiment names here
+    omniglot_training : dict
+    omniglot_inference : dict
+    surf_agent_2obj_unsupervised : dict
+    mnist_training : dict
+    mnist_inference : dict
+    mnist_unsuper : dict
     pass
 
 

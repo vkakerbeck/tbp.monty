@@ -1,0 +1,30 @@
+INFO:root:Logger initialized at 2025-06-09 14:22:47.698060
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Bengali/character01/0132_11
+INFO:root:Running a simulation to model object: Bengali_1
+WARNING:root:Output file omniglot/log/omniglot_training/pretrained/train_stats.csv already exists. This file will be moved to omniglot/log/omniglot_training/pretrained/train_stats_old.csv
+INFO:root:
+---Updating memory of learning_module_0---
+INFO:root:Bengali_1 not in memory ([])
+INFO:root:Adding a new graph to memory.
+INFO:root:init object model with id Bengali_1
+INFO:root:built graph Data(
+  x=[228, 17],
+  pos=[228, 3],
+  norm=[228, 3],
+  feature_mapping={
+    node_ids=[2],
+    pose_vectors=[2],
+    pose_fully_defined=[2],
+    on_object=[2],
+    rgba=[2],
+    principal_curvatures_log=[2]
+  },
+  edge_index=[2, 1368],
+  edge_attr=[1368, 3]
+)
+INFO:root:Added new graph with id Bengali_1 to memory.
+INFO:root:
+
+Going from 0 to 1 of 6
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Bengali/character01/0132_02
+INFO:root:Running a simulation to model object: Bengali_1

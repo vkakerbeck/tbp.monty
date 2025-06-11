@@ -24,6 +24,7 @@ from tbp.monty.frameworks.environments.two_d_data import (
     OmniglotEnvironment,
     SaccadeOnImageEnvironment,
     SaccadeOnImageFromStreamEnvironment,
+    TwoDimensionSaccadeOnImageEnvironment,
 )
 from tbp.monty.frameworks.environments.ycb import SHUFFLED_YCB_OBJECTS
 from tbp.monty.frameworks.utils.transform_utils import scipy_to_numpy_quat
@@ -371,9 +372,165 @@ def get_env_dataloader_per_object_by_idx(start, stop, list_of_indices=None):
 class OmniglotDataloaderArgs:
     """Set basic debug args to load 3 characters of 2 alphabets in 1 version."""
 
-    alphabets: List = field(default_factory=lambda: [0, 0, 0, 1, 1, 1])
-    characters: List = field(default_factory=lambda: [1, 2, 3, 1, 2, 3])
-    versions: List = field(default_factory=lambda: [1, 1, 1, 1, 1, 1])
+    # alphabets: List = field(default_factory=lambda: [0, 0, 0, 1, 1, 1])
+    # characters: List = field(default_factory=lambda: [1, 2, 3, 1, 2, 3])
+    # versions: List = field(default_factory=lambda: [1, 1, 1, 1, 1, 1])
+    alphabets: List = field(default_factory=lambda: [0, 0, 0, 0,0,0])
+    characters: List = field(default_factory=lambda: [1, 1, 1, 1, 1, 1])
+    versions: List = field(default_factory=lambda: [1, 2, 3, 4, 5, 6])
+
+
+
+@dataclass
+class MnistDatasetArgs: # by skj
+    env_init_func: Callable = field(default=TwoDimensionSaccadeOnImageEnvironment)
+    env_init_args: Dict = field(default_factory=lambda: dict())
+    transform: Union[Callable, list, None] = None
+
+    # def __post_init__(self):
+    #     self.transform = [
+    #         DepthTo3DLocations(
+    #             agent_id="agent_id_0",
+    #             sensor_ids=["patch"],
+    #             resolutions=np.array([[10, 10]]),
+    #             world_coord=True,
+    #             zooms=1,
+    #             get_all_points=True,
+    #             use_semantic_sensor=False,
+    #             depth_clip_sensors=(0,),
+    #             clip_value=1.1,                
+    #         ),
+    #     ]
+
+@dataclass
+class MnistDataloaderArgs: # by skj
+
+    #alphabets: List = field(default_factory=lambda: [0, 0, 0, 1, 1, 1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1])
+    #characters: List = field(default_factory=lambda: [1, 2, 3, 1, 2, 3,1,2,3,1,2,3,4,5,6,1,2,3])
+    #versions: List = field(default_factory=lambda: [1, 1, 1, 1, 1, 1,2,2,2,2,2,2,3,3,3,3,3,3,5,5,5,5,5,5])
+    
+    #numbers: List = field(default_factory=lambda: [0,1,2,3,4,5,6,7,8,9])
+    #versions: List = field(default_factory=lambda: [0,0,0,0,0,0,0,0,0,0])
+    
+    numbers: List = field(default_factory=lambda: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+    versions: List = field(default_factory=lambda: [5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5])
+
+@dataclass
+class MnistEvalDataloaderArgs: # by skj
+    """Set basic debug args to load 3 characters of 2 alphabets in 1 version."""
+
+    #alphabets: List = field(default_factory=lambda: [0, 0, 0, 1, 1, 1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,1,1,1])
+    #characters: List = field(default_factory=lambda: [1, 2, 3, 1, 2, 3,1,2,3,1,2,3,4,5,6,1,2,3])
+    #versions: List = field(default_factory=lambda: [1, 1, 1, 1, 1, 1,2,2,2,2,2,2,3,3,3,3,3,3,5,5,5,5,5,5])
+    
+    # numbers: List = field(default_factory=lambda: [0, 1, 2, 3, 4, 5])
+    # versions: List = field(default_factory=lambda: [6, 7, 8, 9, 10, 11])
+
+    numbers: List = field(default_factory=lambda: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                                    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+    versions: List = field(default_factory=lambda: [5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5])
+
+def get_mnist_train_dataloader(
+    start_at_version, number_ids, num_versions=None, data_path=None
+):
+    
+    if data_path is None:
+        data_path = os.path.join(os.environ["MONTY_DATA"], "mnist/samples/trainingSample")
+    number_names = [
+        a for a in os.listdir(data_path) if a[0] != "."
+    ]        
+
+    all_number_idx = []    
+    all_version_idx = []
+    for a_idx in number_ids:
+        number = number_names[a_idx]        
+        
+        if num_versions is None:
+            versions_of_char = list(
+                os.listdir(
+                    data_path + "/" + number
+                )
+            )
+            num_versions = len(versions_of_char) - start_at_version
+
+        for v_idx in range(num_versions + start_at_version):
+            if v_idx >= start_at_version:
+                all_number_idx.append(a_idx)
+                all_version_idx.append(v_idx) # skj delete '+ 1' because version starts from 0
+
+
+    return MnistDataloaderArgs(
+        numbers=all_number_idx,
+        versions=all_version_idx,
+    )
+
+
+def get_mnist_eval_dataloader(
+    start_at_version, number_ids, num_versions=None, data_path=None
+):
+    if data_path is None:
+        data_path = os.path.join(os.environ["MONTY_DATA"], "mnist/samples/trainingSample")
+    number_names = [
+        a for a in os.listdir(data_path) if a[0] != "."
+    ]        
+
+    all_number_idx = []    
+    all_version_idx = []
+    for a_idx in number_ids:
+        number = number_names[a_idx]        
+        
+        if num_versions is None:
+            versions_of_char = list(
+                os.listdir(
+                    data_path + "/" + number
+                )
+            )
+            num_versions = len(versions_of_char) - start_at_version
+
+        for v_idx in range(num_versions + start_at_version):
+            if v_idx >= start_at_version:
+                all_number_idx.append(a_idx)
+                all_version_idx.append(v_idx) # skj delete '+ 1' because version starts from 0
+
+    return MnistEvalDataloaderArgs(
+        numbers=all_number_idx,
+        versions=all_version_idx,
+    )
+
+def get_mnist_test_dataloader(
+    start_at_version, number_ids, num_versions=None, data_path=None
+):
+    if data_path is None:
+        data_path = os.path.join(os.environ["MONTY_DATA"], "mnist/test/testSet")
+    number_names = [
+        a for a in os.listdir(data_path) if a[0] != "."
+    ]        
+
+    all_number_idx = []
+    all_version_idx = []
+    for a_idx in number_ids:
+        number = number_names[a_idx]        
+        
+        if num_versions is None:
+            versions_of_char = list(
+                os.listdir(
+                    data_path + "/" + number
+                )
+            )
+            num_versions = len(versions_of_char) - start_at_version
+
+        for v_idx in range(num_versions + start_at_version):
+            if v_idx >= start_at_version:
+                all_number_idx.append(a_idx)
+                all_version_idx.append(v_idx) # skj delete '+ 1' because version starts from 0
+
+    return MnistEvalDataloaderArgs(
+        numbers=all_number_idx,
+        versions=all_version_idx,
+    )
 
 
 @dataclass

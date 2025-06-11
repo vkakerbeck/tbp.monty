@@ -1,0 +1,10 @@
+INFO:root:Logger initialized at 2025-06-10 13:24:12.314370
+WARNING:root:You are setting the monty logging level to DETAILED, but all yourhandlers are BASIC. Consider setting the level to BASIC, or adding aDETAILED handler
+INFO:root:New primary target: {'euler_rotation': array([280.6887601 , 214.86605686, 160.49979103]),
+ 'object': 'mug',
+ 'position': [0.0, 1.5, 0.0],
+ 'quat_rotation': array([ 0.69154307, -0.31282258,  0.12421052,  0.63912594]),
+ 'rotation': quaternion(0.639125937063787, 0.691543069672575, -0.312822578184853, 0.124210522653882),
+ 'scale': [1.0, 1.0, 1.0],
+ 'semantic_id': 1}
+INFO:root:Running a simulation to model object: mug

@@ -463,7 +463,7 @@ class HabitatSim(HabitatActuator):
         Raises:
             ValueError: If the action name is invalid
         """
-        action_name = self.action_name(action)
+        action_name = self.action_name(action)            
         if action_name not in self._action_space:
             raise ValueError(f"Invalid action name: {action_name}")
 

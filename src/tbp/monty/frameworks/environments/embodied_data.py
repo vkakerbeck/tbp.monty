@@ -1087,3 +1087,78 @@ class SaccadeOnImageFromStreamDataLoader(SaccadeOnImageDataLoader):
             "position": np.array([0, 0, 0]),
             "scale": [1.0, 1.0, 1.0],
         }
+
+        
+class MnistDataLoader(EnvironmentDataLoaderPerObject): # by skj
+    """Dataloader for Omniglot dataset."""
+
+    def __init__(
+        self,
+        numbers,
+        versions,
+        dataset,
+        motor_system,
+        *args,
+        **kwargs,
+    ):
+        
+        """Initialize dataloader."""
+        assert isinstance(dataset, EnvironmentDataset)
+        assert callable(motor_system)
+        self.dataset = dataset
+        self.motor_system = motor_system
+        self._observation, self.motor_system.state = self.dataset.reset()
+        self._action = None
+        self._amount = None
+        self._counter = 0
+
+        self.numbers = numbers
+        self.versions = versions
+        self.current_object = 0
+        self.n_objects =  len(numbers)
+        self.episodes = 0
+        self.epochs = 0
+        self.primary_target = None
+        self.object_names = [
+            str(self.dataset.env.number_names[numbers[i]])
+            + "_"
+            + str(self.numbers[i])
+            for i in range(self.n_objects)
+        ]
+
+    def post_episode(self):
+        self.motor_system.post_episode()
+        self.cycle_object()
+        self.episodes += 1
+
+    def post_epoch(self):
+        self.epochs += 1
+
+    def cycle_object(self):
+        """Switch to the next character image."""
+        next_object = (self.current_object + 1) % self.n_objects
+        logging.info(
+            f"\n\nGoing from {self.current_object} to {next_object} of {self.n_objects}"
+        )
+        self.change_object_by_idx(next_object)
+
+    def change_object_by_idx(self, idx):
+        """Update the object in the scene given the idx of it in the object params.
+
+        Args:
+            idx: Index of the new object and ints parameters in object params
+        """
+        assert idx <= self.n_objects, "idx must be <= self.n_objects"
+
+        self.dataset.env.switch_to_object(
+            self.numbers[idx], self.versions[idx]
+        )
+        self.current_object = idx
+        self.primary_target = {
+            "object": self.object_names[idx],
+            "rotation": np.quaternion(0, 0, 0, 1),
+            "euler_rotation": np.array([0, 0, 0]),
+            "quat_rotation": [0, 0, 0, 1],
+            "position": np.array([0, 0, 0]),
+            "scale": [1.0, 1.0, 1.0],
+        }

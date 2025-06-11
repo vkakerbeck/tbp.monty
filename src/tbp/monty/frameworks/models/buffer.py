@@ -574,8 +574,8 @@ class FeatureAtLocationBuffer(BaseBuffer):
         Returns:
             The padded values.
         """
-        # create new np array filled with nans of size (current_step, new_val_len)
-        new_vals = np.empty((len(self) + 1, new_val_len)) * np.nan
+        # create new np array filled with nans of size (current_step, new_val_len)        
+        new_vals = np.empty((len(self) + 1, new_val_len)) * np.nan        
         # Replace nans with stored values for this feature.
         # existing_feat has shape (last_stored_step, attr_shape)
         new_vals[: existing_vals.shape[0], : existing_vals.shape[1]] = existing_vals

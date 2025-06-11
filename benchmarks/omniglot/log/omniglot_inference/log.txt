@@ -1,0 +1,375 @@
+INFO:root:Logger initialized at 2025-06-02 09:51:55.832037
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Bengali/character01/0132_01
+INFO:root:Running a simulation to model object: Bengali_1
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 1 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > 0.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > 0.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > 0.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > 0.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > 0.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > 0.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 2 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -1.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -1.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -1.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -1.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -1.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -1.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 3 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -2.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -2.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -2.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -2.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -2.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -2.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 4 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -3.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -3.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -3.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -3.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -3.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -3.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 5 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -4.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -4.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -4.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -4.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -4.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -4.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Setting terminal state of learning_module_0 to no_match
+INFO:root:Possible matches for LM 0: set()
+INFO:root:--- Global Matching Step 6 ---
+INFO:root:
+
+Going from 0 to 1 of 6
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Bengali/character02/0133_01
+INFO:root:Running a simulation to model object: Bengali_2
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 1 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > 0.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > 0.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > 0.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > 0.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > 0.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > 0.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 2 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -1.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -1.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -1.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -1.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -1.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -1.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 3 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -2.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -2.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -2.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -2.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -2.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -2.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Setting terminal state of learning_module_0 to no_match
+INFO:root:Possible matches for LM 0: set()
+INFO:root:--- Global Matching Step 4 ---
+INFO:root:
+
+Going from 1 to 2 of 6
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Bengali/character03/0134_01
+INFO:root:Running a simulation to model object: Bengali_3
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 1 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > 0.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > 0.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > 0.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > 0.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > 0.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > 0.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 2 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -1.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -1.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -1.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -1.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -1.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -1.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 3 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -2.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -2.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -2.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -2.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -2.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -2.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 4 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -3.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -3.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -3.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -3.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -3.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -3.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 5 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -4.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -4.0)
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -4.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -4.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -4.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -4.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Setting terminal state of learning_module_0 to no_match
+INFO:root:Possible matches for LM 0: set()
+INFO:root:--- Global Matching Step 6 ---
+INFO:root:
+
+Going from 2 to 3 of 6
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Inuktitut_(Canadian_Aboriginal_Syllabics)/character01/0540_01
+INFO:root:Running a simulation to model object: Inuktitut_(Canadian_Aboriginal_Syllabics)_1
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 1 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > 0.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > 0.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > 0.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > 0.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > 0.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > 0.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 2 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > 0.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > 0.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > 0.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > 0.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > 0.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > 0.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 3 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -1.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -1.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -1.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -1.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -1.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -1.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 4 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -2.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -2.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -2.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -2.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -2.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -2.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 5 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -3.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -3.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -3.0)
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -3.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -3.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -3.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 6 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -4.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -4.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -4.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -4.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -4.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -4.0)
+INFO:root:current most likely hypothesis: Bengali_3 with evidence 0.0
+INFO:root:Setting terminal state of learning_module_0 to no_match
+INFO:root:Possible matches for LM 0: set()
+INFO:root:--- Global Matching Step 7 ---
+INFO:root:
+
+Going from 3 to 4 of 6
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Inuktitut_(Canadian_Aboriginal_Syllabics)/character02/0541_01
+INFO:root:Running a simulation to model object: Inuktitut_(Canadian_Aboriginal_Syllabics)_2
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 1 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > 0.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > 0.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > 0.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > 0.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > 0.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > 0.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 2 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -1.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -1.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -1.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -1.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -1.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -1.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 3 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -2.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -2.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -2.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -2.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -2.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -2.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 4 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -3.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -3.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -3.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -3.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -3.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -3.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 5 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -4.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -4.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -4.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -4.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -4.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -4.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 6 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -5.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -5.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -5.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -5.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -5.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -5.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Setting terminal state of learning_module_0 to no_match
+INFO:root:Possible matches for LM 0: set()
+INFO:root:--- Global Matching Step 7 ---
+INFO:root:
+
+Going from 4 to 5 of 6
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Inuktitut_(Canadian_Aboriginal_Syllabics)/character03/0542_01
+INFO:root:Running a simulation to model object: Inuktitut_(Canadian_Aboriginal_Syllabics)_3
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 1 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > 0.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > 0.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > 0.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > 0.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > 0.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > 0.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 2 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > 0.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > 0.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > 0.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > 0.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > 0.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > 0.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 3 ---
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -1.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -1.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -1.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -1.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -1.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -1.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 4 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -2.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -2.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -2.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -2.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -2.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -2.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Possible matches for LM 0: {'Inuktitut_(Canadian_Aboriginal_Syllabics)_1', 'Bengali_3', 'Bengali_1', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_2', 'Bengali_2', 'Inuktitut_(Canadian_Aboriginal_Syllabics)_3'}
+INFO:root:--- Global Matching Step 5 ---
+INFO:root:learning_module_0 did not recognize an object yet.
+INFO:root:Sending input from ['patch'] to learning_module_0
+INFO:root:Testing 213 out of 213 hypotheses for Bengali_1 (evidence > -3.0)
+INFO:root:Testing 222 out of 222 hypotheses for Bengali_3 (evidence > -3.0)
+INFO:root:Testing 335 out of 335 hypotheses for Bengali_2 (evidence > -3.0)
+INFO:root:Testing 161 out of 161 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_1 (evidence > -3.0)
+INFO:root:Testing 114 out of 114 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_2 (evidence > -3.0)
+INFO:root:Testing 149 out of 149 hypotheses for Inuktitut_(Canadian_Aboriginal_Syllabics)_3 (evidence > -3.0)
+INFO:root:current most likely hypothesis: Bengali_1 with evidence 0.0
+INFO:root:Setting terminal state of learning_module_0 to no_match
+INFO:root:Possible matches for LM 0: set()
+INFO:root:--- Global Matching Step 6 ---
+INFO:root:
+
+Going from 5 to 0 of 6
+INFO:root:Finished loading new image from /home/skj/tbp/data/omniglot/python/images_background/Bengali/character01/0132_01
+INFO:root:saving model to omniglot/log/omniglot_inference/0
