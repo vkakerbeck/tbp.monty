@@ -435,8 +435,8 @@ mnist_unsuper = dict(
     experiment_class=MontyObjectRecognitionExperiment,
     experiment_args=ExperimentArgs(        
         
-        do_train=False,
-        do_eval=True,
+        do_train=True,
+        do_eval=False,
         n_train_epochs=3,
         n_eval_epochs=1,
         #max_train_steps=100,
@@ -446,7 +446,7 @@ mnist_unsuper = dict(
     #logging_config=LoggingConfig(),
     logging_config=CSVLoggingConfig(
             output_dir="mnist/log",
-            python_log_level="DEBUG",
+            python_log_level="INFO",
             #monty_handlers=[BasicCSVStatsHandler],                 
         ),
 
@@ -460,7 +460,7 @@ mnist_unsuper = dict(
                 learning_module_class=EvidenceGraphLM,
                 learning_module_args=dict(              
                     #x_percent_threshold=20, 
-                    max_match_distance=1,
+                    max_match_distance=0.0000001,
                     tolerances={
                         "patch": {
                             "principal_curvatures_log": np.ones(2),
@@ -474,7 +474,7 @@ mnist_unsuper = dict(
                         }
                     },
                     # We assume the letter is presented upright
-                    #initial_possible_poses=[[0, 0, 0]],
+                    initial_possible_poses=[[0, 0, 0]],
                 ),
             )
         ),

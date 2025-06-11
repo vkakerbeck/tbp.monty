@@ -875,7 +875,7 @@ class TwoDimensionSaccadeOnImageEnvironment(EmbodiedEnvironment): # by skj for 2
         # TODO Use 2D-specific actions instead of overloading? Habitat actions
         self._valid_actions = ["look_up", "look_down", "turn_left", "turn_right"]
 
-        self.voxel_scale = 1#0.15/28 # by skj MNIST : 28x28. all location should be within 0.3M range        
+        self.voxel_scale = 0.15/28 # by skj MNIST : 28x28. all location should be within 0.3M range        
     @property
     def action_space(self):
         # TODO: move this to other action space definitions and clean up.
