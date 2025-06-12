@@ -460,7 +460,7 @@ mnist_unsuper = dict(
                 learning_module_class=EvidenceGraphLM,
                 learning_module_args=dict(              
                     #x_percent_threshold=20, 
-                    max_match_distance=0.005,
+                    max_match_distance=0.0000001,
                     tolerances={
                         "patch": {
                             "principal_curvatures_log": np.ones(2),
@@ -474,7 +474,7 @@ mnist_unsuper = dict(
                         }
                     },
                     # We assume the letter is presented upright
-                    initial_possible_poses=[[0, 0, 0]],
+                    #initial_possible_poses=[[0, 0, 0]],
                 ),
             )
         ),
@@ -484,10 +484,10 @@ mnist_unsuper = dict(
     dataset_args=MnistDatasetArgs(),
     train_dataloader_class=ED.MnistDataLoader,
 	#train_dataloader_args=MnistDataloaderArgs(),
-    train_dataloader_args = get_mnist_train_dataloader(start_at_version = 0, number_ids = np.arange(0,2), num_versions=3),
+    train_dataloader_args = get_mnist_train_dataloader(start_at_version = 0, number_ids = np.arange(2,4), num_versions=1),
     eval_dataloader_class=ED.MnistDataLoader,
     #eval_dataloader_args=MnistEvalDataloaderArgs(),
-    eval_dataloader_args = get_mnist_eval_dataloader(start_at_version = 0, number_ids = np.arange(0,2), num_versions=3)
+    eval_dataloader_args = get_mnist_eval_dataloader(start_at_version = 0, number_ids = np.arange(2,4), num_versions=3)
 )
 
 
