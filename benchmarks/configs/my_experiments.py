@@ -14,53 +14,41 @@ import numpy as np
 
 from benchmarks.configs.names import MyExperiments
 from tbp.monty.frameworks.config_utils.config_args import (
-	LoggingConfig,
-    MotorSystemConfigInformedNoTrans,
-	MotorSystemConfigInformedNoTransStepS1,
-    MotorSystemConfigInformedNoTransStepS3,
-    MotorSystemConfig,
-    MotorSystemConfigNaiveScanSpiral,
-    MotorSystemConfigSurface,
-	PatchAndViewMontyConfig,
-	PretrainLoggingConfig,
     CSVLoggingConfig,
-    SurfaceAndViewMontyConfig,
+    LoggingConfig,
     MontyArgs,
-
+    MotorSystemConfigNaiveScanSpiral,
+    PatchAndViewMontyConfig,
+    PretrainLoggingConfig,
+    SurfaceAndViewMontyConfig,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
-	ExperimentArgs,
-	OmniglotDataloaderArgs,   
-	OmniglotDatasetArgs,
-    get_omniglot_train_dataloader,
-    get_omniglot_eval_dataloader,
-    RandomRotationObjectInitializer,
     EnvironmentDataloaderPerObjectArgs,
+    ExperimentArgs,
     MnistDatasetArgs,
+    OmniglotDataloaderArgs,
+    OmniglotDatasetArgs,
+    RandomRotationObjectInitializer,
+    get_mnist_eval_dataloader,
     get_mnist_train_dataloader,
-    get_mnist_eval_dataloader
-
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
 from tbp.monty.frameworks.experiments import (
 	MontyObjectRecognitionExperiment,
 	MontySupervisedObjectPretrainingExperiment,
 )
+from tbp.monty.frameworks.loggers.monty_handlers import BasicCSVStatsHandler
 from tbp.monty.frameworks.models.evidence_matching import (
 	EvidenceGraphLM,
 	MontyForEvidenceGraphMatching,
 )
 from tbp.monty.frameworks.models.sensor_modules import (
-	DetailedLoggingSM,
-	HabitatDistantPatchSM,  
-
+    DetailedLoggingSM,
+    HabitatDistantPatchSM,
 )
-
-from tbp.monty.frameworks.loggers.monty_handlers import BasicCSVStatsHandler
 from tbp.monty.simulators.habitat.configs import (
     SurfaceViewFinderMountHabitatDatasetArgs,
 )
-
 
 # Add your experiment configurations here
 # e.g.: my_experiment_config = dict(...)
@@ -319,88 +307,28 @@ mnist_sensor_module_config = dict(
 
 
 mnist_training = dict(
-	experiment_class=MontySupervisedObjectPretrainingExperiment,
-	experiment_args=ExperimentArgs(
-    	n_train_epochs=1,
-    	do_train = True,
+    experiment_class=MontySupervisedObjectPretrainingExperiment,
+    experiment_args=ExperimentArgs(
+        n_train_epochs=1,
+        do_train=True,
         do_eval=False,
-	),
+    ),
     logging_config=PretrainLoggingConfig(
-    	#output_dir=pretrain_dir,
-        output_dir = "mnist/log",
-	),
+        output_dir="mnist/log",
+    ),
     # logging_config=CSVLoggingConfig(
     #     output_dir="mnist/log",
     #     python_log_level="INFO",
-    #     #monty_handlers=[BasicCSVStatsHandler],                 
+    #     #monty_handlers=[BasicCSVStatsHandler],
     # ),
-
-	monty_config=PatchAndViewMontyConfig(
-    	# Take 1 step at a time, following the drawing path of the letter
-    	#motor_system_config=MotorSystemConfigInformedNoTrans(),
-        #motor_system_config=MotorSystemConfigInformedNoTransStepS1(),
-        motor_system_config=MotorSystemConfigNaiveScanSpiral(),                
-        monty_class=MontyForEvidenceGraphMatching,
-    #     learning_module_configs=dict(
-    #         learning_module_0=dict( 
-    #             learning_module_class=EvidenceGraphLM,
-    #             learning_module_args=dict(               
-    #                 max_match_distance=1,
-    #                 tolerances={
-    #                     "patch": {
-    #                         "principal_curvatures_log": np.ones(2),
-    #                         "pose_vectors": np.ones(3) * 45,
-    #                     }
-    #                 },
-    #                 # Point normal always points up, so they are not useful
-    #                 feature_weights={
-    #                     "patch": {
-    #                         "pose_vectors": [0, 1, 0],
-    #                     }
-    #                 },
-    #                 # We assume the letter is presented upright
-    #                 #initial_possible_poses=[[0, 0, 0]],
-    #             ),
-    #         )
-    #     ),
-     	sensor_module_configs=mnist_sensor_module_config,
-	),
-	dataset_class=ED.EnvironmentDataset,
-	dataset_args=MnistDatasetArgs(),
-	train_dataloader_class=ED.MnistDataLoader,	
-    train_dataloader_args = get_mnist_train_dataloader(start_at_version = 0, number_ids = np.arange(0,10), num_versions=1)
-)
-
-mnist_inference = dict(
-    experiment_class=MontyObjectRecognitionExperiment,
-    experiment_args=ExperimentArgs(
-        #model_name_or_path=pretrain_dir + "/mnist_training/",
-        model_name_or_path = "mnist/log/mnist_training/pretrained",
-        do_train=False,
-        do_eval=True,
-        n_train_epochs=3,
-        n_eval_epochs=1,
-        #max_train_steps=100,
-        #max_eval_steps=100,
-        max_total_steps=6000,
-    ),
-    #logging_config=LoggingConfig(),
-    logging_config=CSVLoggingConfig(
-            output_dir="mnist/log",
-            python_log_level="DEBUG",
-            #monty_handlers=[BasicCSVStatsHandler],                 
-        ),
-
     monty_config=PatchAndViewMontyConfig(
-        #motor_system_config = MotorSystemConfigInformedNoTrans(),
-        #motor_system_config = MotorSystemConfigInformedNoTransStepS3(),
         motor_system_config=MotorSystemConfigNaiveScanSpiral(),
         monty_class=MontyForEvidenceGraphMatching,
         learning_module_configs=dict(
-            learning_module_0=dict(                 
+            # Using evidence graph LM here so we have grid models that we can keep using later.
+            learning_module_0=dict(
                 learning_module_class=EvidenceGraphLM,
-                learning_module_args=dict(              
-                    #x_percent_threshold=20, 
+                learning_module_args=dict(
                     max_match_distance=1,
                     tolerances={
                         "patch": {
@@ -415,7 +343,7 @@ mnist_inference = dict(
                         }
                     },
                     # We assume the letter is presented upright
-                    #initial_possible_poses=[[0, 0, 0]],
+                    # initial_possible_poses=[[0, 0, 0]],
                 ),
             )
         ),
@@ -424,47 +352,105 @@ mnist_inference = dict(
     dataset_class=ED.EnvironmentDataset,
     dataset_args=MnistDatasetArgs(),
     train_dataloader_class=ED.MnistDataLoader,
-	#train_dataloader_args=MnistDataloaderArgs(),
-    train_dataloader_args = get_mnist_train_dataloader(start_at_version = 0, number_ids = np.arange(0,2), num_versions=3),
+    train_dataloader_args=get_mnist_train_dataloader(
+        start_at_version=0, number_ids=np.arange(0, 10), num_versions=1
+    ),
+)
+
+mnist_inference = dict(
+    experiment_class=MontyObjectRecognitionExperiment,
+    experiment_args=ExperimentArgs(
+        model_name_or_path="mnist/log/mnist_training/pretrained",
+        do_train=False,
+        do_eval=True,
+        n_train_epochs=1,
+        n_eval_epochs=1,
+        max_total_steps=21 * 21,
+    ),
+    logging_config=CSVLoggingConfig(
+        output_dir="mnist/log",
+        python_log_level="DEBUG",
+        # monty_handlers=[BasicCSVStatsHandler],
+    ),
+    monty_config=PatchAndViewMontyConfig(
+        motor_system_config=MotorSystemConfigNaiveScanSpiral(),
+        monty_class=MontyForEvidenceGraphMatching,
+        monty_args=MontyArgs(min_eval_steps=80, num_exploratory_steps=0),
+        learning_module_configs=dict(
+            learning_module_0=dict(
+                learning_module_class=EvidenceGraphLM,
+                learning_module_args=dict(
+                    # x_percent_threshold=20,
+                    max_match_distance=0.01,
+                    tolerances={
+                        "patch": {
+                            "principal_curvatures_log": np.ones(2),
+                            "pose_vectors": np.ones(3) * 5,
+                        }
+                    },
+                    # Point normal always points up, so they are not useful
+                    feature_weights={
+                        "patch": {
+                            "pose_vectors": [0, 1, 0],
+                        }
+                    },
+                    feature_evidence_increment=0,
+                    # We assume the letter is presented upright
+                    initial_possible_poses=[
+                        [0, 0, 0],
+                        [0, 10, 0],
+                        [0, -10, 0],
+                        [0, 20, 0],
+                        [0, -20, 0],
+                        [0, 30, 0],
+                        [0, -30, 0],
+                    ],
+                ),
+            )
+        ),
+        sensor_module_configs=mnist_sensor_module_config,
+    ),
+    dataset_class=ED.EnvironmentDataset,
+    dataset_args=MnistDatasetArgs(),
     eval_dataloader_class=ED.MnistDataLoader,
-    #eval_dataloader_args=MnistEvalDataloaderArgs(),
-    eval_dataloader_args = get_mnist_eval_dataloader(start_at_version = 0, number_ids = np.arange(9,10), num_versions=10)
+    # eval_dataloader_args=MnistEvalDataloaderArgs(),
+    eval_dataloader_args=get_mnist_eval_dataloader(
+        start_at_version=0, number_ids=np.arange(1, 2), num_versions=11
+    ),
 )
 
 mnist_unsuper = dict(
     experiment_class=MontyObjectRecognitionExperiment,
-    experiment_args=ExperimentArgs(        
-        
+    experiment_args=ExperimentArgs(
         do_train=True,
         do_eval=False,
-        n_train_epochs=3,
-        n_eval_epochs=1,
-        #max_train_steps=100,
-        #max_eval_steps=100,
-        max_total_steps=6000,
+        n_train_epochs=1,
+        n_eval_epochs=0,
+        max_total_steps=21 * 21,
+        model_name_or_path="mnist/log/mnist_training/pretrained",
     ),
-    #logging_config=LoggingConfig(),
+    # logging_config=LoggingConfig(),
     logging_config=CSVLoggingConfig(
-            output_dir="mnist/log",
-            python_log_level="INFO",
-            #monty_handlers=[BasicCSVStatsHandler],                 
-        ),
-
+        output_dir="mnist/log",
+        python_log_level="INFO",
+        # monty_handlers=[BasicCSVStatsHandler],
+    ),
     monty_config=PatchAndViewMontyConfig(
-        #motor_system_config = MotorSystemConfigInformedNoTrans(),
-        #motor_system_config = MotorSystemConfigInformedNoTransStepS3(),
         motor_system_config=MotorSystemConfigNaiveScanSpiral(),
         monty_class=MontyForEvidenceGraphMatching,
+        monty_args=MontyArgs(
+            min_eval_steps=80, min_train_steps=80, num_exploratory_steps=21 * 21
+        ),
         learning_module_configs=dict(
-            learning_module_0=dict(                 
+            learning_module_0=dict(
                 learning_module_class=EvidenceGraphLM,
-                learning_module_args=dict(              
-                    #x_percent_threshold=20, 
-                    max_match_distance=0.0000001,
+                learning_module_args=dict(
+                    # x_percent_threshold=20,
+                    max_match_distance=0.01,
                     tolerances={
                         "patch": {
                             "principal_curvatures_log": np.ones(2),
-                            "pose_vectors": np.ones(3) * 45,
+                            "pose_vectors": np.ones(3) * 5,
                         }
                     },
                     # Point normal always points up, so they are not useful
@@ -474,7 +460,15 @@ mnist_unsuper = dict(
                         }
                     },
                     # We assume the letter is presented upright
-                    #initial_possible_poses=[[0, 0, 0]],
+                    initial_possible_poses=[
+                        [0, 0, 0],
+                        [0, 10, 0],
+                        [0, -10, 0],
+                        [0, 20, 0],
+                        [0, -20, 0],
+                        [0, 30, 0],
+                        [0, -30, 0],
+                    ],
                 ),
             )
         ),
@@ -483,11 +477,13 @@ mnist_unsuper = dict(
     dataset_class=ED.EnvironmentDataset,
     dataset_args=MnistDatasetArgs(),
     train_dataloader_class=ED.MnistDataLoader,
-	#train_dataloader_args=MnistDataloaderArgs(),
-    train_dataloader_args = get_mnist_train_dataloader(start_at_version = 0, number_ids = np.arange(2,4), num_versions=1),
+    train_dataloader_args=get_mnist_train_dataloader(
+        start_at_version=0, number_ids=np.arange(0, 9), num_versions=2
+    ),
     eval_dataloader_class=ED.MnistDataLoader,
-    #eval_dataloader_args=MnistEvalDataloaderArgs(),
-    eval_dataloader_args = get_mnist_eval_dataloader(start_at_version = 0, number_ids = np.arange(2,4), num_versions=3)
+    eval_dataloader_args=get_mnist_eval_dataloader(
+        start_at_version=0, number_ids=np.arange(2, 4), num_versions=3
+    ),
 )
 
 
