@@ -438,7 +438,7 @@ def get_mnist_train_dataloader(
 ):
     
     if data_path is None:
-        data_path = os.path.join(os.environ["MONTY_DATA"], "mnist/samples/trainingSample")
+        data_path = os.path.join(os.environ["MONTY_DATA"], "mnist_png/train")
     number_names = [
         a for a in os.listdir(data_path) if a[0] != "."
     ]        
@@ -472,7 +472,7 @@ def get_mnist_eval_dataloader(
     start_at_version, number_ids, num_versions=None, data_path=None
 ):
     if data_path is None:
-        data_path = os.path.join(os.environ["MONTY_DATA"], "mnist/samples/trainingSample")
+        data_path = os.path.join(os.environ["MONTY_DATA"], "mnist_png/train")
     number_names = [
         a for a in os.listdir(data_path) if a[0] != "."
     ]        
