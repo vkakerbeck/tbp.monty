@@ -1941,7 +1941,8 @@ class EvidenceGraphMemory(GraphMemory):
         )
         # Keep benchmark results constant by still using original graph for
         # matching when loading pretrained models.
-        model.use_original_graph = True
+        # Not setting this to True so we can keep training after loading pretrained graphs.
+        # model.use_original_graph = True
         model.set_graph(graph)
         return model
 
