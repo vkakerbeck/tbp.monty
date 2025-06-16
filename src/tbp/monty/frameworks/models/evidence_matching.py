@@ -12,11 +12,14 @@ from __future__ import annotations
 
 import copy
 import logging
+import os
 import threading
 import time
-from typing import Tuple
+from typing import Optional, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
 from scipy.spatial import KDTree
 from scipy.spatial.transform import Rotation
 
@@ -267,12 +270,12 @@ class EvidenceGraphLM(GraphLM):
         feature_evidence_increment=1,
         max_nneighbors=3,
         initial_possible_poses="informed",
-        evidence_update_threshold="all", 
-        vote_evidence_threshold=0.8, # by skj. default = 0.8
+        evidence_update_threshold="all",
+        vote_evidence_threshold=0.8,  # by skj. default = 0.8
         past_weight=1,
         present_weight=1,
         vote_weight=1,
-        object_evidence_threshold=1, # by skj. default = 1
+        object_evidence_threshold=1,  # by skj. default = 1
         x_percent_threshold=10,
         path_similarity_threshold=0.1,
         pose_similarity_threshold=0.35,
@@ -284,6 +287,8 @@ class EvidenceGraphLM(GraphLM):
         use_multithreading=True,
         gsg_class=EvidenceGoalStateGenerator,
         gsg_args=None,
+        enable_plotting=False,
+        save_plots=True,
         *args,
         **kwargs,
     ):
@@ -322,6 +327,12 @@ class EvidenceGraphLM(GraphLM):
         self.max_graph_size = max_graph_size
         # --- Debugging Params ---
         self.use_multithreading = use_multithreading
+        self.enable_plotting = enable_plotting
+        self._plot_fig: Optional[Figure] = None
+        self._plot_axes = None
+
+        self.save_plots = save_plots
+        self._episode = -1
 
         # TODO make sure we always extract pose features and remove this
         self.tolerances = add_pose_features_to_tolerances(tolerances)
@@ -360,6 +371,8 @@ class EvidenceGraphLM(GraphLM):
         """Reset evidence count and other variables."""
         # Now here, as opposed to the displacement and feature-location LMs,
         # possible_matches is a list of IDs, not a dictionary with the object graphs.
+        if self.save_plots:
+            self._episode += 1
         self.possible_matches = self.graph_memory.get_initial_hypotheses()
 
         if self.tolerances is not None:
@@ -869,6 +882,8 @@ class EvidenceGraphLM(GraphLM):
         # Call this update in the step method?
         self.possible_matches = self._threshold_possible_matches()
         self.current_mlh = self._calculate_most_likely_hypothesis()
+        if self.enable_plotting:
+            self._plot_hypotheses_and_path()
 
     def _update_evidence(
         self,
@@ -1854,6 +1869,193 @@ class EvidenceGraphLM(GraphLM):
         stats["evidences"] = self.evidence
         stats["symmetry_evidence"] = self.symmetry_evidence
         return stats
+
+    def _plot_hypotheses_and_path(self):
+        """Visualize the current hypotheses of the LM and the path taken so far."""
+        if not self.buffer or len(self.buffer) == 0:
+            return
+
+        input_channel = self.buffer.get_first_sensory_input_channel()
+        if input_channel is None:
+            return  # No sensory data to plot
+
+        all_locations = self.buffer.locations.get(input_channel)
+        if all_locations is None or all_locations.size == 0:
+            return
+
+        valid_indices = ~np.isnan(all_locations).any(axis=1)
+        observed_locations = all_locations[valid_indices]
+
+        observed_normals = np.array([])
+        if (
+            input_channel in self.buffer.features
+            and "pose_vectors" in self.buffer.features[input_channel]
+        ):
+            all_pose_vectors_flat = self.buffer.features[input_channel]["pose_vectors"]
+            if all_pose_vectors_flat.shape[0] == all_locations.shape[0]:
+                valid_pose_vectors_flat = all_pose_vectors_flat[valid_indices]
+                if valid_pose_vectors_flat.size > 0:
+                    num_valid = valid_pose_vectors_flat.shape[0]
+                    valid_pose_vectors = valid_pose_vectors_flat.reshape(
+                        num_valid, 3, 3
+                    )
+                    observed_normals = valid_pose_vectors[:, 0, :]
+
+        if self._plot_fig is None:
+            plt.ion()
+            self._plot_fig = plt.figure(figsize=(18, 6))
+            self._plot_axes = [
+                self._plot_fig.add_subplot(1, 3, 1, projection="3d"),
+                self._plot_fig.add_subplot(1, 3, 2, projection="3d"),
+                self._plot_fig.add_subplot(1, 3, 3, projection="3d"),
+            ]
+            if (
+                hasattr(self._plot_fig.canvas, "manager")
+                and self._plot_fig.canvas.manager is not None
+            ):
+                self._plot_fig.canvas.manager.set_window_title(
+                    f"LM-{self.learning_module_id} Hypotheses"
+                )
+
+        # Plot 1: Path in world coordinates
+        ax1 = self._plot_axes[0]
+        ax1.clear()
+        ax1.set_title("Path in World Coordinates")
+        if len(observed_locations) > 0:
+            ax1.scatter(
+                observed_locations[:, 1],
+                -observed_locations[:, 0],
+                observed_locations[:, 2],
+                c="blue",
+                s=20,
+                label="Observed Path (world frame)",
+            )
+        ax1.set_xlabel("X")
+        ax1.set_ylabel("Y")
+        ax1.set_zlabel("Z")
+        ax1.set_xticks([])
+        ax1.set_aspect("equal")
+        ax1.view_init(elev=180, azim=180)
+        ax1.legend()
+
+        top_id, second_id = self.get_top_two_mlh_ids()
+        second_id = "1_1"
+
+        # Plot 2: Path on most likely object
+        ax2 = self._plot_axes[1]
+        self._plot_single_hypothesis_mlh_on_ax(
+            ax2,
+            top_id,
+            observed_locations_world=observed_locations,
+            observed_normals_world=observed_normals,
+            title_prefix="Path on Top MLH",
+        )
+
+        # Plot 3: Path on second most likely object
+        ax3 = self._plot_axes[2]
+        self._plot_single_hypothesis_mlh_on_ax(
+            ax3,
+            second_id,
+            observed_locations_world=observed_locations,
+            observed_normals_world=observed_normals,
+            title_prefix="Path on Target",
+        )
+
+        plt.tight_layout()
+        self._plot_fig.canvas.draw()
+        self._plot_fig.canvas.flush_events()
+        if self.save_plots:
+            plot_dir = f"plots/ep_{self._episode}"
+            if not os.path.exists(plot_dir):
+                os.makedirs(plot_dir)
+            filename = os.path.join(
+                plot_dir,
+                f"step_{len(self.buffer)}.png",
+            )
+            self._plot_fig.savefig(filename)
+        plt.pause(0.01)
+
+    def _plot_single_hypothesis_mlh_on_ax(
+        self,
+        ax,
+        obj_id: str,
+        input_feature_channel: str = "patch",
+        observed_locations_world: Optional[np.ndarray] = None,
+        observed_normals_world: Optional[np.ndarray] = None,
+        title_prefix: str = "MLH Focus for",
+    ):
+        """Plots the object model and observed path in the object's MLH frame."""
+        ax.clear()
+        model_subsampling_rate = 1
+
+        mlh_info = self._calculate_most_likely_hypothesis(obj_id)
+
+        object_model_instance = self.graph_memory.get_graph(
+            obj_id, input_feature_channel
+        )
+        rotation_hypothesis = np.round(
+            mlh_info["rotation"].as_euler("xyz", degrees=True), 2
+        )
+        current_title = f"{title_prefix}: {obj_id}\nrotation hypothesis: {rotation_hypothesis}\nevidence: {np.round(mlh_info['evidence'], 2)}"
+        ax.set_title(current_title)
+
+        if object_model_instance:
+            graph_data_source = None
+            if hasattr(object_model_instance, "_graph"):
+                graph_data_source = object_model_instance._graph
+            elif hasattr(object_model_instance, "graph"):
+                graph_data_source = object_model_instance.graph
+            else:
+                graph_data_source = object_model_instance
+
+            if hasattr(graph_data_source, "pos") and graph_data_source.pos is not None:
+                model_nodes_local = np.array(graph_data_source.pos)
+                if (
+                    model_nodes_local.ndim == 2
+                    and model_nodes_local.shape[0] > 0
+                    and model_nodes_local.shape[1] == 3
+                ):
+                    nodes_for_scatter = model_nodes_local[::model_subsampling_rate]
+                    ax.scatter(
+                        nodes_for_scatter[:, 1],
+                        -nodes_for_scatter[:, 0],
+                        nodes_for_scatter[:, 2],
+                        c="grey",
+                        s=2,
+                        alpha=0.5,
+                        label="Model",
+                    )
+
+        scipy_rotation_world_to_obj = mlh_info["rotation"]
+        obj_frame_anchor_point = np.array(mlh_info["location"])
+
+        if observed_locations_world is not None and len(observed_locations_world) > 0:
+            obs_loc_world_np = np.array(observed_locations_world)
+            if obs_loc_world_np.ndim == 2 and obs_loc_world_np.shape[1] == 3:
+                world_frame_anchor_point = obs_loc_world_np[-1]
+                relative_world_vectors = obs_loc_world_np - world_frame_anchor_point
+                rotated_vectors = scipy_rotation_world_to_obj.apply(
+                    relative_world_vectors
+                )
+                obs_loc_obj_frame = rotated_vectors + obj_frame_anchor_point
+
+                ax.scatter(
+                    obs_loc_obj_frame[:, 1],
+                    -obs_loc_obj_frame[:, 0],
+                    obs_loc_obj_frame[:, 2],
+                    c="blue",
+                    s=20,
+                    label="Observed Path (object frame)",
+                    alpha=0.7,
+                )
+
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        ax.set_xticks([])
+        ax.set_aspect("equal")
+        ax.view_init(elev=180, azim=180)
+        ax.legend(loc="upper right", fontsize="small")
 
 
 class EvidenceGraphMemory(GraphMemory):
