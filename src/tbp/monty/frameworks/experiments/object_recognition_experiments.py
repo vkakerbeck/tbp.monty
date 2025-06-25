@@ -125,10 +125,10 @@ class MontyObjectRecognitionExperiment(MontyExperiment):
         self.setup_camera_ax()
         self.setup_sensor_ax()
 
-    def show_observations(self, observation, step):
+    def show_observations(self, observation, step: int) -> None:
         self.fig.suptitle(
             f"Observation at step {step}"
-            + ("" if step == 0 else f"\n{self.dataloader._action.split('.')[-1]}")
+            + ("" if step == 0 else f"\n{self.dataloader._action.name}")
         )
         self.show_view_finder(observation, step)
         self.show_patch(observation)
