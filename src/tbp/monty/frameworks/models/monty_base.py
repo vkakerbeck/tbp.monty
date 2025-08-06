@@ -101,7 +101,6 @@ class MontyBase(Monty):
         # Number of steps in which at least 1 LM was updated. Is not the same as each
         # individual LMs number of matching steps
         self.matching_steps = 0
-        self.epochs = 0
 
         if self.sm_to_lm_matrix is None:
             raise ValueError("sm_to_lm_matrix must be defined")
