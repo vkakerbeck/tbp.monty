@@ -40,7 +40,7 @@
 - [implementation-overview](how-monty-works/implementation-overview.md)
 - [experiment](how-monty-works/experiment.md)
 - [environment-agent](how-monty-works/environment-agent.md)
-- [model](how-monty-works/model.md)
+- [monty](how-monty-works/monty.md)
 - [observations-transforms-sensor-modules](how-monty-works/observations-transforms-sensor-modules.md)
 - [learning-module](how-monty-works/learning-module.md)
   - [object-models](how-monty-works/learning-module/object-models.md)
