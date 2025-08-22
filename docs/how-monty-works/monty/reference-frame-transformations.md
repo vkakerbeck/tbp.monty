@@ -4,23 +4,26 @@ title: Reference Frame Transforms
 In a sensorimotor learning setup one naturally encounters several different reference frames in which information can be represented. Additionally, Monty has it's internal reference frames in which is learns models of objects. Those can get confusing to wrap your head around and keep track of so here is a brief overview of all the reference frames involved in a typical Monty setup.
 
 # Reference Frames in a Typical Monty Experiment
-
-### Object rel. World
-- [dark green] The object in the world that has an orientation in the world (unknown to Monty)
-### Feature rel. Object
-- [darkest green] All the features on the object in the world which have an orientation relative to the object (also unknown to the Monty)
-### Sensor rel. World/Body
-- [yellow] The sensor’s orientation in the world (known through proprioception or motor efference copies)
-### Feature rel. Sensor
-- [dark yellow] The feature orientation relative to the sensor (surface normal and curvature direction extracted from the camera image)
-### Feature rel. World/Body
-- [bright green] The estimated orientation of the sensed feature in the world (sensor_rel_world * feature_rel_sensor, currently happens to the depth values in DepthTo3DLocations while the surface normal and curvature extraction then happens in the SM but we are planning to pull the transform into the SM)
-### Object rel. Model
-- [bluementa] Hypothesized orientation of the learned model relative to the object (in the world). This orientation needs to be inferred by the LM based on its sensory inputs. There are usually multiple hypotheses.
-### Feature rel. Model
-- [dark blue] Rotation of the currently sensed feature relative to the object model in the LM (feature_rel_world * object_rel_model).
-
 ![](../../figures/how-monty-works/reference_frames_overview.png)
+
+### 🟢 Object rel. World
+The orientation of the object in the world (unknown to Monty). For instance, if we use a simulator, this would be the configuration that specifies where the object is placed in the environment (like we do [here](https://github.com/thousandbrainsproject/tbp.monty/blob/4844ef17a4cadce455acb8d852fe3ed7038a298f/src/tbp/monty/frameworks/config_utils/make_dataset_configs.py#L229)). In the real world we don't have a specific origin but still, all objects are placed in a common reference frame with relative displacements between each other.
+### 🟢⚫️ Feature rel. Object
+The pose of all the features on the object (also unknown to the Monty). For instance, if you use a 3D simulator, this could be defined in the object meshes.
+### 🟡 Sensor rel. World/Body
+The sensor’s location and orientation in the world can be calculated from proprioceptive information and motor efference copies. Basically, as the system moves it's sensors, it can use this information to update the locations of those sensors in a common reference frame. For the purposes of Monty it doesn't matter where the origin of this RF is (it could be the agent's body or an aritrary location in the environment) but it matters that all sensor locations are represented in this common RF.
+### 🟠 Feature rel. Sensor
+This is the feature orientation relative to the sensor. For instance in Monty, we often use the surface normal and curvature direction to define the sensed pose, which are extracted from the depth image of the sensor ([code](https://github.com/thousandbrainsproject/tbp.monty/blob/main/src/tbp/monty/frameworks/models/sensor_modules.py#L161-L167)).
+### 🟢⚪️ Feature rel. World/Body
+[bright green]
+The estimated orientation of the sensed feature in the world (sensor_rel_world * feature_rel_sensor). In Monty this currently happens to the depth values in [DepthTo3DLocations](https://github.com/thousandbrainsproject/tbp.monty/blob/4844ef17a4cadce455acb8d852fe3ed7038a298f/src/tbp/monty/frameworks/environment_utils/transforms.py#L220) while the surface normal and curvature extraction then happens in the SM, but in the end you get the same results.
+### 🔵 Object rel. Model
+This is the hypothesized orientation of the learned model relative to the object (in the world). This orientation needs to be inferred by the LM based on its sensory inputs. There are usually multiple hypotheses.
+### 🔵⚫️ Feature rel. Model
+This is the rotation of the currently sensed feature relative to the object model in the LM (feature_rel_world * object_rel_model). The learning module uses it's pose hypothesis to transform the feature relative to the world into it's objects reference frame so that it can recognize the object in any orientation and location in the world, independent of where it was learned. 
+
+> [!NOTE] 
+> In the brain we hypothesize that the transformation of sensory input into the object's reference frame is done by the thalamus (see our [neuroscience theory paper](https://arxiv.org/abs/2507.05888) for more details).
 
 ## Keeping Input to the LM Constant as the Sensor Moves
 The transform in the sensor module combines the sensor pose in the world with the sensed pose of the features relative to the sensor. This way, if the sensor moves while fixating on a point on the object, that feature pose will not change (see animation below). We are sending the same location and orientation of the feature in the world to the LM, no matter from which angle the sensor is "looking" at it.
