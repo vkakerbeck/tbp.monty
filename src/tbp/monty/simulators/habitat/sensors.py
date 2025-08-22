@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -48,14 +49,14 @@ class SensorConfig:
         """Returns List of Habitat sensor specs to be passed to `habitat-sim`."""
         return []
 
-    def process_observations(self, sensor_obs):
+    def process_observations(self, sensor_obs) -> dict:
         """Callback used to process habitat raw sensor observations.
 
         Args:
             sensor_obs: Sensor raw habitat-sim observations
 
         Returns:
-            dict: The processed observations grouped by agent_id
+            The processed observations grouped by agent_id
         """
         return sensor_obs
 

@@ -14,19 +14,19 @@ To manage the logging for an experiment you can specify the handlers that should
 | **BasicCSVStatsHandler**          | Log a .csv file with one row per episode that contains the results and performance of this episode.                                                         |
 | **ReproduceEpisodeHandler**       | Logs action sequence and target such that an episode can be exactly reproduced.                                                                             |
 | **BasicWandbTableStatsHandler**   | Logs a table similar to the .csv table to wandb.                                                                                                            |
-| **BasicWandbChartStatsHandler**   | Logs episode stats to wandb charts. When running in parallel this is done at the end of a run. Otherwise one can follow the run stats live on wanbd.        |
+| **BasicWandbChartStatsHandler**   | Logs episode stats to wandb charts. When running in parallel this is done at the end of a run. Otherwise one can follow the run stats live on wandb.       |
 | **DetailedWandbHandler**          | Logs animations of raw observations to wandb.                                                                                                               |
 | **DetailedWandbMarkedObsHandler** | Same as previous but marks the view-finder observation with a square indicating where the patch is.                                                         |
 
 ## Logging to Wandb
 
-When logging to wanbd we recommend to run`export WANDB_DIR=~/tbp/results/monty/wandb`so the wandb logs are not stored in the repository folder.
+When logging to wandb we recommend to run`export WANDB_DIR=~/tbp/results/monty/wandb`so the wandb logs are not stored in the repository folder.
 
 The first time you run experiments that log to wandb you will need to set your WANDB_API key using `export WANDB_API_KEY=your_key`
 
 # Analysis
 
-## Analyzing Data from monty_handlers
+## Analyzing Data From `monty_handlers`
 
 The [`plot_utils.py`](../../src/tbp/monty/frameworks/utils/plot_utils.py) contains utils for plotting the logged data. The [`logging_utils.py`](../../src/tbp/monty/frameworks/utils/logging_utils.py) file contains some useful utils for loading logs and printing some summary statistics on them.
 
@@ -52,7 +52,7 @@ import os
 from tbp.monty.frameworks.utils.logging_utils import load_stats
 
 pretrain_path = os.path.expanduser("~/tbp/results/monty/pretrained_models/")
-pretrained_dict = pretrain_path + "pretrained_ycb_v9/surf_agent_1lm_10distinctobj/pretrained/"
+pretrained_dict = pretrain_path + "pretrained_ycb_v10/surf_agent_1lm_10distinctobj/pretrained/"
 
 log_path = os.path.expanduser("~/tbp/results/monty/projects/evidence_eval_runs/logs/")
 exp_name = "randrot_10distinctobj_surf_agent"
@@ -97,7 +97,7 @@ print_unsupervised_stats(train_stats, epoch_len=10)
 
 ### Plotting Object Graphs
 
-When loading the `lm_models` (either using the `load_stats` function or `torch.load`) you get a dictionary of object graphs. Object graphs are represented as `torch_geometric.data` class instances with properties `x, pos, norm, feature_mapping` where `x` stores the features at each point in the graph, `pos` the locations, `norm` the point normal and `feature_mapping` is a dictionary that encodes which indices in `x` correspond to which features.
+When loading the `lm_models` (either using the `load_stats` function or `torch.load`) you get a dictionary of object graphs. Object graphs are represented as `torch_geometric.data` class instances with properties `x, pos, norm, feature_mapping` where `x` stores the features at each point in the graph, `pos` the locations, `norm` the surface normal and `feature_mapping` is a dictionary that encodes which indices in `x` correspond to which features.
 
 There are a range of graph plotting utils in the `plot_utils.py` file. Additionally, you can find some more examples of how to plot graphs and how to use the functions in `GraphVisualizations.ipynb`, `EvidenceLM.ipynb`, and `MultiLMViz.ipynb` in the [monty_lab repository](https://github.com/thousandbrainsproject/monty_lab). Below is just one illustrative example of how you can quickly plot an object graph after loading it as shown above.
 
@@ -122,7 +122,7 @@ plt.show()
 
 > 📘 Plotting in 3D
 >
-> Most plots shown here use the 3D projection feature of matplotlib. The plots can be viewed interactively by dragging the mouse over them to zoom and rotate. When you want to save figures with 3D plots programatically, it can be useful to set the `rotation` parameter in the `plot_graph` function such that the POV provides a good view of the 3D structure of the object.
+> Most plots shown here use the 3D projection feature of matplotlib. The plots can be viewed interactively by dragging the mouse over them to zoom and rotate. When you want to save figures with 3D plots programmatically, it can be useful to set the `rotation` parameter in the `plot_graph` function such that the POV provides a good view of the 3D structure of the object.
 
 ### Plotting Matching Animations
 
@@ -220,7 +220,7 @@ plt.show()
 
 Obviously, there are tons of options for visualizing the logged data. The code and images above are just some examples to provide inspiration.
 
-## Analyzing Data from wandb_handlers
+## Analyzing Data From `wandb_handlers`
 
 When logging into Wandb, you can track your experiment results at <https://wandb.ai/home> . When you navigate to your project (by default called "Monty") you should see all your experiments in the Wandb dashboard. If you click on one of the runs, you should see something like this:
 

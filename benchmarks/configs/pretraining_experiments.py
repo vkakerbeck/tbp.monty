@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -9,9 +10,11 @@
 
 import copy
 import os
+from dataclasses import asdict
 
 import numpy as np
 
+from benchmarks.configs.names import PretrainingExperiments
 from tbp.monty.frameworks.config_utils.config_args import (
     FiveLMMontyConfig,
     MontyArgs,
@@ -26,12 +29,7 @@ from tbp.monty.frameworks.config_utils.config_args import (
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
     EnvironmentDataloaderPerObjectArgs,
     ExperimentArgs,
-    FiveLMMountHabitatDatasetArgs,
-    PatchViewFinderMountHabitatDatasetArgs,
     PredefinedObjectInitializer,
-    SurfaceViewFinderMontyWorldMountHabitatDatasetArgs,
-    SurfaceViewFinderMountHabitatDatasetArgs,
-    get_env_dataloader_per_object_by_idx,
     get_object_names_by_idx,
 )
 from tbp.monty.frameworks.config_utils.policy_setup_utils import (
@@ -48,9 +46,16 @@ from tbp.monty.frameworks.experiments import (
     MontySupervisedObjectPretrainingExperiment,
 )
 from tbp.monty.frameworks.models.displacement_matching import DisplacementGraphLM
+from tbp.monty.frameworks.models.motor_policies import NaiveScanPolicy
 from tbp.monty.frameworks.models.sensor_modules import (
     DetailedLoggingSM,
     HabitatSurfacePatchSM,
+)
+from tbp.monty.simulators.habitat.configs import (
+    FiveLMMountHabitatDatasetArgs,
+    PatchViewFinderMountHabitatDatasetArgs,
+    SurfaceViewFinderMontyWorldMountHabitatDatasetArgs,
+    SurfaceViewFinderMountHabitatDatasetArgs,
 )
 
 # FOR SUPERVISED PRETRAINING: 14 unique rotations that give good views of the object.
@@ -59,7 +64,7 @@ train_rotations_all = get_cube_face_and_corner_views_rotations()
 monty_models_dir = os.getenv("MONTY_MODELS")
 
 fe_pretrain_dir = os.path.expanduser(
-    os.path.join(monty_models_dir, "pretrained_ycb_v9")
+    os.path.join(monty_models_dir, "pretrained_ycb_v10")
 )
 
 pre_surf_agent_visual_training_model_path = os.path.join(
@@ -87,7 +92,7 @@ supervised_pre_training_base = dict(
                     graph_delta_thresholds=dict(
                         patch=dict(
                             distance=0.001,
-                            # Only first pose vector (point normal) is currently used
+                            # Only first pose vector (surface normal) is currently used
                             pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
                             principal_curvatures_log=[1, 1],
                             hsv=[0.1, 1, 1],
@@ -116,7 +121,10 @@ supervised_pre_training_base = dict(
             )
         ),
         motor_system_config=MotorSystemConfigNaiveScanSpiral(
-            motor_system_args=make_naive_scan_policy_config(step_size=5)
+            motor_system_args=dict(
+                policy_class=NaiveScanPolicy,
+                policy_args=make_naive_scan_policy_config(step_size=5),
+            )
         ),  # use spiral policy for more even object coverage during learning
     ),
     dataset_class=ED.EnvironmentDataset,
@@ -126,8 +134,6 @@ supervised_pre_training_base = dict(
         object_names=get_object_names_by_idx(0, 10, object_list=DISTINCT_OBJECTS),
         object_init_sampler=PredefinedObjectInitializer(rotations=train_rotations_all),
     ),
-    eval_dataloader_class=ED.InformedEnvironmentDataLoader,  # just placeholder
-    eval_dataloader_args=get_env_dataloader_per_object_by_idx(start=0, stop=1),
 )
 
 
@@ -252,7 +258,10 @@ supervised_pre_training_5lms.update(
     monty_config=FiveLMMontyConfig(
         monty_args=MontyArgs(num_exploratory_steps=500),
         motor_system_config=MotorSystemConfigNaiveScanSpiral(
-            motor_system_args=make_naive_scan_policy_config(step_size=5)
+            motor_system_args=dict(
+                policy_class=NaiveScanPolicy,
+                policy_args=make_naive_scan_policy_config(step_size=5),
+            )
         ),
     ),
     dataset_args=FiveLMMountHabitatDatasetArgs(),
@@ -268,7 +277,7 @@ supervised_pre_training_5lms_all_objects.update(
     ),
 )
 
-CONFIGS = dict(
+experiments = PretrainingExperiments(
     supervised_pre_training_base=supervised_pre_training_base,
     supervised_pre_training_5lms=supervised_pre_training_5lms,
     supervised_pre_training_5lms_all_objects=supervised_pre_training_5lms_all_objects,
@@ -277,3 +286,4 @@ CONFIGS = dict(
     only_surf_agent_training_allobj=only_surf_agent_training_allobj,
     only_surf_agent_training_numenta_lab_obj=only_surf_agent_training_numenta_lab_obj,
 )
+CONFIGS = asdict(experiments)

@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -12,6 +13,7 @@ import os
 import shutil
 import time
 from pathlib import Path
+from typing import List, Mapping, Optional
 
 import numpy as np
 import pandas as pd
@@ -39,15 +41,16 @@ from tbp.monty.frameworks.utils.dataclass_utils import config_to_dict
 """
 Just like run.py, but run episodes in parallel. Running in parallel is as simple as
 
-`python run_parallel.py -e my_exp -n ${NUM_CPUS}`
+`python run_parallel.py -e my_exp -n ${NUM_PARALLEL}`
 
 Assumptions and notes:
 --- There are some differences between training and testing in parallel. At train time,
     we parallelize across objects, but episodes with the same object are run in serial.
-    In this case it is best to set num_cpus to num_objects in your dataset if possible.
-    At test time, we separate all (object, pose) combos into separate jobs and run them
-    in parallel. In this case, the total_n_jobs is n_objects * n_poses, and the
-    more cpus the better (assuming you won't have more than total_n_jobs oavialable).
+    In this case it is best to set num_parallel to num_objects in your dataset if
+    possible. At test time, we separate all (object, pose) combos into separate jobs and
+    run them in parallel. In this case, the total_n_jobs is n_objects * n_poses, and
+    the more parallelism the better (assuming you won't have more than total_n_jobs
+    available).
 --- Only certain experiment classes are supported for training. Right now the focus is
     on SupervisedPreTraning. Some classes like ObjectRecognition are inherently
     not parallelizable because each episode depends on results from the previous.
@@ -57,25 +60,19 @@ Assumptions and notes:
 
 def single_train(config):
     os.makedirs(config["logging_config"]["output_dir"], exist_ok=True)
-    exp = config["experiment_class"]()
-    exp.setup_experiment(config)
-    print("---------training---------")
-    exp.train()
-    exp.close()
+    with config["experiment_class"](config) as exp:
+        print("---------training---------")
+        exp.train()
 
 
 def single_evaluate(config):
     os.makedirs(config["logging_config"]["output_dir"], exist_ok=True)
-    exp = config["experiment_class"]()
-    exp.setup_experiment(config)
-    print("---------evaluating---------")
-    exp.evaluate()
-    if config["logging_config"]["log_parallel_wandb"]:
-        eval_stats = get_episode_stats(exp, "eval")
-        exp.close()
-        return eval_stats
-    else:
-        exp.close()
+    with config["experiment_class"](config) as exp:
+        print("---------evaluating---------")
+        exp.evaluate()
+        if config["logging_config"]["log_parallel_wandb"]:
+            eval_stats = get_episode_stats(exp, "eval")
+            return eval_stats
 
 
 def get_episode_stats(exp, mode):
@@ -90,7 +87,7 @@ def get_episode_stats(exp, mode):
 
 
 def get_overall_stats(stats):
-    overall_stats = dict()
+    overall_stats = {}
     # combines correct and correct_mlh
     overall_stats["overall/percent_correct"] = np.mean(stats["episode/correct"]) * 100
     overall_stats["overall/percent_confused"] = np.mean(stats["episode/confused"]) * 100
@@ -132,7 +129,7 @@ def get_overall_stats(stats):
 
 
 def sample_params_to_init_args(params):
-    new_params = dict()
+    new_params = {}
     new_params["positions"] = [params["position"]]
     new_params["scales"] = [params["scale"]]
     new_params["rotations"] = [params["euler_rotation"]]
@@ -210,17 +207,23 @@ def move_reproducibility_data(base_dir, parallel_dirs):
         assert "eval_episode_0_target.txt" in files
         action_file = f"eval_episode_{cnt}_actions.jsonl"
         target_file = f"eval_episode_{cnt}_target.txt"
-        os.rename(
-            os.path.join(rdir, "eval_episode_0_actions.jsonl"),
-            os.path.join(outdir, action_file),
+        Path(os.path.join(rdir, "eval_episode_0_actions.jsonl")).rename(
+            os.path.join(outdir, action_file)
         )
-        os.rename(
-            os.path.join(rdir, "eval_episode_0_target.txt"),
-            os.path.join(outdir, target_file),
+        Path(os.path.join(rdir, "eval_episode_0_target.txt")).rename(
+            os.path.join(outdir, target_file)
         )
 
 
-def post_parallel_eval(configs, base_dir):
+def post_parallel_eval(configs: List[Mapping], base_dir: str) -> None:
+    """Post-execution cleanup after running evaluation in parallel.
+
+    Logs are consolidated across parallel runs and saved to disk.
+
+    Args:
+        configs: List of configs ran in parallel.
+        base_dir: Directory where parallel logs are stored.
+    """
     print("Executing post parallel evaluation cleanup")
     parallel_dirs = [cfg["logging_config"]["output_dir"] for cfg in configs]
 
@@ -257,7 +260,15 @@ def post_parallel_eval(configs, base_dir):
         shutil.rmtree(pdir)
 
 
-def post_parallel_train(configs, base_dir):
+def post_parallel_train(configs: List[Mapping], base_dir: str) -> None:
+    """Post-execution cleanup after running training in parallel.
+
+    Object models are consolidated across parallel runs and saved to disk.
+
+    Args:
+        configs: List of configs ran in parallel.
+        base_dir: Directory where parallel logs are stored.
+    """
     print("Executing post parallel training cleanup")
     parallel_dirs = [cfg["logging_config"]["output_dir"] for cfg in configs]
     pretraining = False
@@ -277,35 +288,51 @@ def post_parallel_train(configs, base_dir):
         post_parallel_profile_cleanup(parallel_dirs, base_dir, "train")
 
     config = configs[0]
-    exp = config["experiment_class"]()
-    exp.setup_experiment(config)
-    exp.model.load_state_dict_from_parallel(parallel_dirs, True)
-    output_dir = os.path.dirname(configs[0]["logging_config"]["output_dir"])
-    if issubclass(
-        configs[0]["experiment_class"], MontySupervisedObjectPretrainingExperiment
-    ):
-        output_dir = os.path.join(output_dir, "pretrained")
-    os.makedirs(output_dir, exist_ok=True)
-    saved_model_file = os.path.join(output_dir, "model.pt")
-    torch.save(exp.model.state_dict(), saved_model_file)
+    with config["experiment_class"](config) as exp:
+        exp.model.load_state_dict_from_parallel(parallel_dirs, True)
+        output_dir = os.path.dirname(configs[0]["logging_config"]["output_dir"])
+        if issubclass(
+            configs[0]["experiment_class"], MontySupervisedObjectPretrainingExperiment
+        ):
+            output_dir = os.path.join(output_dir, "pretrained")
+        os.makedirs(output_dir, exist_ok=True)
+        saved_model_file = os.path.join(output_dir, "model.pt")
+        torch.save(exp.model.state_dict(), saved_model_file)
 
-    if pretraining:
-        pdirs = [os.path.dirname(i) for i in parallel_dirs]
-    else:
-        pdirs = parallel_dirs
+        if pretraining:
+            pdirs = [os.path.dirname(i) for i in parallel_dirs]
+        else:
+            pdirs = parallel_dirs
 
-    for pdir in pdirs:
-        print(f"Removing directory: {pdir}")
-        shutil.rmtree(pdir)
+        for pdir in pdirs:
+            print(f"Removing directory: {pdir}")
+            shutil.rmtree(pdir)
 
 
 def run_episodes_parallel(
-    configs, num_cpus, experiment_name, train=True, is_unittest=False
-):
+    configs: List[Mapping],
+    num_parallel: int,
+    experiment_name: str,
+    train: bool = True,
+    is_unittest: bool = False,
+) -> None:
+    """Run episodes in parallel.
+
+    Args:
+        configs: List of configs to run in parallel.
+        num_parallel: Maximum number of parallel processes to run. If there
+            are fewer configs to run than `num_parallel`, then the actual number of
+            processes will be equal to the number of configs.
+        experiment_name: name of experiment
+        train: whether to run training or evaluation
+        is_unittest: whether to run in unittest mode
+    """
+    # Use fewer processes if there are fewer configs than `num_parallel`.
+    num_parallel = min(len(configs), num_parallel)
     exp_type = "training" if train else "evaluation"
     print(
         f"-------- Running {exp_type} experiment {experiment_name}"
-        f" with {num_cpus} cpus --------"
+        f" with {num_parallel} episodes in parallel --------"
     )
     start_time = time.time()
     if configs[0]["logging_config"]["log_parallel_wandb"]:
@@ -325,33 +352,30 @@ def run_episodes_parallel(
         for config in configs:
             run_fn(config)
     else:
-        with mp.Pool(num_cpus) as p:
+        with mp.Pool(num_parallel) as p:
             if train:
                 # NOTE: since we don't use wandb logging for training right now
                 # it is also not covered here. Might want to add that in the future.
                 p.map(single_train, configs)
+            elif configs[0]["logging_config"]["log_parallel_wandb"]:
+                all_episode_stats = {}
+                for result in p.imap(single_evaluate, configs):
+                    run.log(result)
+                    if not all_episode_stats:  # first episode
+                        for key in list(result.keys()):
+                            all_episode_stats[key] = [result[key]]
+                    else:
+                        for key in list(result.keys()):
+                            all_episode_stats[key].append(result[key])
+                overall_stats = get_overall_stats(all_episode_stats)
+                # episode/run_time is the sum over individual episode run times.
+                # when running parallel this may not be the actual run time so we
+                # log this here additionally.
+                overall_stats["overall/parallel_run_time"] = time.time() - start_time
+                overall_stats["overall/num_processes"] = num_parallel
+                run.log(overall_stats)
             else:
-                if configs[0]["logging_config"]["log_parallel_wandb"]:
-                    all_episode_stats = dict()
-                    for result in p.imap(single_evaluate, configs):
-                        run.log(result)
-                        if not all_episode_stats:  # first episode
-                            for key in list(result.keys()):
-                                all_episode_stats[key] = [result[key]]
-                        else:
-                            for key in list(result.keys()):
-                                all_episode_stats[key].append(result[key])
-                    overall_stats = get_overall_stats(all_episode_stats)
-                    # episode/run_time is the sum over individual episode run times.
-                    # when running parallel this may not be the actual run time so we
-                    # log this here additionally.
-                    overall_stats["overall/parallel_run_time"] = (
-                        time.time() - start_time
-                    )
-                    overall_stats["overall/num_processes"] = num_cpus
-                    run.log(overall_stats)
-                else:
-                    p.map(single_evaluate, configs)
+                p.map(single_evaluate, configs)
     end_time = time.time()
     total_time = end_time - start_time
 
@@ -379,7 +403,10 @@ def run_episodes_parallel(
             else:
                 print(f"No csv table found at {csv_path} to log to wandb")
 
-    print(f"Total time for {len(configs)} using {num_cpus} cpus: {total_time}")
+    print(
+        f"Total time for {len(configs)} running {num_parallel} episodes in parallel: "
+        f"{total_time}"
+    )
     if configs[0]["logging_config"]["log_parallel_wandb"]:
         run.finish()
 
@@ -388,18 +415,24 @@ def run_episodes_parallel(
     # Keep a record of how long everything takes
     with open(os.path.join(base_dir, "parallel_log.txt"), "w") as f:
         f.write(f"experiment: {experiment_name}\n")
-        f.write(f"num_cpus: {num_cpus}\n")
+        f.write(f"num_parallel: {num_parallel}\n")
         f.write(f"total_time: {total_time}")
 
 
-def generate_parallel_train_configs(exp, experiment_name):
+def generate_parallel_train_configs(
+    exp: Mapping, experiment_name: str
+) -> List[Mapping]:
     """Generate configs for training episodes in parallel.
 
+    Create a config for each object in the experiment. Unlike with parallel eval
+    episodes, each parallel config specifies a single object but all rotations.
+
     Args:
-        exp: dict, config for experiment
-        experiment_name: str, name of experiment
-        split: optional[str]; train or eval. Determines if we make configs for train
-                  or eval batch
+        exp: Config for experiment to be broken into parallel configs.
+        experiment_name: Name of experiment.
+
+    Returns:
+        List of configs for training episodes.
 
     Note:
         If we view the same object from multiple poses in separate experiments, we
@@ -408,8 +441,6 @@ def generate_parallel_train_configs(exp, experiment_name):
         still in sequence. By contrast, eval episodes are parallel across objects
         AND poses.
 
-    Returns:
-        List of configs for training episodes.
     """
     sampler = exp["train_dataloader_args"]["object_init_sampler"]
     sampler.rng = np.random.RandomState(exp["experiment_args"]["seed"])
@@ -446,7 +477,19 @@ def generate_parallel_train_configs(exp, experiment_name):
     return new_configs
 
 
-def generate_parallel_eval_configs(exp, experiment_name):
+def generate_parallel_eval_configs(exp: Mapping, experiment_name: str) -> List[Mapping]:
+    """Generate configs for evaluation episodes in parallel.
+
+    Create a config for each object and rotation in the experiment. Unlike with parallel
+    training episodes, a config is created for each object + rotation separately.
+
+    Args:
+        exp: Config for experiment to be broken into parallel configs.
+        experiment_name: Name of experiment.
+
+    Returns:
+        List of configs for evaluation episodes.
+    """
     sampler = exp["eval_dataloader_args"]["object_init_sampler"]
     sampler.rng = np.random.RandomState(exp["experiment_args"]["seed"])
     object_names = exp["eval_dataloader_args"]["object_names"]
@@ -508,24 +551,69 @@ def generate_parallel_eval_configs(exp, experiment_name):
 
 
 def main(
-    all_configs=None,
-    exp=None,
-    experiment=None,
-    num_cpus=None,
-    quiet_habitat_logs=True,
-    print_cfg=False,
-    is_unittest=False,
+    all_configs: Optional[Mapping[str, Mapping]] = None,
+    exp: Optional[Mapping] = None,
+    experiment: Optional[str] = None,
+    num_parallel: Optional[int] = None,
+    quiet_habitat_logs: bool = True,
+    print_cfg: bool = False,
+    is_unittest: bool = False,
 ):
+    """Run an experiment in parallel.
+
+    This function runs an experiment in parallel by breaking a config into a set
+    of configs that can be run in parallel, executing them, and performing cleanup
+    to consolidate logs across parallelized configs. How configs are split up into
+    parallelizable configs depends on the type of experiment. For supervised
+    pre-training, a config is created for each object, and that config will run all
+    object rotations in serial. For evaluation experiments, a config is created for
+    each object + a rotation individually. Note that we don't parallelize over rotations
+    during training since graphs should be merged in the order in which the object was
+    seen; updating the graph at rotation *i* should influence how observations at
+    rotation *i + 1* are incorporated into the graph. This is not the case for
+    evaluation experiments where graphs aren't modified, and evaluation is therefore
+    embarrassingly parallelizable.
+
+    This function is typically called by `run_parallel.py` through command line
+    (i.e., `python run_parallel.py -e my_exp`) but is sometimes called directly,
+    such as when performing a unit test. As a result, the arguments required depend
+    on how the function is called. When run via command line, the following arguments
+    are required:
+        - `all_configs`
+        - `experiment`
+        - `num_parallel`
+
+    When called directly, the following arguments are required:
+        - `exp`
+        - `experiment`
+        - `num_parallel`
+
+    Args:
+        all_configs: A mapping from config name to config dict.
+        exp: Config for experiment to run. Not required if running
+            from command line as the config is selected from `all_configs`.
+        experiment: Name of experiment to run. Not required if running
+            from command line.
+        num_parallel: Maximum number of parallel processes to run. If
+            the config is broken into fewer parallel configs than `num_parallel`, then
+            the actual number of processes will be equal to the number of parallel
+            configs. Not required if running from command line.
+        quiet_habitat_logs: Whether to quiet Habitat logs. Defaults to True.
+        print_cfg: Whether to print configs for spot checking. Defaults to
+            False.
+        is_unittest: Whether to run in unittest mode. If `True`, parallel runs
+            are done in serial. Defaults to False.
+    """
     # Handle args passed directly (only used by unittest) or command line (normal)
     if experiment:
-        assert num_cpus, "missing arg num_cpus"
+        assert num_parallel, "missing arg num_parallel"
         assert exp, "missing arg exp"
 
     else:
-        cmd_parser = create_cmd_parser_parallel(all_configs=all_configs)
+        cmd_parser = create_cmd_parser_parallel(experiments=list(all_configs.keys()))
         cmd_args = cmd_parser.parse_args()
         experiment = cmd_args.experiment
-        num_cpus = cmd_args.num_cpus
+        num_parallel = cmd_args.num_parallel
         quiet_habitat_logs = cmd_args.quiet_habitat_logs
         print_cfg = cmd_args.print_cfg
         is_unittest = False
@@ -555,7 +643,7 @@ def main(
         else:
             run_episodes_parallel(
                 train_configs,
-                num_cpus,
+                num_parallel,
                 experiment,
                 train=True,
                 is_unittest=is_unittest,
@@ -574,7 +662,7 @@ def main(
         else:
             run_episodes_parallel(
                 eval_configs,
-                num_cpus,
+                num_parallel,
                 experiment,
                 train=False,
                 is_unittest=is_unittest,

@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2023-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -32,9 +33,9 @@ from tbp.monty.frameworks.utils.object_model_utils import (
     remove_close_points,
     torch_graph_to_numpy,
 )
-from tbp.monty.frameworks.utils.spatial_arithmetics import (
-    apply_rf_transform_to_points,
-)
+from tbp.monty.frameworks.utils.spatial_arithmetics import apply_rf_transform_to_points
+
+logger = logging.getLogger(__name__)
 
 
 class GraphObjectModel(ObjectModel):
@@ -46,7 +47,7 @@ class GraphObjectModel(ObjectModel):
         Args:
             object_id: id of the object
         """
-        logging.info(f"init object model with id {object_id}")
+        logger.info(f"init object model with id {object_id}")
         self.object_id = object_id
         self._graph = None
         self.has_ppf = False
@@ -65,7 +66,7 @@ class GraphObjectModel(ObjectModel):
         self.k_n = k_n
         self.graph_delta_thresholds = graph_delta_thresholds
         self.set_graph(graph)
-        logging.info(f"built graph {self._graph}")
+        logger.info(f"built graph {self._graph}")
 
     def update_model(
         self,
@@ -90,7 +91,7 @@ class GraphObjectModel(ObjectModel):
             rf_features,
         )
 
-        logging.info("building graph")
+        logger.info("building graph")
         new_graph = self._build_adjacency_graph(
             all_locations,
             all_features,
@@ -183,13 +184,13 @@ class GraphObjectModel(ObjectModel):
             features: new observed features (dict)
 
         Returns:
-            combines features at locations with new locations transformed into
-                the graphs reference frame.
+            Combines features at locations with new locations transformed into the
+            graph's reference frame.
         """
         old_points = self.pos
         feature_mapping = self.feature_mapping
 
-        all_features = dict()
+        all_features = {}
 
         # Iterate through the different feature types, stacking on (i.e. appending)
         # those features associated w/ candidate new points to the old-graph point
@@ -217,10 +218,10 @@ class GraphObjectModel(ObjectModel):
             both_feat = np.vstack([old_feat, new_feat])
             all_features[feature] = both_feat
 
-            for feature in self.feature_ids_in_graph:
-                if feature not in features.keys() and feature != "node_ids":
+            for graph_feature in self.feature_ids_in_graph:
+                if graph_feature not in features.keys() and graph_feature != "node_ids":
                     raise NotImplementedError(
-                        f"{feature} is represented in graph but",
+                        f"{graph_feature} is represented in graph but",
                         " was not observed at this step. Implement padding with nan.",
                     )
 
@@ -252,14 +253,14 @@ class GraphObjectModel(ObjectModel):
 
         Returns:
             A torch_geometric.data graph containing the observed features at
-                locations, with edges betweed the k_n nearest neighbors.
+            locations, with edges between the k_n nearest neighbors.
         """
         locations_reduced, clean_ids = remove_close_points(
             np.array(locations), features, graph_delta_thresholds, old_graph_index
         )
         num_nodes = locations_reduced.shape[0]
         node_features = np.linspace(0, num_nodes - 1, num_nodes).reshape((num_nodes, 1))
-        feature_mapping = dict()
+        feature_mapping = {}
         feature_mapping["node_ids"] = [0, 1]
 
         for feature_id in features.keys():
@@ -346,7 +347,7 @@ class GridObjectModel(GraphObjectModel):
             num_voxels_per_dim: number of voxels per dimension in the models grids.
                 Defines the resolution of the model.
         """
-        logging.info(f"init object model with id {object_id}")
+        logger.info(f"init object model with id {object_id}")
         self.object_id = object_id
         self._graph = None
         self._max_nodes = max_nodes
@@ -365,7 +366,7 @@ class GridObjectModel(GraphObjectModel):
         # For backward compatibility. May remove later on.
         # This will be true if we load a pretrained graph. If True, grids are not
         # filled or used to constrain nodes in graph.
-        self.use_orginal_graph = False
+        self.use_original_graph = False
         self._location_tree = None
 
     # =============== Public Interface Functions ===============
@@ -377,14 +378,14 @@ class GridObjectModel(GraphObjectModel):
             observation_feature_mapping,
         ) = self._extract_feature_array(features)
         # TODO: part of init method?
-        logging.info(f"building graph from {locations.shape[0]} observations")
+        logger.info(f"building graph from {locations.shape[0]} observations")
         self._initialize_and_fill_grid(
             locations=locations,
             features=feature_array,
             observation_feature_mapping=observation_feature_mapping,
         )
         self._graph = self._build_graph_from_grids()
-        logging.info(f"built graph {self._graph}")
+        logger.info(f"built graph {self._graph}")
 
     def update_model(
         self,
@@ -406,7 +407,7 @@ class GridObjectModel(GraphObjectModel):
             feature_array,
             observation_feature_mapping,
         ) = self._extract_feature_array(rf_features)
-        logging.info(f"adding {locations.shape[0]} observations")
+        logger.info(f"adding {locations.shape[0]} observations")
         self._update_grids(
             locations=rf_locations,
             features=feature_array,
@@ -468,9 +469,9 @@ class GridObjectModel(GraphObjectModel):
         """Set self._graph property and convert input graph to right format."""
         if type(graph) is not NumpyGraph:
             # could also check if is type torch_geometric.data.data.Data
-            logging.debug(f"turning graph of type {type(graph)} into numpy graph")
+            logger.debug(f"turning graph of type {type(graph)} into numpy graph")
             graph = torch_graph_to_numpy(graph)
-        if self.use_orginal_graph:
+        if self.use_original_graph:
             # Just use pretrained graph. Do not use grids to constrain nodes.
             self._graph = graph
             self._location_tree = KDTree(
@@ -562,9 +563,9 @@ class GridObjectModel(GraphObjectModel):
         )
         percent_in_bounds = sum(locations_in_bounds) / len(locations_in_bounds)
         if percent_in_bounds < 0.9:
-            logging.info(
+            logger.info(
                 "Too many observations outside of grid "
-                f"({np.round(percent_in_bounds*100,2)}%). Skipping update of grids."
+                f"({np.round(percent_in_bounds * 100, 2)}%). Skipping update of grids."
             )
             raise GridTooSmallError
         voxel_ids_of_new_obs = location_grid_ids[locations_in_bounds]
@@ -706,7 +707,7 @@ class GridObjectModel(GraphObjectModel):
             feature_mapping: Dictionary with feature names as keys and their
                 corresponding indices in feature_array as values.
         """
-        feature_mapping = dict()
+        feature_mapping = {}
         feature_array = None
         for feature in feature_dict.keys():
             feats = feature_dict[feature]

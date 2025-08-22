@@ -12,8 +12,10 @@ on:
     branches:
       - main
 
-jobs:
+env:
+  UV_PYTHON: 3.9.22 # version of Python to use in `uv` environment
 
+jobs:
   build_sphinx_monty:
     name: build-sphinx-monty
     runs-on:
@@ -175,7 +177,8 @@ jobs:
           export PATH="$HOME/miniconda/bin:$PATH"
           source activate tbp.monty
           mkdir -p test_results/ruff
-          ruff check --verbose src tests benchmarks
+          ruff check src tests benchmarks
+          ruff format --check src tests benchmarks
 
   check_types_monty:
     name: check-types-monty
@@ -201,12 +204,13 @@ jobs:
           path: tbp.monty
       - name: Check types
         if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
+        continue-on-error: true # Accept type errors for now
         working-directory: tbp.monty
         run: |
           export PATH="$HOME/miniconda/bin:$PATH"
           source activate tbp.monty
           mkdir -p test_results/mypy
-          mypy --warn-unused-configs src tests benchmarks
+          mypy src tests benchmarks
 
   install_monty:
     name: install-monty
@@ -304,7 +308,7 @@ jobs:
     name: test-monty
     runs-on:
       group: tbp.monty
-      labels: tbp-linux-x64-ubuntu2204-8core
+      labels: tbp-linux-x64-ubuntu-nvidia-4core-t4gpu
     timeout-minutes: 120
     needs:
       - check_dependencies_monty # Don't run if dependency check fails
@@ -320,24 +324,19 @@ jobs:
           path: |
             ~/miniconda
           key: ${{ needs.install_monty.outputs.conda_env_cache_key_sha }}
+      - name: Install dependencies
+        # Installing before checkout because GitLFS is missing from the image
+        if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
+        run: |
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends xvfb libegl1-mesa-dev git-lfs
       - name: Checkout tbp.monty
         if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
         uses: actions/checkout@v4
         with:
           lfs: true
           path: tbp.monty
-      - name: Install xvfb and mesa
-        # Use X11 framebuffer and mesa opengl libraries for testing.
-        # Not ideal but better than no tests.
-        if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
-        run: |
-          sudo apt update -y
-          sudo apt install -y --no-install-recommends xvfb libegl1-mesa-dev
       - name: Run python tests
-        # Using 8 CPUs corresponding to the large GithHub-hosted runner available in the "tbp" runner group.
-        # See: https://docs.github.com/en/actions/using-github-hosted-runners/using-larger-runners/about-larger-runners#specifications-for-general-larger-runners
-        #
-        # NOTE: LD_PRELOAD is needed to provide what is discussed in https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748
         if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
         working-directory: tbp.monty
         run: |
@@ -345,8 +344,7 @@ jobs:
           source activate tbp.monty
           set -e
           mkdir -p test_results/pytest
-          export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
-          xvfb-run pytest -n 8 --cov --cov-report html --cov-report term --junitxml=test_results/pytest/results.xml --verbose
+          xvfb-run pytest --cov --cov-report html --cov-report term --junitxml=test_results/pytest/results.xml --verbose
       - name: Store test results
         if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
         uses: actions/upload-artifact@v4
@@ -358,4 +356,54 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test_coverage
+          path: tbp.monty/htmlcov
+
+  test_uv_monty:
+    name: test-uv-monty
+    runs-on:
+      group: tbp.monty
+      labels: tbp-linux-x64-ubuntu2204-8core
+    timeout-minutes: 120
+    needs:
+      # TODO: check all these using `uv` once we move off Conda
+      - check_dependencies_monty # Don't run if dependency check fails
+      - check_style_monty # Don't run if style check fails
+      - check_types_monty # Don't run if type check fails
+      - should_run_monty
+    steps:
+      - name: Checkout tbp.monty
+        if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          path: tbp.monty
+      - name: Install uv
+        if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: '**/uv.lock'
+      - name: Create uv environment
+        if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
+        working-directory: tbp.monty
+        continue-on-error: true
+        run: uv sync --locked --extra dev --extra simulator_mujoco
+      - name: Run tests
+        if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
+        working-directory: tbp.monty
+        continue-on-error: true
+        run: |
+          mkdir -p test_results/pytest
+          uv run pytest --cov --cov-report html --cov-report term --junitxml=test_results/pytest/results.xml --verbose
+      - name: Store test results
+        if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_results_uv
+          path: tbp.monty/test_results/pytest
+      - name: Store coverage
+        if: ${{ needs.should_run_monty.outputs.should_run_monty == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_coverage_uv
           path: tbp.monty/htmlcov

@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -6,11 +7,17 @@
 # Use of this source code is governed by the MIT
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
+from __future__ import annotations
 
 import dataclasses
 import importlib
 from inspect import Parameter, signature
-from typing import Callable, Optional, Type
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Type
+
+from typing_extensions import TypeIs
+
+if TYPE_CHECKING:
+    from _typeshed import DataclassInstance
 
 __all__ = [
     "as_dataclass_dict",
@@ -67,9 +74,7 @@ def from_dataclass_dict(datadict):
     # Check for nested dataclass
     kwargs = {}
     for k, v in datadict.items():
-        if isinstance(v, dict):
-            v = from_dataclass_dict(v)
-        kwargs[k] = v
+        kwargs[k] = from_dataclass_dict(v) if isinstance(v, dict) else v
 
     if _DATACLASS_TYPE not in kwargs:
         # Not a dataclass dict
@@ -151,7 +156,7 @@ def create_dataclass_args(
     return dataclasses.make_dataclass(dataclass_name, _fields, bases=bases, frozen=True)
 
 
-def config_to_dict(config):
+def config_to_dict(config: DataclassInstance | Dict[str, Any]) -> Dict[str, Any]:
     """Convert config composed of mixed dataclass and dict elements to pure dict.
 
     We want to convert configs composed of mixed dataclass and dict elements to
@@ -159,20 +164,37 @@ def config_to_dict(config):
 
     TODO: Remove once all other configs are converted to dict only
 
+    Args:
+        config: Config to convert to dict.
+
     Returns:
         Pure dict version of config.
     """
-    if isinstance(config, dict):
-        return {k: config_to_dict(v) for k, v in config.items()}
-    if dataclasses.is_dataclass(config):
-        return dataclasses.asdict(config)
-    return config
+    return (
+        {k: config_to_dict(v) if is_config_like(v) else v for k, v in config.items()}
+        if isinstance(config, dict)
+        else dataclasses.asdict(config)
+    )
+
+
+def is_config_like(obj: Any) -> TypeIs[DataclassInstance | Dict[str, Any]]:
+    """Returns True if obj is a dataclass or dict, False otherwise.
+
+    Args:
+        obj: Object to check.
+
+    Returns:
+        True if config is a dataclass or dict, False otherwise.
+    """
+    if isinstance(obj, type):
+        return False
+    return isinstance(obj, dict) or dataclasses.is_dataclass(obj)
 
 
 def get_subset_of_args(arguments, function):
     dict_args = config_to_dict(arguments)
     _fields = extract_fields(function)
-    common_fields = dict()
+    common_fields = {}
     for field in _fields:
         field_name = field[0]
         if field_name in dict_args:

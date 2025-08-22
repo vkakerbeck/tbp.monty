@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -6,6 +7,13 @@
 # Use of this source code is governed by the MIT
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
+
+import pytest
+
+pytest.importorskip(
+    "habitat_sim",
+    reason="Habitat Sim optional dependency not installed.",
+)
 
 import copy
 import shutil
@@ -20,11 +28,9 @@ from tbp.monty.frameworks.config_utils.config_args import (
     PatchAndViewMontyConfig,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
-    EnvInitArgsPatchViewMount,
     EnvironmentDataLoaderPerObjectEvalArgs,
     EnvironmentDataLoaderPerObjectTrainArgs,
     ExperimentArgs,
-    PatchViewFinderMountHabitatDatasetArgs,
     PredefinedObjectInitializer,
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
@@ -32,6 +38,10 @@ from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
 from tbp.monty.frameworks.models.sensor_modules import (
     DetailedLoggingSM,
     HabitatDistantPatchSM,
+)
+from tbp.monty.simulators.habitat.configs import (
+    EnvInitArgsPatchViewMount,
+    PatchViewFinderMountHabitatDatasetArgs,
 )
 
 
@@ -122,64 +132,58 @@ class SensorModuleTest(unittest.TestCase):
         """Check that correct features are returned by sensor module."""
         print("...parsing experiment...")
         base_config = copy.deepcopy(self.sensor_feature_test)
-        self.exp = MontyObjectRecognitionExperiment()
-        self.exp.setup_experiment(base_config)
-        self.exp.model.set_experiment_mode("train")
-        pprint("...training...")
-        self.exp.pre_epoch()
-        self.exp.pre_episode()
-        for step, observation in enumerate(self.exp.dataloader):
-            self.exp.model.step(observation)
-            if step == 1:
-                break
-        self.exp.dataset.close()
+        with MontyObjectRecognitionExperiment(base_config) as exp:
+            exp.model.set_experiment_mode("train")
+            pprint("...training...")
+            exp.pre_epoch()
+            exp.pre_episode()
+            for step, observation in enumerate(exp.dataloader):
+                exp.model.step(observation)
+                if step == 1:
+                    break
 
     # @unittest.skip("debugging")
     def test_features_in_sensor(self):
         """Check that correct features are returned by sensor module."""
         print("...parsing experiment...")
         base_config = copy.deepcopy(self.sensor_feature_test)
-        self.exp = MontyObjectRecognitionExperiment()
-        self.exp.setup_experiment(base_config)
-        self.exp.model.set_experiment_mode("train")
-        pprint("...training...")
-        self.exp.pre_epoch()
-        self.exp.pre_episode()
-        for _, observation in enumerate(self.exp.dataloader):
-            self.exp.model.aggregate_sensory_inputs(observation)
+        with MontyObjectRecognitionExperiment(base_config) as exp:
+            exp.model.set_experiment_mode("train")
+            pprint("...training...")
+            exp.pre_epoch()
+            exp.pre_episode()
+            for _, observation in enumerate(exp.dataloader):
+                exp.model.aggregate_sensory_inputs(observation)
 
-            pprint(self.exp.model.sensor_module_outputs)
-            for feature in self.tested_features:
-                if feature in ["pose_vectors", "pose_fully_defined", "on_object"]:
-                    self.assertIn(
-                        feature,
-                        self.exp.model.sensor_module_outputs[
-                            0
-                        ].morphological_features.keys(),
-                        f"{feature} not returned by SM",
-                    )
-                else:
-                    self.assertIn(
-                        feature,
-                        self.exp.model.sensor_module_outputs[
-                            0
-                        ].non_morphological_features.keys(),
-                        f"{feature} not returned by SM",
-                    )
-            break
-        self.exp.dataset.close()
+                pprint(exp.model.sensor_module_outputs)
+                for feature in self.tested_features:
+                    if feature in ["pose_vectors", "pose_fully_defined", "on_object"]:
+                        self.assertIn(
+                            feature,
+                            exp.model.sensor_module_outputs[
+                                0
+                            ].morphological_features.keys(),
+                            f"{feature} not returned by SM",
+                        )
+                    else:
+                        self.assertIn(
+                            feature,
+                            exp.model.sensor_module_outputs[
+                                0
+                            ].non_morphological_features.keys(),
+                            f"{feature} not returned by SM",
+                        )
+                break
 
     def test_feature_change_sm(self):
         pprint("...parsing experiment...")
         config = copy.deepcopy(self.feature_change_sensor_config)
-        self.exp = MontyObjectRecognitionExperiment()
-        self.exp.setup_experiment(config)
-        pprint("...training...")
-        self.exp.train()
-        # TODO: test that only new features are given to LM
-        pprint("...evaluating...")
-        self.exp.evaluate()
-        self.exp.dataset.close()
+        with MontyObjectRecognitionExperiment(config) as exp:
+            pprint("...training...")
+            exp.train()
+            # TODO: test that only new features are given to LM
+            pprint("...evaluating...")
+            exp.evaluate()
 
 
 if __name__ == "__main__":

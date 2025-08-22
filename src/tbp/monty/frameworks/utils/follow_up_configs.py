@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -97,8 +98,8 @@ def create_eval_episode_config(
         output_dir, "reproduce_episode_data", f"eval_episode_{episode}_actions.jsonl"
     )
     new_config["monty_config"]["motor_system_config"]["motor_system_args"][
-        "file_name"
-    ] = motor_file
+        "policy_args"
+    ]["file_name"] = motor_file
 
     # 2) Load object params from this episode into dataloader config
     object_params_file = os.path.join(
@@ -190,24 +191,16 @@ def create_eval_config_multiple_episodes(
     # Add detailed handlers
     if DetailedJSONHandler not in new_config["logging_config"]["monty_handlers"]:
         new_config["logging_config"]["monty_handlers"].append(DetailedJSONHandler)
-    if (
-        DetailedWandbMarkedObsHandler
-        not in new_config["logging_config"]["wandb_handlers"]
-    ):
-        new_config["logging_config"]["wandb_handlers"].append(
-            DetailedWandbMarkedObsHandler
-        )
 
     ###
     # Accumulate episode-specific data: actions and object params
     ###
 
-    file_names_per_episode = dict()
+    file_names_per_episode = {}
     target_objects = []
     target_positions = []
     target_rotations = []
-    episode_counter = 0
-    for episode in episodes:
+    for episode_counter, episode in enumerate(episodes):
         # Get actions from this episode
         motor_file = os.path.join(
             output_dir,
@@ -227,7 +220,6 @@ def create_eval_config_multiple_episodes(
         target_objects.append(target_data["primary_target_object"])
         target_positions.append(target_data["primary_target_position"])
         target_rotations.append(target_data["primary_target_rotation_euler"])
-        episode_counter += 1
 
     # Update config with episode-specific data
     new_config["eval_dataloader_args"]["object_names"] = target_objects
@@ -238,5 +230,8 @@ def create_eval_config_multiple_episodes(
             change_every_episode=True,
         )
     )
+    new_config["monty_config"]["motor_system_config"]["motor_system_args"][
+        "policy_args"
+    ]["file_names_per_episode"] = file_names_per_episode
 
     return new_config

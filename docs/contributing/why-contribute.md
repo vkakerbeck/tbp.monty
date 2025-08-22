@@ -12,7 +12,7 @@ We are excited about all contributors and there may be a wide range of motivatio
 - You want to solve a task that requires quick, continuous learning and adaptation.
 - You want to better understand the brain and principles underlying our intelligence.
 - You want to work on the future of AI.
-- You want to be part of a truely unique and special project.
+- You want to be part of a truly unique and special project.
 
 Here is a list of concrete output you may get out of working on this project.
 
@@ -24,4 +24,4 @@ Here is a list of concrete output you may get out of working on this project.
 - Become a code contributor.
 - Lastly, for those out there who love achievements, note that when an RFC you have made is merged and active, you can get a player icon of your choice on our [project roadmap](../future-work/project-roadmap.md). Maybe we'll see you there soon? 🎯
 
-As we are putting this code under an [MIT license](../../LICENSE) and related patents under a [non-assert pledge](https://www.numenta.com/thousand-brains-project/patents/), people can also build commercial applications on this framework. However, the current code is very much research code and not an out-of-the-box solution so it will require significant engineering effort to tailor it to your application.
+As we are putting this code under an [MIT license](../../LICENSE) and Numenta has put its related patents under a [non-assert pledge](https://www.numenta.com/thousand-brains-project/patents/), people can also build commercial applications on this framework. However, the current code is very much research code and not an out-of-the-box solution so it will require significant engineering effort to tailor it to your application.

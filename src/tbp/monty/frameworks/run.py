@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -15,6 +16,8 @@ import time
 
 from tbp.monty.frameworks.config_utils.cmd_parser import create_cmd_parser
 from tbp.monty.frameworks.utils.dataclass_utils import config_to_dict
+
+logger = logging.getLogger(__name__)
 
 
 def merge_args(config, cmd_args=None):
@@ -42,25 +45,23 @@ def print_config(config):
 
 
 def run(config):
-    exp = config["experiment_class"]()
-    exp.setup_experiment(config)
+    with config["experiment_class"](config) as exp:
+        # TODO: Later will want to evaluate every x episodes or epochs
+        # this could probably be solved with just setting the logging freqency
+        # Since each trainng loop already does everything that eval does.
+        if exp.do_train:
+            print("---------training---------")
+            exp.train()
 
-    # TODO: Later will want to evaluate every x episodes or epochs
-    # this could probably be solved with just setting the logging freqency
-    # Since each trainng loop already does everything that eval does.
-    if exp.do_train:
-        print("---------training---------")
-        exp.train()
-
-    if exp.do_eval:
-        print("---------evaluating---------")
-        exp.evaluate()
+        if exp.do_eval:
+            print("---------evaluating---------")
+            exp.evaluate()
 
 
 def main(all_configs, experiments=None):
     """Use this as "main" function when running monty experiments.
 
-    A typical project `run.py` shoud look like this::
+    A typical project `run.py` should look like this::
 
         # Load all experiment configurations from local project
         from experiments import CONFIGS
@@ -78,7 +79,7 @@ def main(all_configs, experiments=None):
     """
     cmd_args = None
     if not experiments:
-        cmd_parser = create_cmd_parser(all_configs=all_configs)
+        cmd_parser = create_cmd_parser(experiments=list(all_configs.keys()))
         cmd_args = cmd_parser.parse_args()
         experiments = cmd_args.experiments
 
@@ -101,14 +102,14 @@ def main(all_configs, experiments=None):
         )
         # If we are not running in parallel, this should always be False
         exp_config["logging_config"]["log_parallel_wandb"] = False
+        print_config(exp_config)
 
-        # Print config, including udpates to run name
+        # Print config without running experiment
         if cmd_args is not None:
             if cmd_args.print_config:
-                print_config(exp_config)
                 continue
 
         os.makedirs(exp_config["logging_config"]["output_dir"], exist_ok=True)
         start_time = time.time()
         run(exp_config)
-        logging.info(f"Done running {experiment} in {time.time() - start_time} seconds")
+        logger.info(f"Done running {experiment} in {time.time() - start_time} seconds")

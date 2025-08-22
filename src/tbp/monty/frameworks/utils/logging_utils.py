@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2023-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -7,15 +8,19 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+from __future__ import annotations
+
 import copy
 import json
 import logging
 import os
 from collections import deque
 from itertools import chain
+from pathlib import Path
 from sys import getsizeof
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import quaternion
 import torch
@@ -25,6 +30,8 @@ from tbp.monty.frameworks.utils.spatial_arithmetics import (
     get_unique_rotations,
     rotations_to_quats,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def load_stats(
@@ -114,11 +121,10 @@ def deserialize_json_chunks(json_file, start=0, stop=None, episodes=None):
         else:
             return (counter >= start) and (counter < stop)
 
-    detailed_json = dict()
+    detailed_json = {}
     stop = stop or np.inf
     with open(json_file, "r") as f:
-        line_counter = 0
-        for line in f:
+        for line_counter, line in enumerate(f):
             if should_get_episode(start, stop, episodes, line_counter):
                 # NOTE: json logging is only used at inference time and inference
                 # episodes are independent and order does not matter. This hack fixes a
@@ -131,11 +137,10 @@ def deserialize_json_chunks(json_file, start=0, stop=None, episodes=None):
                 json_key = list(tmp_json.keys())[0]  # has only one key
                 detailed_json[str(line_counter)] = tmp_json[json_key]
                 del tmp_json
-            line_counter += 1
 
     if episodes is not None:
         str_episodes = [str(i) for i in episodes]
-        if not list(detailed_json.keys()) == str_episodes:
+        if list(detailed_json.keys()) != str_episodes:
             print(
                 "WARNING: episode keys did not equal json keys. This can happen if "
                 "json file was not appended to in episode order. To manually load the"
@@ -168,7 +173,7 @@ def matches_to_target_str(possible_matches, graph_to_target):
         targets = graph_to_target[match]
         possible_match_sources.update(targets)
 
-    sorted_targets = sorted(list(possible_match_sources))
+    sorted_targets = sorted(possible_match_sources)
     str_targets = "-".join(sorted_targets)
     return dict(possible_match_sources=str_targets)
 
@@ -358,7 +363,7 @@ def check_detection_accuracy_at_step(stats, last_n_step=1):
     return detection_stats
 
 
-def get_time_stats(all_ds, all_conditions):
+def get_time_stats(all_ds, all_conditions) -> pd.DataFrame:
     """Get summary of run times in a dataframe for each condition.
 
     Args:
@@ -366,7 +371,7 @@ def get_time_stats(all_ds, all_conditions):
         all_conditions: name of each condition
 
     Returns:
-        pd.DataFrame with runtime stats
+        Runtime stats.
     """
     time_stats = []
     for i, detailed_stats in enumerate(all_ds):
@@ -387,18 +392,56 @@ def get_time_stats(all_ds, all_conditions):
     return time_stats
 
 
-def get_pose_error(detected_pose, target_pose):
-    if type(detected_pose) != list:
-        detected_pose = [detected_pose]
-    target_r = Rotation.from_quat(target_pose)
-    min_error = np.pi
-    for det_r in detected_pose:
-        detected_r = Rotation.from_quat(det_r)
-        difference = detected_r * target_r.inv()
-        error = difference.magnitude()
-        if error < min_error:
-            min_error = error
-    return min_error
+def compute_pose_errors(
+    predicted_rotation: Rotation, target_rotation: Rotation
+) -> npt.NDArray[np.float64] | float:
+    """Computes the angular pose errors between predicted and target rotations.
+
+    Both inputs must be instances of `scipy.spatial.transform.Rotation`. The
+    `predicted_rotation` may contain a single rotation or a list of rotations,
+    while `target_rotation` must be exactly one rotation.
+
+    The pose error is defined as the geodesic distance on SO(3) — the angle of the
+    relative rotation between predicted and target. If `predicted_rotation` contains
+    multiple rotations, this function returns the errors among them.
+
+    Note that the `.inv()` operation in this method is due to how geodesic distance
+    between two rotations is calculated, not a side-effect of whether the target
+    rotation is stored in its normal form, or as its inverse. The function therefore
+    assumes that the orientations are already in the same coordinate system before
+    the comparison.
+
+    Args:
+        predicted_rotation: Predicted rotation(s). Can be a single or list of
+            rotation.
+        target_rotation: Target rotation. Must represent a single rotation.
+
+    Returns:
+        The angular errors in radians.
+    """
+    errors: npt.NDArray[np.float64] | float = (
+        predicted_rotation * target_rotation.inv()
+    ).magnitude()
+    return errors
+
+
+def compute_pose_error(
+    predicted_rotation: Rotation, target_rotation: Rotation
+) -> float:
+    """Computes the minimum angular pose error between predicted and target rotations.
+
+    See `compute_pose_errors` for more details.
+
+    Args:
+        predicted_rotation: Predicted rotation(s). Can be a single or list of
+            rotation.
+        target_rotation: Target rotation. Must represent a single rotation.
+
+    Returns:
+        The minimum angular error in radians.
+    """
+    error = np.min(compute_pose_errors(predicted_rotation, target_rotation))
+    return error
 
 
 def get_overall_pose_error(stats, lm_id="LM_0"):
@@ -408,7 +451,7 @@ def get_overall_pose_error(stats, lm_id="LM_0"):
         This can now be obtained easier from the .csv stats.
 
     Args:
-        stats (dict): detailed stats
+        stats: detailed stats
         lm_id: id of learning module
 
     Returns:
@@ -419,7 +462,9 @@ def get_overall_pose_error(stats, lm_id="LM_0"):
         detected = stats[episode][lm_id]["detected_rotation_quat"]
         if detected is not None:  # only checking accuracy on detected objects
             target = stats[episode][lm_id]["target"]["quat_rotation"]
-            err = get_pose_error(detected, target)
+            err = compute_pose_error(
+                Rotation.from_quat(detected), Rotation.from_quat(target)
+            )
             errors.append(err)
     return np.round(np.mean(errors), 4)
 
@@ -433,13 +478,14 @@ def print_overall_stats(stats):
         / len(stats)
         * 100
     )
-    print(f"Detected {np.round(acc,2)}% correctly")
+    print(f"Detected {np.round(acc, 2)}% correctly")
     rt = np.sum(stats["time"])
     rt_per_step = np.mean(stats["time"] / stats["monty_matching_steps"])
     print(
-        f"overall run time: {np.round(rt,2)} seconds ({np.round(rt/60,2)} minutes),"
-        f" {np.round(rt/len(stats),2)} seconds per episode, {np.round(rt_per_step,2)} "
-        "seconds per step."
+        f"overall run time: {np.round(rt, 2)} seconds "
+        f"({np.round(rt / 60, 2)} minutes), "
+        f"{np.round(rt / len(stats), 2)} seconds per episode, "
+        f"{np.round(rt_per_step, 2)} seconds per step."
     )
 
 
@@ -467,10 +513,10 @@ def print_unsupervised_stats(stats, epoch_len):
         * 100
     )
     print(
-        f"Detected {np.round(first_epoch_acc,2)}% correctly as new object"
+        f"Detected {np.round(first_epoch_acc, 2)}% correctly as new object"
         "in first epoch"
     )
-    print(f"Detected {np.round(later_acc,2)}% correctly after first epoch")
+    print(f"Detected {np.round(later_acc, 2)}% correctly after first epoch")
     print(f"Mean objects per graph: {list(stats['mean_objects_per_graph'])[-1]}")
     print(f"Mean graphs per object: {list(stats['mean_graphs_per_object'])[-1]}")
     print("Merged graphs:")
@@ -479,8 +525,8 @@ def print_unsupervised_stats(stats, epoch_len):
             print("     " + string)
     rt = np.sum(stats["time"])
     print(
-        f"overall run time: {np.round(rt,2)} seconds ({np.round(rt/60,2)} minutes),"
-        f" {np.round(rt/len(stats),2)} seconds per episode."
+        f"overall run time: {np.round(rt, 2)} seconds ({np.round(rt / 60, 2)} minutes),"
+        f" {np.round(rt / len(stats), 2)} seconds per episode."
     )
 
 
@@ -573,9 +619,9 @@ def get_graph_lm_episode_stats(lm):
                 else:
                     detected_rotation = lm.buffer.stats["detected_rotation_quat"]
                 rotation_error = np.round(
-                    get_pose_error(
-                        detected_rotation,
-                        lm.primary_target_rotation_quat,
+                    compute_pose_error(
+                        Rotation.from_quat(detected_rotation),
+                        Rotation.from_quat(lm.primary_target_rotation_quat),
                     ),
                     4,
                 )
@@ -614,9 +660,9 @@ def get_graph_lm_episode_stats(lm):
                     else:
                         detected_rotation_ts = lm.buffer.stats["individual_ts_rot"]
                     individual_ts_rotation_error = np.round(
-                        get_pose_error(
-                            detected_rotation_ts,
-                            lm.primary_target_rotation_quat,
+                        compute_pose_error(
+                            Rotation.from_quat(detected_rotation_ts),
+                            Rotation.from_quat(lm.primary_target_rotation_quat),
                         ),
                         4,
                     )
@@ -706,7 +752,7 @@ def get_stats_per_lm(model, target):
     Returns:
         performance_dict: dict with stats per lm
     """
-    performance_dict = dict()
+    performance_dict = {}
     primary_target_dict = target_data_to_dict(target)
     for i, lm in enumerate(model.learning_modules):
         lm_stats = get_graph_lm_episode_stats(lm)
@@ -753,9 +799,9 @@ def add_evidence_lm_episode_stats(lm, stats):
     )
     if stats["primary_performance"] == "correct_mlh":
         stats["rotation_error"] = np.round(
-            get_pose_error(
-                last_mlh["rotation"].inv().as_quat(),
-                lm.primary_target_rotation_quat,
+            compute_pose_error(
+                last_mlh["rotation"].inv(),
+                Rotation.from_quat(lm.primary_target_rotation_quat),
             ),
             4,
         )
@@ -792,9 +838,9 @@ def target_data_to_dict(target):
         target: target params
 
     Returns:
-        output_dict: dict with target params
+        dict with target params
     """
-    output_dict = dict()
+    output_dict = {}
     output_dict["primary_target_object"] = target["object"]
     output_dict["primary_target_position"] = target["position"]
     output_dict["primary_target_rotation_euler"] = target["euler_rotation"]
@@ -821,7 +867,7 @@ def format_columns_for_wandb(lm_dict):
         lm_dict: dict, part of a larger dict ~ {LM_0: lm_dict, LM_1: lm_dict}
 
     Returns:
-        dict: formatted lm_dict
+        formatted lm_dict
     """
     formatted_dict = copy.deepcopy(lm_dict)
     if "result" in formatted_dict:
@@ -847,7 +893,7 @@ def lm_stats_to_dataframe(stats, format_for_wandb=False):
     """
     df_list = []
     for episode in stats.values():
-        lm_dict = dict()
+        lm_dict = {}
         # Loop over things like LM_*, SM_*, motor_system and get only LM_*
         for key in episode.keys():
             if isinstance(key, str):
@@ -881,36 +927,35 @@ def maybe_rename_existing_file(log_file, extension, report_count):
         old_name = log_file.split(extension)[0]
         new_name = old_name + "_old" + extension
 
-        logging.warning(
+        logger.warning(
             f"Output file {log_file} already exists. This file will be moved"
             f" to {new_name}"
         )
 
         if os.path.exists(new_name):
-            logging.warning(
+            logger.warning(
                 f"Output file {new_name} also already exists. This file will be removed"
                 " before renaming."
             )
             os.remove(new_name)
 
-        os.rename(log_file, new_name)
+        Path(log_file).rename(new_name)
 
 
 def maybe_rename_existing_directory(path, report_count):
     if (report_count == 0) and os.path.exists(path):
         new_path = path + "_old"
-        logging.warning(
-            f"Output path {path} already exists. This path will be moved"
-            f"to {new_path}"
+        logger.warning(
+            f"Output path {path} already exists. This path will be movedto {new_path}"
         )
 
         if os.path.exists(new_path):
-            logging.warning(
+            logger.warning(
                 f"{new_path} also exists, and will be removed before renaming"
             )
             os.remove(new_path)
 
-        os.rename(path, new_path)
+        Path(path).rename(new_path)
 
 
 def get_rgba_frames_single_sm(observations):

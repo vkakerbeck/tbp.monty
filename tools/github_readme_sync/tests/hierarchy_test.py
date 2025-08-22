@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -7,6 +8,7 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+import contextlib
 import http.server
 import os
 import socketserver
@@ -24,7 +26,7 @@ from tools.github_readme_sync.hierarchy import (
     check_hierarchy_file,
     check_links,
     create_hierarchy_file,
-    extract_links,
+    extract_external_links,
 )
 from tools.github_readme_sync.readme import ReadMe
 
@@ -177,12 +179,9 @@ class TestHierarchyFile(unittest.TestCase):
             f.write(f"[Fragment]({self.server_url}/valid#fragment)\n")
 
         with self.assertLogs(level="ERROR") as log:
-            try:
+            with contextlib.suppress(SystemExit):
                 check_external(self.test_dir, [], ReadMe("0.0"))
-            except SystemExit:
-                pass
 
-        print("here", log.output)
         self.assertTrue(
             any(
                 f"broken link: {self.server_url}/missing" in message
@@ -195,7 +194,7 @@ class TestHierarchyFile(unittest.TestCase):
 
     def test_extract_links_happy_path(self):
         def extract(input_string, expected_output):
-            self.assertEqual(extract_links(input_string), expected_output)
+            self.assertEqual(extract_external_links(input_string), expected_output)
 
         extract("[Link 1](https://a.com)", ["https://a.com"])
         extract(

@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2023-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -11,6 +12,10 @@ import http.server
 import os
 import re
 
+from tbp.monty.frameworks.run_env import setup_env
+
+setup_env()
+
 # This class is used for the monty meets world demo to live stream data from the iPad
 # camera to a server that Monty can then read from.
 
@@ -22,7 +27,9 @@ class MontyRequestHandler(http.server.SimpleHTTPRequestHandler):
         data_type = "depth" if inc_filename == "depth.data" else "rgb"
 
         # check existing filenames in the directory
-        data_path = os.path.expanduser("~/tbp/data/worldimages/world_data_stream")
+        data_path = os.path.join(
+            os.environ["MONTY_DATA"], "worldimages/world_data_stream"
+        )
         file_list = [f for f in os.listdir(data_path) if not f.startswith(".")]
         if data_type == "depth":
             match = [re.search("depth_(.*).data", file) for file in file_list]
@@ -47,10 +54,18 @@ class MontyRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
         # Return object id
-        reply_body = 'Saved "%s"\n' % new_filename
+        reply_body = f'Saved "{new_filename}"\n'
         self.wfile.write(reply_body.encode("utf-8"))
 
 
 if __name__ == "__main__":
-    server = http.server.HTTPServer(("0.0.0.0", 8080), MontyRequestHandler)
+    # throw an error if the ip address is not set
+    ip_address = os.environ.get("MONTY_SERVER_IP_ADDRESS")
+    assert ip_address is not None, (
+        "MONTY_SERVER_IP_ADDRESS must be set. Set it to your WiFi's IP address by "
+        "running `export MONTY_SERVER_IP_ADDRESS=<your_wifi_ip_address>`",
+    )
+    port = 8080
+    server = http.server.HTTPServer((ip_address, port), MontyRequestHandler)
+    print(f"Waiting for data at {ip_address}:{port}...")
     server.serve_forever()

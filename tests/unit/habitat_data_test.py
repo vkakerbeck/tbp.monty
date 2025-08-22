@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -6,6 +7,13 @@
 # Use of this source code is governed by the MIT
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
+
+import pytest
+
+pytest.importorskip(
+    "habitat_sim",
+    reason="Habitat Sim optional dependency not installed.",
+)
 
 import unittest
 import unittest.mock as mock
@@ -22,9 +30,10 @@ from tbp.monty.frameworks.environments.embodied_data import (
     EnvironmentDataset,
 )
 from tbp.monty.frameworks.environments.embodied_environment import ActionSpace
-from tbp.monty.frameworks.environments.habitat import AgentConfig, HabitatEnvironment
 from tbp.monty.frameworks.models.motor_policies import BasePolicy
+from tbp.monty.frameworks.models.motor_system import MotorSystem
 from tbp.monty.simulators.habitat import SingleSensorAgent
+from tbp.monty.simulators.habitat.environment import AgentConfig, HabitatEnvironment
 
 DATASET_LEN = 10
 DEFAULT_ACTUATION_AMOUNT = 0.25
@@ -125,12 +134,14 @@ class HabitatDataTest(unittest.TestCase):
         self.assertIn(action_space_dist.sample(), EXPECTED_ACTIONS_DIST)
 
         # Create distant-agent motor systems / policies
-        motor_system_config_dist = make_base_policy_config(
+        base_policy_config_dist = make_base_policy_config(
             action_space_type="distant_agent",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_dist = BasePolicy(rng=rng, **motor_system_config_dist.__dict__)
+        motor_system_dist = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_dist.__dict__)
+        )
 
         # Check if datasets are getting observations from simulator
         mock_sim_dist.get_sensor_observations.side_effect = self.mock_observations
@@ -190,12 +201,14 @@ class HabitatDataTest(unittest.TestCase):
         self.assertCountEqual(action_space_abs, EXPECTED_ACTIONS_ABS)
         self.assertIn(action_space_abs.sample(), EXPECTED_ACTIONS_ABS)
 
-        motor_system_config_abs = make_base_policy_config(
+        base_policy_config_abs = make_base_policy_config(
             action_space_type="absolute_only",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_abs = BasePolicy(rng=rng, **motor_system_config_abs.__dict__)
+        motor_system_abs = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_abs.__dict__)
+        )
 
         # Check if datasets are getting observations from simulator
         mock_sim_abs.get_sensor_observations.side_effect = self.mock_observations
@@ -257,12 +270,14 @@ class HabitatDataTest(unittest.TestCase):
 
         # Note we just test random actions (i.e. base policy) with the surface-agent
         # action space
-        motor_system_config_surf = make_base_policy_config(
+        base_policy_config_surf = make_base_policy_config(
             action_space_type="surface_agent",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_surf = BasePolicy(rng=rng, **motor_system_config_surf.__dict__)
+        motor_system_surf = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_surf.__dict__)
+        )
 
         # Check if datasets are getting observations from simulator
         mock_sim_surf.get_sensor_observations.side_effect = self.mock_observations
@@ -315,18 +330,16 @@ class HabitatDataTest(unittest.TestCase):
             rng=rng,
         )
 
-        motor_system_config_dist = make_base_policy_config(
+        base_policy_config_dist = make_base_policy_config(
             action_space_type="distant_agent",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_dist = BasePolicy(rng=rng, **motor_system_config_dist.__dict__)
+        motor_system_dist = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_dist.__dict__)
+        )
 
         dataloader_dist = EnvironmentDataLoader(dataset_dist, motor_system_dist, rng)
-        initial_obs_dist = next(dataloader_dist)
-        camera_obs_dist = initial_obs_dist[AGENT_ID][SENSOR_ID]
-        self.assertTrue(np.all(camera_obs_dist[SENSORS[0]] == EXPECTED_STATES[0]))
-
         for i, item in enumerate(dataloader_dist):
             camera_obs_dist = item[AGENT_ID][SENSOR_ID]
             self.assertTrue(np.all(camera_obs_dist[SENSORS[0]] == EXPECTED_STATES[i]))
@@ -358,18 +371,16 @@ class HabitatDataTest(unittest.TestCase):
             rng=rng,
         )
 
-        motor_system_config_abs = make_base_policy_config(
+        base_policy_config_abs = make_base_policy_config(
             action_space_type="absolute_only",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_abs = BasePolicy(rng=rng, **motor_system_config_abs.__dict__)
+        motor_system_abs = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_abs.__dict__)
+        )
 
         dataloader_abs = EnvironmentDataLoader(dataset_abs, motor_system_abs, rng)
-        initial_obs_abs = next(dataloader_abs)
-        camera_obs_abs = initial_obs_abs[AGENT_ID][SENSOR_ID]
-        self.assertTrue(np.all(camera_obs_abs[SENSORS[0]] == EXPECTED_STATES[0]))
-
         for i, item in enumerate(dataloader_abs):
             camera_obs_abs = item[AGENT_ID][SENSOR_ID]
             self.assertTrue(np.all(camera_obs_abs[SENSORS[0]] == EXPECTED_STATES[i]))
@@ -403,18 +414,16 @@ class HabitatDataTest(unittest.TestCase):
 
         # Note we just test random actions (i.e. base policy) with the surface-agent
         # action space
-        motor_system_config_surf = make_base_policy_config(
+        base_policy_config_surf = make_base_policy_config(
             action_space_type="surface_agent",
             action_sampler_class=UniformlyDistributedSampler,
             agent_id=AGENT_ID,
         )
-        motor_system_surf = BasePolicy(rng=rng, **motor_system_config_surf.__dict__)
+        motor_system_surf = MotorSystem(
+            policy=BasePolicy(rng=rng, **base_policy_config_surf.__dict__)
+        )
 
         dataloader_surf = EnvironmentDataLoader(dataset_surf, motor_system_surf, rng)
-        initial_obs_surf = next(dataloader_surf)
-        camera_obs_surf = initial_obs_surf[AGENT_ID][SENSOR_ID]
-        self.assertTrue(np.all(camera_obs_surf[SENSORS[0]] == EXPECTED_STATES[0]))
-
         for i, item in enumerate(dataloader_surf):
             camera_obs_surf = item[AGENT_ID][SENSOR_ID]
             self.assertTrue(np.all(camera_obs_surf[SENSORS[0]] == EXPECTED_STATES[i]))

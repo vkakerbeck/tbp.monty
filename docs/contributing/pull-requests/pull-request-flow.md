@@ -1,7 +1,7 @@
 ---
 title: Pull Request Flow
 ---
-![Blue: Contributor responsibility  <br/>Gray: Maintainer responsibility](../../figures/contributing/pull_request_flow.png)
+![Blue: Contributor responsibility  <br>Gray: Maintainer responsibility](../../figures/contributing/pull_request_flow.png)
 
 
 The Pull Request flow begins when you **Create a Pull Request** to our [GitHub repository](https://github.com/thousandbrainsproject/tbp.monty/pulls).
@@ -40,7 +40,7 @@ If all automated checks pass, **Maintainers** will **Review** the Pull Request. 
 
 # 3. Update Pull Request
 
-If automated checks fail or **Maintainers** **Request Changes**, you are responsible for **Updating the Pull Request**. Once you updated, the Pull Request will again enter **Review**.
+If automated checks fail or **Maintainers** **Request Changes**, you are responsible for **Updating the Pull Request**. Once you have updated it, the Pull Request will again enter **Review**.
 
 # 4. Approve
 
@@ -67,6 +67,29 @@ Once your Pull Request is **Approved**, if you make any unexpected commits that 
 > _As of this writing (October 2024), GitHub does not provide a mechanism to enforce this._
 
 **Maintainers** will **Merge** your **Approved** Pull Request.
+
+> [!NOTE]
+> **Maintainers**
+>
+> The commit message for the merge commit should comply with [RFC 10 Conventional Commits](https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0010_conventional_commits.md).
+>
+> We use the following commit types:
+>
+> * `fix`: Fix to a bug in the **src/tbp/monty** codebase. This correlates with `PATCH` in [RFC 7 Monty versioning](https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0007_monty_versioning.md).
+> * `feat`: Introduction of a new feature to the **scr/tbp/monty** codebase. This correlates with `MINOR` in [RFC 7 Monty versioning](https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0007_monty_versioning.md).
+> * `build`: Change to the build system or external dependencies.
+> * `ci`: Change to our GitHub Actions configuration files and scripts.
+> * `docs`: Documentation only update.
+> * `perf`: Performance improvement.
+> * `refactor`: A **src/tbp/monty** code change that neither fixes a bug nor adds a feature.
+> * `style`: Change that does not affect the meaning of the code (white-space, formatting, etc.).
+> * `test`: Adding or correcting tests.
+> * `chore`: The commit is a catch all for work outside of the types identified above. For example, the commit affects infrastructure, tooling, development, or other non-Monty framework code.
+> * `rfc`: RFC proposal.
+> * `revert`: Commit that reverts a previous commit.
+>
+> Breaking changes are communicated by appending `!` after the type. This correlates with `MAJOR` in [RFC 7 Monty versioning](https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0007_monty_versioning.md).
+
 
 After **Merge**, automated post-merge checks and tasks will run. If these fail, the Pull Request will be **Reverted**. If they succeed, you are **Done** 🥳🎉🎊.
 

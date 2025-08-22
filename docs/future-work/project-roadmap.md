@@ -2,7 +2,7 @@
 title: Project Roadmap
 description: An overview of tasks we plan to work on or would welcome contributions on.
 ---
-# Tasks on our Roadmap
+# Tasks on Our Roadmap
 
 We have a high-level overview table of tasks on our roadmap in our [project planning spreadsheet](https://docs.google.com/spreadsheets/d/1HlKqhMzYWxpW6_D0LtDd5qEuWRYHl6xMfxbIZ76lzng/edit?usp=sharing).
 
@@ -19,7 +19,7 @@ Tasks are categorized in two ways:
 
 Tasks that are done have a check mark next to them and are shaded in green. When a task gets checked off, it will add progress to the corresponding capabilities on the right.
 
-# What the TBP Team @Numenta is Working on
+# What the TBP Team is Working On
 
 Some of the tasks are under active development by our team or scheduled to be tackled by us soon. Those are shaded in color. Below the main table, you can find a **list of our past and current milestones** with more detailed descriptions, timeline, and who is working on it. The colors of the milestones correspond to the colors in the main table.
 
@@ -27,7 +27,22 @@ Some of the tasks are under active development by our team or scheduled to be ta
 
 We also have two stars that mark the current top two priorities of the TBP team.
 
-# How you can Contribute
+## Current Quarterly Goals
+To get a more concrete idea of our goals and roadmap for Q2 - 2025, have a look at this video:
+[block:embed]
+{
+  "html": "<iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fwww.youtube.com%2Fembed%2F4by5MeJ1IT8%3Ffeature%3Doembed&display_name=YouTube&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D4by5MeJ1IT8&image=https%3A%2F%2Fi.ytimg.com%2Fvi%2F4by5MeJ1IT8%2Fhqdefault.jpg&type=text%2Fhtml&schema=youtube\" width=\"854\" height=\"480\" scrolling=\"no\" title=\"YouTube embed\" frameborder=\"0\" allow=\"autoplay; fullscreen; encrypted-media; picture-in-picture;\" allowfullscreen=\"true\"></iframe>",
+  "url": "https://www.youtube.com/watch?v=4by5MeJ1IT8",
+  "title": "2025/04 - Q2 Roadmap",
+  "favicon": "https://www.youtube.com/favicon.ico",
+  "image": "https://i.ytimg.com/vi/4by5MeJ1IT8/hqdefault.jpg",
+  "provider": "https://www.youtube.com/",
+  "href": "https://www.youtube.com/watch?v=4by5MeJ1IT8",
+  "typeOfEmbed": "youtube"
+}
+[/block]
+
+# How You Can Contribute
 
 We are happy if one of the tasks on this list piques your interest and you would like to contribute by tackling it!
 
@@ -41,7 +56,7 @@ Once you have a concrete idea of how you would like to tackle a task (whether it
 >
 > Besides these more involved and research/code heavy tasks on our roadmap, there are many other ways you can get involved and support this project. Check out our page on [ways to contribute](../contributing/ways-to-contribute-to-code.md) to find out what best matches your skillset and interests.
 
-# Tasks that are not on this Sheet
+# Tasks That Are Not on This Sheet
 
 Obviously, this table doesn't cover everything we want the system to eventually be able to do or all the ideas you might be coming up with. 
 

@@ -3,7 +3,7 @@ title: Unsupervised Continual Learning
 ---
 # Introduction
 
-This tutorial demonstrates how to configure and run Monty experiments for [unsupervised continual learning](../../how-monty-works/how-learning-modules-work.md#different-phases-of-learning). In this regime, Monty learns while it explores an object and attempts to identify its identity and pose. If an object has been recognized as a previously seen item, then any knowledge gained during its exploration is added to an existing model and committed to memory. If Monty does not recognize the object, then a new model is generated for the object and stored. In this way, Monty jointly performs unsupervised learning and object/pose recognition. This mode of operation is distinct from those used in our tutorials on [pretraining](pretraining-a-model.md) and [model evaluation](running-inference-with-a-pretrained-model.md) in which learning and inference were performed in separate stages which is useful for more controlled experiments on one of the two. It is closer to the ultimate vision of Monty, where learning and inference are closely intertwined, much as they are in humans.
+This tutorial demonstrates how to configure and run Monty experiments for [unsupervised continual learning](../../how-monty-works/experiment.md#different-phases-of-learning). In this regime, Monty learns while it explores an object and attempts to identify its identity and pose. If an object has been recognized as a previously seen item, then any knowledge gained during its exploration is added to an existing model and committed to memory. If Monty does not recognize the object, then a new model is generated for the object and stored. In this way, Monty jointly performs unsupervised learning and object/pose recognition. This mode of operation is distinct from those used in our tutorials on [pretraining](pretraining-a-model.md) and [model evaluation](running-inference-with-a-pretrained-model.md) in which learning and inference were performed in separate stages which is useful for more controlled experiments on one of the two. It is closer to the ultimate vision of Monty, where learning and inference are closely intertwined, much as they are in humans.
 
 Our model will have one surface agent connected to one sensor module connected to one learning module. Our dataset will be comprised of two objects in the [YCB](https://www.ycbbenchmarks.com/) dataset, and each will be shown at a different random rotation for each episode. Monty will see each object three times in total.
 
@@ -13,13 +13,15 @@ Our model will have one surface agent connected to one sensor module connected t
 
 # Setting up the Experiment Config for Continual Learning
 
-To follow along, create a file called `unsupervised_continual_learning_tutorial.py` in the `benchmarks/configs/` folder and paste the code snippets into it.
+To follow along, open the `benchmarks/configs/my_experiments.py` file and paste the code snippets into it.
 
 ```python
 import os
+from dataclasses import asdict
 
 import numpy as np
 
+from benchmarks.configs.names import MyExperiments
 from tbp.monty.frameworks.config_utils.config_args import (
     CSVLoggingConfig,
     MontyArgs,
@@ -29,13 +31,17 @@ from tbp.monty.frameworks.config_utils.make_dataset_configs import (
     EnvironmentDataloaderPerObjectArgs,
     ExperimentArgs,
     RandomRotationObjectInitializer,
-    SurfaceViewFinderMountHabitatDatasetArgs,
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
 from tbp.monty.frameworks.experiments import (
     MontyObjectRecognitionExperiment,
 )
-from tbp.monty.frameworks.models.evidence_matching import EvidenceGraphLM
+from tbp.monty.frameworks.models.evidence_matching.learning_module import (
+    EvidenceGraphLM
+)
+from tbp.monty.simulators.habitat.configs import (
+    SurfaceViewFinderMountHabitatDatasetArgs,
+)
 
 """
 Basic setup
@@ -95,7 +101,9 @@ learning_module_0 = dict(
         # parameter value partially addresses this, altough we note these are temporary
         # fixes and we intend to implement a more principled approach in the future.
         required_symmetry_evidence=20,
-        max_nneighbors=5,
+        hypotheses_updater_args=dict(
+            max_nneighbors=5
+        )
     ),
 )
 learning_module_configs = dict(learning_module_0=learning_module_0)
@@ -147,26 +155,24 @@ surf_agent_2obj_unsupervised = dict(
 ```
 If you have read our previous tutorials on [pretraining](pretraining-a-model.md) or [running inference with a pretrained model](running-inference-with-a-pretrained-model.md), you may spot a few differences in this setup. For pretraining, we used the `MontySupervisedObjectPretrainingExperiment` class which also performs training (and not evaluation). While that was a training-only setup, it is different from our unsupervised continual learning config since it supplies object labels to learning modules. For running inference with a pretrained model, we used the `MontyObjectRecognitionExperiment` class but specified that we only wanted to perform evaluation (i.e., `do_train=False` and `do_eval=True`). In contrast, here we used the `MontyObjectRecognitionExperiment` with arguments `do_train=True` and `do_eval=False`. This combination of experiment class and `do_train`/`do_eval` arguments is specific to unsupervised continual learning. We have also increased `min_training_steps`, `object_evidence_threshold`, and `required_symmetry_evidence` to avoid early misclassification when there are fewer objects in memory.
 
-Besides these crucial changes, we have also made a few minor adjustments to simplify the rest of the the configs. First, we did not explicitly define our sensor module or motor system configs. This is because we are using `SurfaceAndViewMontyConfig`'s default sensor modules, motor system, and matrices that define connectivity between agents, sensors, and learning modules. Second, we are using a `RandomRotationObjectInitializer` which randomly rotates an object at the beginning of each episode rather than rotating an object by a specific user-defined rotation. Third, we are using the `CSVLoggingConfig`. This is equivalent to setting up a base `LoggingConfig` and specifying that we only want a `BasicCSVStatsHandler`, but it's a bit more succint. Monty has many config classes provided for this kind of convenience.
+Besides these crucial changes, we have also made a few minor adjustments to simplify the rest of the configs. First, we did not explicitly define our sensor module or motor system configs. This is because we are using `SurfaceAndViewMontyConfig`'s default sensor modules, motor system, and matrices that define connectivity between agents, sensors, and learning modules. Second, we are using a `RandomRotationObjectInitializer` which randomly rotates an object at the beginning of each episode rather than rotating an object by a specific user-defined rotation. Third, we are using the `CSVLoggingConfig`. This is equivalent to setting up a base `LoggingConfig` and specifying that we only want a `BasicCSVStatsHandler`, but it's a bit more succinct. Monty has many config classes provided for this kind of convenience.
 
 # Running the Unsupervised Continual Learning Experiment
 
-Finally, add the following lines to the bottom of the file:
+Finally, add your experiment to `MyExperiments` at the bottom of the file:
 
 ```python
-CONFIGS = dict(
+experiments = MyExperiments(
     surf_agent_2obj_unsupervised=surf_agent_2obj_unsupervised,
 )
+CONFIGS = asdict(experiments)
 ```
-Next, you will need to add the following lines to the `benchmarks/configs/__init__.py` file:
+Next you will need to declare your experiment name as part of the `MyExperiments` dataclass in the `benchmarks/configs/names.py` file:
 
 ```python
-from .unsupervised_continual_learning_tutorial import (
-    CONFIGS as UNSUPERVISED_CONTINUAL_LEARNING_TUTORIAL,
-)
-
-# Put this line after CONFIGS is initialized
-CONFIGS.update(UNSUPERVISED_CONTINUAL_LEARNING_TUTORIAL)
+@dataclass
+class MyExperiments:
+    surf_agent_2obj_unsupervised: dict
 ```
 To run this experiment, navigate to the `benchmarks/` folder in a terminal and call the `run.py` script with an experiment name as the -e argument like so:
 ```shell
@@ -225,6 +231,6 @@ After running this script, you should see a plot with three views of the bowl ob
 
 ![The bowl object model after each epoch](../../figures/how-to-use-monty/unsupervised_bowl_object_models.png)
 
-After Monty's first pass (epoch 0), Monty's internal model of the bowl is somewhat incomplete. As Monty continues to encounter the bowl in subsequent epochs, the model becomes further refined by new observations. In this way, Monty learns about new and existing object continuously without the need for supervision or distinct training periods. To update existing models, the detected pose is used to transform new observations into the existing models reference frame. For more details on how learning modules operate in this mode, see our documentation on [how learning modules work](../../how-monty-works/how-learning-modules-work.md).
+After Monty's first pass (epoch 0), Monty's internal model of the bowl is somewhat incomplete. As Monty continues to encounter the bowl in subsequent epochs, the model becomes further refined by new observations. In this way, Monty learns about new and existing object continuously without the need for supervision or distinct training periods. To update existing models, the detected pose is used to transform new observations into the existing models reference frame. For more details on how learning modules operate in this mode, see our documentation on [how learning modules work](../../how-monty-works/learning-module.md).
 
 Thus far we have demonstrated how to build models that use a single sensor module connected to one learning module. In the [next tutorial](multiple-learning-modules.md), we will demonstrate how to configure multiple sensors and connect them to multiple learning modules to perform faster inference.

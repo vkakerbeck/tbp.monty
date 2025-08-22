@@ -3,7 +3,7 @@ title: Learning Modules
 ---
 The basic building block for sensorimotor processing and modeling the output from the sensor module is a learning module. These are repeating elements, each with the same input and output information format. Each learning module should function as a stand-alone unit and be able to recognize objects on its own. Combining multiple learning modules can speed up recognition (e.g. recognizing a cup using five fingers vs. one), allows for learning modules to focus on storing only some objects, and enables learning compositional objects.
 
-![Learning modules learn structured models through sensorimotor interaction, using reference frames. They model how incoming features are arranged relative to each other in space and time.](../../figures/overview/reference_frames.png)
+![Learning modules learn structured models through sensorimotor interaction, using reference frames. They model how incoming features are arranged relative to each other in space and time.](../../figures/overview/reference_frames.png#width=300px)
 
 
 Learning modules receive either feature IDs from a sensor or estimated object IDs (also interpreted as features) from a lower-level learning module \[[1](#footnote1)]. The feature or object representation might be in the form of a discrete ID (e.g., the color red, a cylinder), or could be represented in a more high dimensional space (e.g., an SDR representing hue or corresponding to a fork-like object). Additionally, learning modules receive the feature's or object's pose relative to _the body_, where the pose includes location and rotation. In this way, pose relative to the body serves as a common reference frame for spatial computations, as opposed to the pose of features relative to each individual sensor. From this information higher level learning modules can build up graphs of compositional objects (e.g., large objects or scenes) and vote on the ID of the currently visible object(s).
@@ -20,6 +20,8 @@ Besides learning new models, the learning module also tries to match the observe
 To generate the LM's output, we need to get the pose of the sensed object relative to the body. We can calculate this from the current incoming pose (pose of the sensed feature relative to the body) and the poses stored in the model of the object. This pose of the object can then be passed hierarchically to another learning module in the same format as the sensory input (features at a pose relative to the body).
 
 Once the learning module has determined the ID of an object and its pose, it can take the most recent observations (and possibly collect more) to update its model of this object. We can therefore continually learn more about the world and learning and inference are two intertwined processes.
+
+See our [implementation documentation](../../how-monty-works/learning-module.md) for details on how we implement learning modules in Monty.
 
 # Footnotes
 

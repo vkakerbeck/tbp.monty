@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -60,18 +61,18 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
         self.handlers = handlers
         self.data = dict(
             BASIC=dict(
-                train_stats=dict(),
-                train_overall_stats=dict(),
-                train_targets=dict(),
-                train_actions=dict(),
-                train_timing=dict(),
-                eval_stats=dict(),
-                eval_overall_stats=dict(),
-                eval_actions=dict(),
-                eval_targets=dict(),
-                eval_timing=dict(),
+                train_stats={},
+                train_overall_stats={},
+                train_targets={},
+                train_actions={},
+                train_timing={},
+                eval_stats={},
+                eval_overall_stats={},
+                eval_actions={},
+                eval_targets={},
+                eval_timing={},
             ),
-            DETAILED=dict(),
+            DETAILED={},
         )
         self.overall_train_stats = dict(
             num_episodes=0,
@@ -155,18 +156,18 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
     def flush(self):
         self.data = dict(
             BASIC=dict(
-                train_stats=dict(),
-                train_overall_stats=dict(),
-                train_targets=dict(),
-                train_actions=dict(),
-                train_timing=dict(),
-                eval_stats=dict(),
-                eval_overall_stats=dict(),
-                eval_actions=dict(),
-                eval_targets=dict(),
-                eval_timing=dict(),
+                train_stats={},
+                train_overall_stats={},
+                train_targets={},
+                train_actions={},
+                train_timing={},
+                eval_stats={},
+                eval_overall_stats={},
+                eval_actions={},
+                eval_targets={},
+                eval_timing={},
             ),
-            DETAILED=dict(),
+            DETAILED={},
         )
 
     def log_episode(self, logger_args, output_dir, model):
@@ -211,7 +212,7 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
 
         mode = model.experiment_mode
         episode = logger_args[f"{mode}_episodes"]
-        actions = model.motor_system.action_sequence
+        actions = model.motor_system._policy.action_sequence
         logger_time = {k: v for k, v in logger_args.items() if k != "target"}
         self.data["BASIC"][f"{mode}_stats"][episode] = performance_dict
 
@@ -373,15 +374,31 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             )
             * 100,
             # Mean rotation error on all LMs that recognized the object
-            "overall/avg_rotation_error": np.mean(correct_rotation_errors),
-            "overall/avg_num_lm_steps": np.mean(stats["episode_lm_steps"]),
-            "overall/avg_num_monty_steps": np.mean(stats["monty_steps"]),
-            "overall/avg_num_monty_matching_steps": np.mean(
-                stats["monty_matching_steps"]
+            "overall/avg_rotation_error": (
+                np.mean(correct_rotation_errors)
+                if len(correct_rotation_errors) > 0
+                else np.nan
+            ),
+            "overall/avg_num_lm_steps": (
+                np.mean(stats["episode_lm_steps"])
+                if len(stats["episode_lm_steps"]) > 0
+                else np.nan
+            ),
+            "overall/avg_num_monty_steps": (
+                np.mean(stats["monty_steps"])
+                if len(stats["monty_steps"]) > 0
+                else np.nan
+            ),
+            "overall/avg_num_monty_matching_steps": (
+                np.mean(stats["monty_matching_steps"])
+                if len(stats["monty_matching_steps"]) > 0
+                else np.nan
             ),
             "overall/run_time": np.sum(stats["run_times"]) / len(self.lms),
             # NOTE: does not take into account different runtimes with multiple LMs
-            "overall/avg_episode_run_time": np.mean(stats["run_times"]),
+            "overall/avg_episode_run_time": (
+                np.mean(stats["run_times"]) if len(stats["run_times"]) > 0 else np.nan
+            ),
             "overall/num_episodes": stats["num_episodes"],
             # Stats for most recent episode
             # Performance of the overall Monty model
@@ -395,18 +412,26 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             "episode/time_out": stats["episode_time_out"],
             "episode/used_mlh_after_time_out": stats["episode_correct_mlh"]
             or stats["episode_confused_mlh"],
-            "episode/rotation_error": np.mean(episode_re),
+            "episode/rotation_error": (
+                np.mean(episode_re) if len(episode_re) > 0 else np.nan
+            ),
             # steps is the max number of steps of all LMs. Some LMs may have taken
             # less steps because they were not on the object all the time.
             "episode/lm_steps": np.max(stats["episode_lm_steps"][-len(self.lms) :]),
             "episode/monty_steps": stats["monty_steps"][-1],
             "episode/monty_matching_steps": stats["monty_matching_steps"][-1],
-            "episode/mean_lm_steps_to_indv_ts": np.mean(episode_individual_ts_steps),
+            "episode/mean_lm_steps_to_indv_ts": (
+                np.mean(episode_individual_ts_steps)
+                if len(episode_individual_ts_steps) > 0
+                else np.nan
+            ),
             "episode/run_time": np.max(stats["run_times"][-len(self.lms) :]),
             # Mean symmetry evidence with multiple LMs may be > required evidence
             # since one LM reaching its terminal condition doesn't mean all others do.
-            "episode/symmetry_evidence": np.mean(
-                stats["episode_symmetry_evidence"][-len(self.lms) :]
+            "episode/symmetry_evidence": (
+                np.mean(stats["episode_symmetry_evidence"][-len(self.lms) :])
+                if len(stats["episode_symmetry_evidence"][-len(self.lms) :]) > 0
+                else np.nan
             ),
             "episode/goal_states_attempted": stats["goal_states_attempted"],
             "episode/goal_state_success_rate": stats["goal_state_success_rate"],
@@ -445,8 +470,8 @@ class DetailedGraphMatchingLogger(BasicGraphMatchingLogger):
         """Initialize stats dicts."""
         super().__init__(handlers)
 
-        self.train_episodes_to_total = dict()
-        self.eval_episodes_to_total = dict()
+        self.train_episodes_to_total = {}
+        self.eval_episodes_to_total = {}
 
     def log_episode(self, logger_args, output_dir, model):
         mode = model.experiment_mode
@@ -480,9 +505,9 @@ class DetailedGraphMatchingLogger(BasicGraphMatchingLogger):
         self.train_episodes_to_total[logger_args["train_episodes"]] = episodes
         self.eval_episodes_to_total[logger_args["eval_episodes"]] = episodes
 
-        buffer_data = dict()
+        buffer_data = {}
         for i, lm in enumerate(model.learning_modules):
-            lm_dict = dict()
+            lm_dict = {}
             lm_dict.update(logger_args)
             lm_dict.update({"locations": lm.buffer.locations})
             lm_dict.update(lm.buffer.features)
@@ -497,16 +522,16 @@ class DetailedGraphMatchingLogger(BasicGraphMatchingLogger):
                 buffer_data[f"SM_{i}"] = sm.state_dict()
 
         # TODO ensure will work with multiple, independent sensor agents
-        buffer_data["motor_system"] = dict()
+        buffer_data["motor_system"] = {}
         buffer_data["motor_system"]["action_sequence"] = (
-            model.motor_system.action_sequence
+            model.motor_system._policy.action_sequence
         )
 
         # Some motor systems store additional data specific to their policy, e.g. when
         # principal curvature has informed movements
-        if hasattr(model.motor_system, "action_details"):
+        if hasattr(model.motor_system._policy, "action_details"):
             buffer_data["motor_system"]["action_details"] = (
-                model.motor_system.action_details
+                model.motor_system._policy.action_details
             )
 
         self.data["DETAILED"][episodes] = buffer_data
@@ -525,8 +550,8 @@ class SelectiveEvidenceLogger(BasicGraphMatchingLogger):
         """Initialize stats dicts."""
         super().__init__(handlers)
 
-        self.train_episodes_to_total = dict()
-        self.eval_episodes_to_total = dict()
+        self.train_episodes_to_total = {}
+        self.eval_episodes_to_total = {}
 
     def log_episode(self, logger_args, output_dir, model):
         mode = model.experiment_mode
@@ -554,9 +579,9 @@ class SelectiveEvidenceLogger(BasicGraphMatchingLogger):
         self.train_episodes_to_total[logger_args["train_episodes"]] = episodes
         self.eval_episodes_to_total[logger_args["eval_episodes"]] = episodes
 
-        buffer_data = dict()
+        buffer_data = {}
         for i, lm in enumerate(model.learning_modules):
-            lm_dict = dict()
+            lm_dict = {}
             lm_dict.update(
                 {
                     # Save evidences and hypotheses only for last step to save storage

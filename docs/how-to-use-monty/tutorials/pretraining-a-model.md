@@ -5,7 +5,7 @@ title: Pretraining a Model
 
 This tutorial demonstrates how to configure and run Monty experiments for pretraining. In the [next tutorial](running-inference-with-a-pretrained-model.md), we show how to load our pretrained model and use it to perform inference. Though Monty is designed for continual learning and does not require separate training and evaluation modes, this set of experiments is useful for understanding many of our [benchmarks experiments](../running-benchmarks.md).
 
-The pretraining differs from [Monty's default learning setup](../../how-monty-works/how-learning-modules-work.md#different-phases-of-learning) in that it is supervised. Under normal conditions, Monty learns by first trying to recognize an object, and then updating its models depending on the outcome of this recognition (unsupervised). Here, we provide the object name and pose to the model directly, so there is no inference phase required. This provides an experimental condition where we can ensure that the model learns the correct models for each of the objects, and we can focus on the inference phase afterward. Naturally, unsupervised learning provides a more challenging but also more naturalistic learning condition, and we will cover this condition later.
+The pretraining differs from [Monty's default learning setup](../../how-monty-works/experiment.md#different-phases-of-learning) in that it is supervised. Under normal conditions, Monty learns by first trying to recognize an object, and then updating its models depending on the outcome of this recognition (unsupervised). Here, we provide the object name and pose to the model directly, so there is no inference phase required. This provides an experimental condition where we can ensure that the model learns the correct models for each of the objects, and we can focus on the inference phase afterward. Naturally, unsupervised learning provides a more challenging but also more naturalistic learning condition, and we will cover this condition later.
 
 Our model will have one surface agent connected to one sensor module connected to one learning module. For simplicity and speed, we will only train/test on two objects in the [YCB](https://www.ycbbenchmarks.com/) dataset.
 
@@ -44,13 +44,13 @@ Most configs come in pairs: a class to instantiate and arguments to instantiate 
 
 # Setting up the Experiment Config for Pretraining
 
-To follow along, create a file called `pretraining_tutorial_train.py` in the `benchmarks/configs/` folder and paste the code snippets into it. Let's set up the training experiment. First, we import everything we need and define names and paths.
+To follow along, open the `benchmarks/configs/my_experiments.py` file and paste the code snippets into it. Let's set up the training experiment. First, we import everything we need and define names and paths.
 
 ```python
 import os
+from dataclasses import asdict
 
-import numpy as np
-
+from benchmarks.configs.names import MyExperiments
 from tbp.monty.frameworks.config_utils.config_args import (
     MontyArgs,
     MotorSystemConfigCurvatureInformedSurface,
@@ -62,7 +62,6 @@ from tbp.monty.frameworks.config_utils.make_dataset_configs import (
     EnvironmentDataloaderPerObjectArgs,
     ExperimentArgs,
     PredefinedObjectInitializer,
-    SurfaceViewFinderMountHabitatDatasetArgs,
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
 from tbp.monty.frameworks.experiments import (
@@ -72,6 +71,9 @@ from tbp.monty.frameworks.models.graph_matching import GraphLM
 from tbp.monty.frameworks.models.sensor_modules import (
     DetailedLoggingSM,
     HabitatSurfacePatchSM,
+)
+from tbp.monty.simulators.habitat.configs import (
+    SurfaceViewFinderMountHabitatDatasetArgs,
 )
 
 """
@@ -92,7 +94,7 @@ model_name = "surf_agent_1lm_2obj"
 >
 > Inference logs will be saved at `~/tbp/results/monty/projects/surf_agent_1lm_2obj/eval`.
 
-Next, we specify which objects the model will train on in the dataset, including the rotations in which the objects will be presented. The following code specifies two object ("mug" and "banana") and 14 unique rotations, which means that both the mug and the banana will be shown 14 times, each time in a different rotation. During each of the overall 28 episodes, the sensors will move over the respective object and collect multiple observations to update the model of the object.
+Next, we specify which objects the model will train on in the dataset, including the rotations in which the objects will be presented. The following code specifies two objects ("mug" and "banana") and 14 unique rotations, which means that both the mug and the banana will be shown 14 times, each time in a different rotation. During each of the overall 28 episodes, the sensors will move over the respective object and collect multiple observations to update the model of the object.
 
 ```python
 """
@@ -111,9 +113,9 @@ and many of our benchmark experiments since the rotations it returns provide a g
 of views from all around the object. Its name comes from picturing an imaginary cube
 surrounding an object. If we look at the object from each of the cube's faces, we
 get 6 unique views that typically cover most of the object's surface. We can also look
-at the object from each of the cube's 8 corners which provides an extra set of views 
-that help fill in any gaps. The 14 rotations provided by 
-`get_cube_face_and_corner_views_rotations` will rotate the object as if an observer 
+at the object from each of the cube's 8 corners which provides an extra set of views
+that help fill in any gaps. The 14 rotations provided by
+`get_cube_face_and_corner_views_rotations` will rotate the object as if an observer
 were looking at the object from each of the cube's faces and corners like so:
 
 ![learned_models](../../figures/how-to-use-monty/cube_face_and_corner_views_spam.png)
@@ -137,7 +139,7 @@ surf_agent_2obj_train = dict(
         run_name=model_name,
         wandb_handlers=[],
     ),
-    # Specify the Monty model.
+    # Specify the Monty config.
     monty_config=PatchAndViewMontyConfig(
         monty_args=MontyArgs(num_exploratory_steps=500),
         # sensory module configs: one surface patch for training (sensor_module_0),
@@ -207,7 +209,7 @@ Here, we explicitly specified most parameters in config classes for transparency
 
 Briefly, we specified our experiment class and the number of epochs to run. We also configured a [logger](../logging-and-analysis.md), the environment dataset, and a training data loader to initialize our objects at different orientations for each episode. We also specified a valid but unused eval dataloader (currently necessary). `monty_config` is a nested config that describes the complete sensorimotor modeling system. Here is a short breakdown of its components:
 
-- `PatchAndViewMontyConfig`: the top-level monty config object specifies that we will have a sensor patch and an additional viewfinder as inputs to the system. It also specifies the routing matrices between sensors, SMs and LMs (using defaults in this simple setup).
+- `PatchAndViewMontyConfig`: the top-level Monty config object specifies that we will have a sensor patch and an additional viewfinder as inputs to the system. It also specifies the routing matrices between sensors, SMs and LMs (using defaults in this simple setup).
   - `monty_args`: a `MontyArgs`object specifying we want 500 exploratory steps per episode.
   - `sensor_module_configs`: a dictionary specifying sensor module class and arguments. These dictionaries specify that
     - `sensor_module_0` will be a `HabitatSurfacePatchSM` (a small sensory patch for a surface agent). The sensor module will extract the given list of features for each patch. We won't save raw observations here since it is memory-intensive and only required for detailed logging/plotting.
@@ -216,32 +218,34 @@ Briefly, we specified our experiment class and the number of epochs to run. We a
     - `learning_module_0` will be a `GraphLM` that constructs a graph of the object being explored.
   - `motor_system_config`: a `MotorSystemConfigCurvatureInformedSurface` config object that specifies a motor policy class to use. This policy here will move orthogonal to the surface of the object with a preference of following principal curvatures that are sensed. When doing pretraining with the distant agent, the `MotorSystemConfigNaiveScanSpiral` policy is recommended since it ensures even coverage of the object from the available view point.
 
-To get an idea of what each sensor module sees and the information passed on to the learning module, check out the documentation on [observations, transforms, and sensor modules](../../how-monty-works/observations-transforms-sensor-modules.md). To learn more about how learning modules construct object graphs from sensor output, refer to the [graph building](../../how-monty-works/how-learning-modules-work.md#graph-building) documentation.
+To get an idea of what each sensor module sees and the information passed on to the learning module, check out the documentation on [observations, transforms, and sensor modules](../../how-monty-works/observations-transforms-sensor-modules.md). To learn more about how learning modules construct object graphs from sensor output, refer to the [graph building](../../how-monty-works/learning-module/object-models.md#graph-building) documentation.
 
 # Running the Pretraining Experiment
 
-Finally, add the following lines to the bottom of the file:
+Finally, add your experiment to `MyExperiments` at the bottom of the file:
 
 ```python
-CONFIGS = dict(
+experiments = MyExperiments(
     surf_agent_2obj_train=surf_agent_2obj_train,
 )
+CONFIGS = asdict(experiments)
 
 ```
-Next, you will need to add the following lines to the `benchmarks/configs/__init__.py` file:
+Next you will need to declare your experiment name as part of the `MyExperiments` dataclass in the `benchmarks/configs/names.py` file:
 
 ```python
-from .pretraining_tutorial_train import CONFIGS as PRETRAINING_TUTORIAL_TRAIN
-
-# Put this line after CONFIGS is initialized
-CONFIGS.update(PRETRAINING_TUTORIAL_TRAIN)
+@dataclass
+class MyExperiments:
+    surf_agent_2obj_train: dict
 ```
-To run this experiment, navigate to the `benchmarks/` folder in a terminal and call the `run.py` script with an experiment name as the -e argument.
+To run this experiment, navigate to the `benchmarks/` folder in a terminal and call the `run.py` script with the experiment name as the -e argument.
 ```shell
 cd benchmarks
 python run.py -e surf_agent_2obj_train
 ```
-Once complete, you can inspect and visualize the learned models. To do so, create a script and paste in the following code
+
+This will take a few minutes to complete and then you can inspect and visualize the learned models. To do so, create a script and paste in the following code. The location and name of the script is unimportant, but we called it `pretraining_tutorial_analysis.py` and placed it outside of the repository at `~/monty_scripts`.
+
 ```python
 import os
 import matplotlib.pyplot as plt
@@ -266,9 +270,8 @@ train_stats, eval_stats, detailed_stats, lm_models = load_stats(
 plot_graph(lm_models["pretrained"][0]["mug"]["patch"], rotation=120)
 plt.show()
 ```
-Replace `"mug"` with `"banana"` in the second to last line to visualize the banana's graph. The location and name of the script is unimportant, but we called it `pretraining_tutorial_analysis.py` and placed it outside of the repository at `~/monty_scripts`. After running the script, you should see a graph of the mug/banana.
+Replace `"mug"` with `"banana"` in the second to last line to visualize the banana's graph. After running the script, you should see a graph of the mug/banana.
 
 ![learned_models](../../figures/how-to-use-monty/pretraining_tutorial_mug_banana.png)
 
 See [logging and analysis](../logging-and-analysis.md) for more detailed information about experiment logs and how to work with them. You can now move on to [part two](running-inference-with-a-pretrained-model.md) of this tutorial where we load our pretrained model and use it for inference.
-

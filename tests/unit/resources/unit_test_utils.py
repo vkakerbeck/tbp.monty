@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -13,6 +14,9 @@ import unittest
 import numpy as np
 from scipy.spatial.transform import Rotation
 
+from tbp.monty.frameworks.config_utils.make_dataset_configs import (
+    make_sensor_positions_on_grid,
+)
 from tbp.monty.frameworks.models.states import State
 
 
@@ -50,6 +54,11 @@ class BaseGraphTestCases:
                 State(**fo_2),
                 State(**fo_3),
             ]
+
+            self.lm_offsets = make_sensor_positions_on_grid(
+                n_sensors=5,
+                add_view_finder=False,
+            )
 
             # Create a symmetric synthetic object, where the location of the last
             # feature differs from the base-synthetic object, resulting in
@@ -137,18 +146,31 @@ class BaseGraphTestCases:
 
             self.fake_obs_house_trans = [State(**obs_dic) for obs_dic in config_list]
 
+            fo_house_5 = copy.deepcopy(fo_house)
+            fo_house_5["location"] = np.array([0.5, 1.5, 1.0])
+            self.fake_obs_house_3d = [
+                State(**fo_house),
+                State(**fo_house_1),
+                State(**fo_house_2),
+                State(**fo_house_3),
+                # replacing fo_house_4 with fo_house_5 to make its pose unambiguous
+                State(**fo_house_5),
+            ]
+
             self.placeholder_target = {
                 "object": "placeholder",
                 "quat_rotation": [1, 0, 0, 0],
             }
 
-        def string_to_array(self, array_string, get_positive_rotations=False):
+        def string_to_array(
+            self, array_string, get_positive_rotations=False
+        ) -> np.ndarray:
             """Convert string representation of an array into a numpy array.
 
             Is needed since the arrays we read out of the stats csv cells are strings.
 
             Returns:
-                np_array: numpy array
+                The newly created numpy array.
             """
             np_array = np.array([])
             for i in array_string.split("[")[1].split("]")[0].split(" "):
@@ -306,7 +328,7 @@ class BaseGraphTestCases:
                     eval_stats["detected_scale"][2 * num_lms + lm_id],
                     eval_stats["primary_target_scale"][2 * num_lms + lm_id],
                     4,
-                    "Scale of capsule3DSolid not detected correctly " f"by lm {lm_id}.",
+                    f"Scale of capsule3DSolid not detected correctly by lm {lm_id}.",
                 )
                 capsule_r = self.string_to_array(
                     eval_stats["detected_rotation"][2 * num_lms + lm_id]
@@ -317,8 +339,7 @@ class BaseGraphTestCases:
                 self.assertLessEqual(
                     eval_stats["rotation_error"][2 * num_lms + lm_id],
                     0.001,
-                    "Rotation of capsule3DSolid not detected correctly "
-                    f"by lm {lm_id}.",
+                    f"Rotation of capsule3DSolid not detected correctly by lm {lm_id}.",
                 )
                 for i in range(3):
                     self.assertEqual(
@@ -440,7 +461,7 @@ class BaseGraphTestCases:
             self.assertNotIn(
                 "learning_module_0",
                 models["0"]["LM_1"]["new_object0"].keys(),
-                "models in LM1 should not store input from LM0 in episode " "0 yet.",
+                "models in LM1 should not store input from LM0 in episode 0 yet.",
             )
             # Check that LM1 extended its graph to add LM0 as a input channel.
             channel_keys = models["2"]["LM_1"]["new_object0"].keys()
@@ -453,15 +474,15 @@ class BaseGraphTestCases:
 
         def check_possible_paths_or_poses(self, stats_1, stats_2, key):
             for paths1, paths2 in zip(stats_1[key], stats_2[key]):
-                possible_objects_1 = set(list(paths1.keys()))
-                possible_objects_2 = set(list(paths2.keys()))
+                possible_objects_1 = set(paths1.keys())
+                possible_objects_2 = set(paths2.keys())
                 self.assertEqual(possible_objects_1, possible_objects_2)
                 for obj in possible_objects_1:
                     # I refuse to go deeper
                     self.assertEqual(paths1[obj], paths2[obj])
 
         def convert_to_numpy_and_check_equal(self, list1, list2):
-            if isinstance(list1[0], (list, np.ndarray)):
+            if len(list1) > 0 and isinstance(list1[0], (list, np.ndarray)):
                 for v1, v2 in zip(list1, list2):
                     self.convert_to_numpy_and_check_equal(v1, v2)
 
@@ -539,12 +560,11 @@ class BaseGraphTestCases:
                                     self.assertEqual(
                                         step_old[key3][f_idx], step_new[key3][f_idx]
                                     )
+                            elif isinstance(step_old[key3], str):
+                                # sm_id can not be compared as array
+                                self.assertEqual(step_old[key3], step_new[key3])
                             else:
-                                if type(step_old[key3]) == str:
-                                    # sm_id can not be compared as array
-                                    self.assertEqual(step_old[key3], step_new[key3])
-                                else:
-                                    np_old = np.array(step_old[key3])
-                                    np_new = np.array(step_new[key3])
-                                    np_equal = np.isclose(np_old, np_new, atol=0.00001)
-                                    self.assertEqual(np.sum(np_equal), np_equal.size)
+                                np_old = np.array(step_old[key3])
+                                np_new = np.array(step_new[key3])
+                                np_equal = np.isclose(np_old, np_new, atol=0.00001)
+                                self.assertEqual(np.sum(np_equal), np_equal.size)

@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -20,6 +21,8 @@ from tbp.monty.frameworks.utils.logging_utils import (
     lm_stats_to_dataframe,
     maybe_rename_existing_file,
 )
+
+logger = logging.getLogger(__name__)
 
 ###
 # Template for MontyHandler
@@ -65,7 +68,7 @@ class DetailedJSONHandler(MontyHandler):
         Changed name to report episode since we are currently running with
         reporting and flushing exactly once per episode.
         """
-        output_data = dict()
+        output_data = {}
         if mode == "train":
             total = kwargs["train_episodes_to_total"][episode]
             stats = data["BASIC"]["train_stats"][episode]
@@ -104,15 +107,15 @@ class BasicCSVStatsHandler(MontyHandler):
         We only want to include the header the first time we write to a file. This
         keeps track of writes per file so we can format the file properly.
         """
-        self.reports_per_file = dict()
+        self.reports_per_file = {}
 
     def report_episode(self, data, output_dir, episode, mode="train", **kwargs):
         # Look for train_stats or eval_stats under BASIC logs
         basic_logs = data["BASIC"]
         mode_key = f"{mode}_stats"
         output_file = os.path.join(output_dir, f"{mode}_stats.csv")
-        stats = basic_logs.get(mode_key, dict())
-        logging.debug(pformat(stats))
+        stats = basic_logs.get(mode_key, {})
+        logger.debug(pformat(stats))
 
         # Remove file if it existed before to avoid appending to previous results file
         if output_file not in self.reports_per_file:

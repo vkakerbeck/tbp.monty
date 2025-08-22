@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -12,6 +13,7 @@ import copy
 import json
 import logging
 import time
+from typing import Any, Callable, Dict, Optional, Type, Union
 
 import numpy as np
 import quaternion
@@ -19,6 +21,8 @@ import torch
 from scipy.spatial.transform import Rotation
 
 from tbp.monty.frameworks.actions.actions import Action, ActionJSONEncoder
+
+logger = logging.getLogger(__name__)
 
 
 class BaseBuffer:
@@ -48,12 +52,14 @@ class FeatureAtLocationBuffer(BaseBuffer):
 
     def __init__(self):
         """Initialize buffer dicts for locations, features, displacements and stats."""
-        self.locations = dict()
-        self.features = dict()
+        self.locations = {}
+        self.features = {}
         self.on_object = []
         self.input_states = []
 
-        self.displacements = dict()
+        self.displacements = {}
+
+        self.channel_sender_types = {}
 
         self.stats = {
             "detected_path": None,
@@ -78,6 +84,8 @@ class FeatureAtLocationBuffer(BaseBuffer):
             # module (i.e. information was actually passed from the SM to the LM); note
             # this is incremented in a way that assumes a 1:1 mapping between SMs and
             # LMs
+            "matching_step_when_output_goal_set": [],
+            "goal_state_achieved": [],
         }
         self.start_time = time.time()
 
@@ -87,7 +95,7 @@ class FeatureAtLocationBuffer(BaseBuffer):
         Returns:
             The features observed at time step idx.
         """
-        features_at_idx = dict()
+        features_at_idx = {}
         for input_channel in self.features.keys():
             features_at_idx[input_channel] = {
                 attribute: self.features[input_channel][attribute][idx]
@@ -115,9 +123,12 @@ class FeatureAtLocationBuffer(BaseBuffer):
         any_obs_on_obj = False
         for state in list_of_data:
             input_channel = state.sender_id
+
+            self.channel_sender_types[input_channel] = state.sender_type
+
             self._add_loc_to_location_buffer(input_channel, state.location)
             if input_channel not in self.features.keys():
-                self.features[input_channel] = dict()
+                self.features[input_channel] = {}
             for attr in state.morphological_features.keys():
                 attr_val = state.morphological_features[attr]
                 self._add_attr_to_feature_buffer(input_channel, attr, attr_val)
@@ -144,11 +155,10 @@ class FeatureAtLocationBuffer(BaseBuffer):
         for stat in stats.keys():
             if stat in self.stats.keys() and append:
                 self.stats[stat].append(copy.deepcopy(stats[stat]))
+            elif init_list:
+                self.stats[stat] = [copy.deepcopy(stats[stat])]
             else:
-                if init_list:
-                    self.stats[stat] = [copy.deepcopy(stats[stat])]
-                else:
-                    self.stats[stat] = copy.deepcopy(stats[stat])
+                self.stats[stat] = copy.deepcopy(stats[stat])
         if update_time:
             self.stats["time"].append(time.time() - self.start_time)
 
@@ -291,7 +301,7 @@ class FeatureAtLocationBuffer(BaseBuffer):
             The current displacement.
         """
         if input_channel == "all" or input_channel is None:
-            all_disps = dict()
+            all_disps = {}
             for input_channel in self.displacements.keys():
                 all_disps[input_channel] = self.get_current_displacement(input_channel)
             return all_disps
@@ -340,10 +350,10 @@ class FeatureAtLocationBuffer(BaseBuffer):
         Returns:
             All observed features that were on the object.
         """
-        all_features_on_object = dict()
+        all_features_on_object = {}
         # Number of steps where at least one input was on the object
         global_on_object_ids = np.where(self.on_object)[0]
-        logging.debug(
+        logger.debug(
             f"Observed {np.array(self.locations).shape} locations, "
             f"{len(global_on_object_ids)} global on object"
         )
@@ -352,13 +362,13 @@ class FeatureAtLocationBuffer(BaseBuffer):
             channel_off_object_ids = np.where(
                 self.features[input_channel]["on_object"] is False
             )[0]
-            logging.debug(
+            logger.debug(
                 f"{input_channel} has "
                 f"{len(self.locations) - len(channel_off_object_ids)} "
                 "on object observations"
             )
 
-            channel_features_on_object = dict()
+            channel_features_on_object = {}
             for feature in self.features[input_channel].keys():
                 # Pad end of array with 0s if last steps of episode were off object
                 # for this channel
@@ -370,7 +380,7 @@ class FeatureAtLocationBuffer(BaseBuffer):
                         ),
                         refcheck=False,
                     )
-                logging.debug(
+                logger.debug(
                     f"{input_channel} observations for feature {feature} have "
                     f"shape {np.array(self.features[input_channel][feature]).shape}"
                 )
@@ -451,22 +461,24 @@ class FeatureAtLocationBuffer(BaseBuffer):
             The name of the first sensory (coming from SM) input channel in buffer.
 
         Raises:
-            ValueError: If no sensor channels are found in the buffer
+            ValueError: If no sensory channels are found in the buffer.
         """
-        all_channels = list(self.locations.keys())
-        if len(all_channels) > 0:
-            for channel in all_channels:
-                # TODO: better way of checking this that doesn't rely on naming. Maybe
-                # store sensory_type together with channel when adding state to buffer?
-                if "patch" in channel:
-                    return channel
-            raise ValueError(
-                "No sensor channel found in buffer. "
-                "get_first_sensory_input_channel assumes we have at least one"
-                f" sensor channel but channels are {all_channels}."
-            )
-        else:
+        all_channels = list(self.channel_sender_types.keys())
+        if len(all_channels) == 0:
             return None
+
+        for channel in all_channels:
+            if self.channel_sender_types[channel] == "SM":
+                return channel
+
+        # If we reach here, no sensory channels were found but channels exist
+        # This means we have channels but none are SMs that output CMP-compliant
+        # State observations (e.g., only view_finder, LM)
+        raise ValueError(
+            f"No sensory input channels found in buffer. "
+            f"Available channels: {all_channels}. "
+            f"Channel sender types: {self.channel_sender_types}"
+        )
 
     def set_individual_ts(self, object_id, pose):
         """Update self.stats with the individual LMs terminal state."""
@@ -503,8 +515,8 @@ class FeatureAtLocationBuffer(BaseBuffer):
             # this time step and then add the sensed feature. This makes
             # sure the same index in different feature array corresponds to
             # the same time step and location.
-            self.features[input_channel][attr_name] = (
-                np.empty((len(self.locations), attr_shape)) * np.nan
+            self.features[input_channel][attr_name] = np.full(
+                (len(self.locations), attr_shape), np.nan
             )
         else:
             padded_feat = self._fill_old_values_with_nans(
@@ -540,10 +552,10 @@ class FeatureAtLocationBuffer(BaseBuffer):
             disp_val: Value of the displacement.
         """
         if input_channel not in self.displacements.keys():
-            self.displacements[input_channel] = dict()
+            self.displacements[input_channel] = {}
         if disp_name not in self.displacements[input_channel].keys():
-            self.displacements[input_channel][disp_name] = (
-                np.empty((len(self.locations), len(disp_val))) * np.nan
+            self.displacements[input_channel][disp_name] = np.full(
+                (len(self.locations), len(disp_val)), np.nan
             )
 
         padded_vals = self._fill_old_values_with_nans(
@@ -571,7 +583,7 @@ class FeatureAtLocationBuffer(BaseBuffer):
             The padded values.
         """
         # create new np array filled with nans of size (current_step, new_val_len)
-        new_vals = np.empty((len(self) + 1, new_val_len)) * np.nan
+        new_vals = np.full((len(self) + 1, new_val_len), np.nan)
         # Replace nans with stored values for this feature.
         # existing_feat has shape (last_stored_step, attr_shape)
         new_vals[: existing_vals.shape[0], : existing_vals.shape[1]] = existing_vals
@@ -581,33 +593,98 @@ class FeatureAtLocationBuffer(BaseBuffer):
 class BufferEncoder(json.JSONEncoder):
     """Encoder to turn the buffer into a JSON compliant format."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.action_encoder = ActionJSONEncoder(**kwargs)
+    _encoders: Dict[type, Union[Callable, json.JSONEncoder]] = {}
 
-    def default(self, obj):
-        """Turn non compliant types into right format.
+    @classmethod
+    def register(
+        cls,
+        obj_type: type,
+        encoder: Union[Callable, Type[json.JSONEncoder]],
+    ) -> None:
+        """Register an encoder.
 
         Args:
-            obj: The object to turn into a JSON compliant format.
+            obj_type: The type to associate with `encoder`.
+            encoder: A function or `JSONEncoder` class that converts objects of type
+              `obj_type` into JSON-compliant data.
+
+        Raises:
+            TypeError: If `encoder` is not a `JSONEncoder` subclass or a callable.
+        """
+        if isinstance(encoder, type) and issubclass(encoder, json.JSONEncoder):
+            cls._encoders[obj_type] = encoder().default
+        elif callable(encoder):
+            cls._encoders[obj_type] = encoder
+        else:
+            raise TypeError(f"Invalid encoder: {encoder}")
+
+    @classmethod
+    def unregister(cls, obj_type: type) -> None:
+        """Unregister an encoder.
+
+        Args:
+            obj_type: The type to unregister the encoder for.
+        """
+        cls._encoders.pop(obj_type, None)
+
+    @classmethod
+    def _find(cls, obj: Any) -> Optional[Callable]:
+        """Attempt to find an appropriate encoder for an object.
+
+        This method attempts to find an encoder for `obj` in such a way that respects
+        `obj`'s type hierarchy. The returned encoder is either
+         - explicitly registered with `obj`'s type, or
+         - registered with `obj`'s "nearest" parent type if none was registered
+           with `obj`'s type.
+
+        The purpose of type-hierarchy-aware lookup is to prevent an encoder
+        registered with a parent class from being returned when an encoder
+        has been registered for `obj`'s type. For example, if we have a class called
+        `Child` that inherits from `Parent` and they were both registered with
+        encoders, then we will always return the encoder registered for `Child`.
+        This is in contrast to lookup via `isinstance` checks in which case an
+        the `Parent` encoder may be returned for a `Child` instance, depending on the
+        order in which their encoders were registered.
+
+        Args:
+            obj: The object in need of an encoder.
 
         Returns:
-            The object in a JSON compliant format.
+            An encoder for `obj` if one exists, otherwise `None`.
         """
-        if isinstance(obj, torch.Tensor):
-            return obj.cpu().numpy()
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, quaternion.quaternion):
-            return quaternion.as_float_array(obj)
-        if isinstance(obj, Rotation):
-            return obj.as_euler("xyz", degrees=True)
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.bool_):
-            return bool(obj)
-        if isinstance(obj, Action):
-            return self.action_encoder.default(obj)
-        # if isinstance(obj, magnum.Vector3):
-        #     return list(obj)
+        obj_type = type(obj)
+        if obj_type in cls._encoders:
+            return cls._encoders[obj_type]
+
+        # Traverse the Method Resolution Order (MRO) to find the encoder associated
+        # with the "nearest" parent class' encoder.
+        for base_cls in obj_type.mro()[1:]:
+            if base_cls in cls._encoders:
+                return cls._encoders[base_cls]
+
+        # If no encoder is found, return None.
+        return None
+
+    def default(self, obj: Any) -> Any:
+        """Turn non-compliant types into a JSON-compliant format.
+
+        Args:
+            obj: The object to turn into a JSON-compliant format.
+
+        Returns:
+            The JSON-compliant data.
+        """
+        encoder = self._find(obj)
+        if encoder is not None:
+            return encoder(obj)
         return json.JSONEncoder.default(self, obj)
+
+
+BufferEncoder.register(np.generic, lambda obj: obj.item())
+BufferEncoder.register(np.ndarray, lambda obj: obj.tolist())
+BufferEncoder.register(Rotation, lambda obj: obj.as_euler("xyz", degrees=True))
+BufferEncoder.register(torch.Tensor, lambda obj: obj.cpu().numpy())
+BufferEncoder.register(
+    quaternion.quaternion, lambda obj: quaternion.as_float_array(obj)
+)
+BufferEncoder.register(Action, ActionJSONEncoder)

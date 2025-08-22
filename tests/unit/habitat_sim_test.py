@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -6,6 +7,14 @@
 # Use of this source code is governed by the MIT
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
+from __future__ import annotations
+
+import pytest
+
+pytest.importorskip(
+    "habitat_sim",
+    reason="Habitat Sim optional dependency not installed.",
+)
 
 import json
 import os
@@ -42,7 +51,7 @@ def create_agents(
     action_space_type="distant_agent",
     rotation_step=10.0,
     translation_step=0.25,
-):
+) -> list[SingleSensorAgent]:
     """Create agents with RGB, Depth and optional semantic sensors.
 
     Args:
@@ -56,7 +65,7 @@ def create_agents(
         translation_step: Default action translation step in meters
 
     Returns:
-        list: List of :class:`HabitatAgent`
+        The created agents.
     """
     agents = []
     for i in range(num_agents):
@@ -84,7 +93,7 @@ class HabitatSimTest(unittest.TestCase):
         with HabitatSim(agents=agents) as sim:
             # Check agent configuration
             actual_agent_config = sim.get_agent(agent_id).agent_config
-            self.assertEquals(actual_agent_config, agent_config)
+            self.assertEqual(actual_agent_config, agent_config)
 
             # Check if 2 sensors were created for the agent (RGB and Depth)
             obs = sim.get_observations()
@@ -114,7 +123,7 @@ class HabitatSimTest(unittest.TestCase):
             for agent in agents:
                 actual_agent_config = sim.get_agent(agent.agent_id).agent_config
                 agent_config = agent.get_spec()
-                self.assertEquals(actual_agent_config, agent_config)
+                self.assertEqual(actual_agent_config, agent_config)
 
             # Check if 2 sensors were created for each agent
             obs = sim.get_observations()

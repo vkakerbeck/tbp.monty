@@ -1,3 +1,4 @@
+# Copyright 2025 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -8,36 +9,7 @@
 # https://opensource.org/licenses/MIT.
 
 import numpy as np
-import quaternion  # noqa: F401; required by np.quaternion
-
-
-def find_transform_instance(composed_transform, transform_type):
-    """Find the first instance of transform_type.
-
-    Loop over a composition of transforms and return the first instance of
-    transform_type.
-
-    Args:
-        composed_transform: Output of T.Compose([args]), T being torchvision or
-            torch_geometric transforms
-        transform_type: The class you are looking for an instance of
-
-    Returns:
-        The first instance of transform_type or None if not found
-    """
-    # if compsoed transform is not a composition but already transform type, just return
-    if isinstance(composed_transform, transform_type):
-        return composed_transform
-
-    instance = None
-    for transform in composed_transform.transforms:
-        if isinstance(transform, transform_type):
-            instance = transform
-
-    if not instance:
-        print(f"Warning, no {transform_type} instance found")
-
-    return instance
+import quaternion  # noqa: F401 required by numpy-quaternion package
 
 
 def numpy_to_scipy_quat(quat):
