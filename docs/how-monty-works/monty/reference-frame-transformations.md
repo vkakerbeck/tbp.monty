@@ -11,7 +11,7 @@ The orientation of the object in the world (unknown to Monty). For instance, if 
 ### 🟢⚫️ Feature rel. Object
 The pose of all the features on the object (also unknown to the Monty). For instance, if you use a 3D simulator, this could be defined in the object meshes.
 ### 🟡 Sensor rel. World/Body
-The sensor’s location and orientation in the world can be calculated from proprioceptive information and motor efference copies. Basically, as the system moves it's sensors, it can use this information to update the locations of those sensors in a common reference frame. For the purposes of Monty it doesn't matter where the origin of this RF is (it could be the agent's body or an arbitrary location in the environment) but it matters that all sensor locations are represented in this common RF.
+The sensor’s location and orientation in the world can be calculated from proprioceptive information and motor efference copies. Basically, as the system moves its sensors, it can use this information to update the locations of those sensors in a common reference frame. For the purposes of Monty it doesn't matter where the origin of this RF is (it could be the agent's body or an arbitrary location in the environment) but it matters that all sensor locations are represented in this common RF.
 ### 🟠 Feature rel. Sensor
 This is the feature's orientation relative to the sensor. For instance in Monty, we often use the surface normal and curvature direction to define the sensed pose, which are extracted from the depth image of the sensor ([code](https://github.com/thousandbrainsproject/tbp.monty/blob/main/src/tbp/monty/frameworks/models/sensor_modules.py#L161-L167)).
 ### 🟢⚪️ Feature rel. World/Body
