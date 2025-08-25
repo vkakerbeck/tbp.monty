@@ -1,7 +1,7 @@
 ---
 title: Reference Frame Transforms
 ---
-In a sensorimotor learning setup one naturally encounters several different reference frames in which information can be represented. Additionally, Monty has it's internal reference frames in which is learns models of objects. Those can get confusing to wrap your head around and keep track of so here is a brief overview of all the reference frames involved in a typical Monty setup.
+In a sensorimotor learning setup, one naturally encounters several different reference frames in which information can be represented. Additionally, Monty has internal reference frames in which it learns models of objects. Those can get confusing to wrap your head around and keep track of, so here is a brief overview of all the reference frames involved in a typical Monty setup.
 
 # Reference Frames in a Typical Monty Experiment
 ![](../../figures/how-monty-works/reference_frames_overview.png)
