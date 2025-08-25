@@ -152,7 +152,7 @@ python -m tools.github_readme_sync.cli check docs
 ```
 
 > [!NOTE] 
-> See the [readme sync tool documentation](../../tools/github_readme_sync/README.md) for more details on how to use it and how to install the additional dependencies for it.
+> See the [readme sync tool documentation](https://github.com/thousandbrainsproject/tbp.monty/blob/main/tools/github_readme_sync/README.md) for more details on how to use it and how to install the additional dependencies for it.
 
 # Images
 
