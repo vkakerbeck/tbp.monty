@@ -49,7 +49,7 @@ Voting in Monty happens in object space. We directly translate between the objec
 
 The two LMs receive input from two sensors that sense different locations and orientations in space. They receive that as a pose in a common coordinate system (rel. world in the image below). Since the sensors are at different locations on the object and our hypotheses are “locations of sensor rel. model” we can’t just vote on the hypotheses directly but have to account for the relative sensor displacement. So the sensor that is sensing the handle of the cup needs to incorporate the offset to the sensor that senses the rim to be able to use its hypotheses.
 
-This offset can be easily calculated from the difference of the two LM’s inputs as those poses are in a common coordinate system. The sending LM attaches its sensed pose in the world to the vote message it sends out (along with its hypotheses about the locations on the mug) and the receiving LM compares it with its own sensed pose and applies the difference to the vote hypotheses.
+This offset can be easily calculated from the difference of the two LM’s inputs, as those poses are in a common coordinate system. The sending LM attaches its sensed pose in the world to the vote message it sends out (along with its hypotheses about the locations on the mug), and the receiving LM compares it with its own sensed pose and applies the difference to the vote hypotheses.
 
 ![](../../figures/how-monty-works/voting_rf_transform.gif)
 
