@@ -65,19 +65,19 @@ Check out our evidence LM documentation for [more details on voting](../learning
 
 ## Example: Both Sensors Sense Same Location
 The simplest example is if both learning modules receive input from the same location in the world (i.e. the two sensors "look" at the same point). In this case, no transformation needs to be applied to the incoming votes and they can directly be overlaid onto the receiving LM's reference frame.
-![](../../figures/how-monty-works/vote_same_loc.png)
+![](../../figures/how-monty-works/vote_same_loc.png#width=400px)
 
 However, voting in this case does not help reduce ambiguity as both LMs receive the same input.
 
 ## Example: Sensors Sense Different Locations
 If the two LMs receive input from two different locations in the world, we need to calculate the displacement between the two and apply it to the incoming votes. In the example below, the left LM is sensing the left side of the rim and the right LM is sensing the right side. When the right LM receives votes from the left one, it needs to shift those towards the right by their distance. You can think of the right LM saying "if you are over there, and you think you are at this location on the mug, then I should be x amount to the right of that".
-![](../../figures/how-monty-works/vote_loc_transform.png)
+![](../../figures/how-monty-works/vote_loc_transform.png#width=400px)
 
 The displaced votes are overlaid onto the existing location hypotheses of the receiving LM (orange dots). Only a few points will be consistent with the incoming votes (in this case just one, circled in green). When the right LM sends votes to the left one, it's location hypotheses will have to be displaced in the opposite direction (towards the left). 
 
 ## Example: Sensors Sense Different Locations and Orientations
 Lastly, if the two LMs also sense different orientations in the world, this needs to be applied to the vote location displacement. This is the example animation shown above where the incoming vote locations are both shifted towards the right on the mug and rotated. 
 
-![](../../figures/how-monty-works/vote_loc_rot_transform.png)
+![](../../figures/how-monty-works/vote_loc_rot_transform.png#width=400px)
 
 After this displacement is applied, the vote locations (red dots) can again be overlaid onto the existing hypothesis space (orange dots). In this example, the right LM received a pose and features that were consistent with the top or bottom of the handle. After incorporating the votes, the top of the handle is the most likely location (circled in green).
