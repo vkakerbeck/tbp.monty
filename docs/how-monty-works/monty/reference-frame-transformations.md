@@ -1,7 +1,7 @@
 ---
 title: Reference Frame Transforms
 ---
-In a sensorimotor learning setup one naturally encounters several different reference frames in which information can be represented. Additionally, Monty has it's internal reference frames in which is learns models of objects. Those can get confusing to wrap your head around and keep track of so here is a brief overview of all the reference frames involved in a typical Monty setup.
+In a sensorimotor learning setup, one naturally encounters several different reference frames in which information can be represented. Additionally, Monty has internal reference frames in which it learns models of objects. Those can get confusing to wrap your head around and keep track of, so here is a brief overview of all the reference frames involved in a typical Monty setup.
 
 # Reference Frames in a Typical Monty Experiment
 ![](../../figures/how-monty-works/reference_frames_overview.png)
@@ -11,16 +11,16 @@ The orientation of the object in the world (unknown to Monty). For instance, if 
 ### 🟢⚫️ Feature rel. Object
 The pose of all the features on the object (also unknown to the Monty). For instance, if you use a 3D simulator, this could be defined in the object meshes.
 ### 🟡 Sensor rel. World/Body
-The sensor’s location and orientation in the world can be calculated from proprioceptive information and motor efference copies. Basically, as the system moves it's sensors, it can use this information to update the locations of those sensors in a common reference frame. For the purposes of Monty it doesn't matter where the origin of this RF is (it could be the agent's body or an arbitrary location in the environment) but it matters that all sensor locations are represented in this common RF.
+The sensor’s location and orientation in the world can be calculated from proprioceptive information and motor efference copies. Basically, as the system moves its sensors, it can use this information to update the locations of those sensors in a common reference frame. For the purposes of Monty it doesn't matter where the origin of this RF is (it could be the agent's body or an arbitrary location in the environment) but it matters that all sensor locations are represented in this common RF.
 ### 🟠 Feature rel. Sensor
 This is the feature's orientation relative to the sensor. For instance in Monty, we often use the surface normal and curvature direction to define the sensed pose, which are extracted from the depth image of the sensor ([code](https://github.com/thousandbrainsproject/tbp.monty/blob/main/src/tbp/monty/frameworks/models/sensor_modules.py#L161-L167)).
 ### 🟢⚪️ Feature rel. World/Body
 [bright green]
-The estimated orientation of the sensed feature in the world (sensor_rel_world * feature_rel_sensor). In Monty this currently happens to the depth values in [DepthTo3DLocations](https://github.com/thousandbrainsproject/tbp.monty/blob/4844ef17a4cadce455acb8d852fe3ed7038a298f/src/tbp/monty/frameworks/environment_utils/transforms.py#L220) while the surface normal and curvature extraction then happens in the SM, but in the end you get the same results.
+The estimated orientation of the sensed feature in the world (sensor_rel_world * feature_rel_sensor). In Monty, this currently happens to the depth values in [DepthTo3DLocations](https://github.com/thousandbrainsproject/tbp.monty/blob/4844ef17a4cadce455acb8d852fe3ed7038a298f/src/tbp/monty/frameworks/environment_utils/transforms.py#L220) while the surface normal and curvature extraction then happens in the SM, but in the end you get the same results.
 ### 🔵 Object rel. Model
 This is the hypothesized orientation of the learned model relative to the object (in the world). This orientation needs to be inferred by the LM based on its sensory inputs. There are usually multiple hypotheses which Monty learning modules keeps track of in [`self.possible_poses`](https://github.com/thousandbrainsproject/tbp.monty/blob/4844ef17a4cadce455acb8d852fe3ed7038a298f/src/tbp/monty/frameworks/models/evidence_matching/learning_module.py#L227)
 ### 🔵⚫️ Feature rel. Model
-This is the rotation of the currently sensed feature relative to the object model in the LM (feature_rel_world * object_rel_model, see code [here](https://github.com/thousandbrainsproject/tbp.monty/blob/main/src/tbp/monty/frameworks/models/evidence_matching/hypotheses_displacer.py#L141-L142)). The learning module uses it's pose hypothesis to transform the feature relative to the world into it's objects reference frame so that it can recognize the object in any orientation and location in the world, independent of where it was learned. 
+This is the rotation of the currently sensed feature relative to the object model in the LM (feature_rel_world * object_rel_model, see code [here](https://github.com/thousandbrainsproject/tbp.monty/blob/main/src/tbp/monty/frameworks/models/evidence_matching/hypotheses_displacer.py#L141-L142)). The learning module uses its pose hypothesis to transform the feature relative to the world into its object's reference frame so that it can recognize the object in any orientation and location in the world, independent of where it was learned. 
 
 > [!NOTE] 
 > In the brain we hypothesize that the transformation of sensory input into the object's reference frame is done by the thalamus (see our [neuroscience theory paper](https://arxiv.org/abs/2507.05888) for more details).
@@ -53,11 +53,11 @@ Before we can apply the movement to update our hypothesized location on the obje
 Applying the hypothesized object rotation to both the incoming movement and features means that Monty can recognize the object in any new location and orientation in the world.
 
 # Reference Frame Transforms for Voting
-Voting in Monty happens in object space. We directly translate between the object’s RF of the sending LM to the object RF of the receiving LM. This relies on the assumption that both LMs learned the object at the same time, and hence their reference frames line up in orientation and displacement (since we receive features rel. world, which will automatically line up if the LMs learn the object at the same time). Otherwise, we could store one displacement between their reference frames and apply that in addition.
+Voting in Monty happens in object space. We directly translate between the object’s RF of the sending LM to the object RF of the receiving LM. This relies on the assumption that both LMs learned the object at the same time, and hence their reference frames line up in orientation and displacement (since we receive features rel. world, which will automatically line up if the LMs learn the object at the same time). Otherwise, we could store one displacement between their reference frames and apply that as well.
 
 The two LMs receive input from two sensors that sense different locations and orientations in space. They receive that as a pose in a common coordinate system (rel. world in the image below). Since the sensors are at different locations on the object and our hypotheses are “locations of sensor rel. model” we can’t just vote on the hypotheses directly but have to account for the relative sensor displacement. So the sensor that is sensing the handle of the cup needs to incorporate the offset to the sensor that senses the rim to be able to use its hypotheses.
 
-This offset can be easily calculated from the difference of the two LM’s inputs as those poses are in a common coordinate system. The sending LM attaches its sensed pose in the world to the vote message it sends out (along with its hypotheses about the locations on the mug) and the receiving LM compares it with its own sensed pose and applies the difference to the vote hypotheses.
+This offset can be easily calculated from the difference of the two LM’s inputs, as those poses are in a common coordinate system. The sending LM attaches its sensed pose in the world to the vote message it sends out (along with its hypotheses about the locations on the mug), and the receiving LM compares it with its own sensed pose and applies the difference to the vote hypotheses.
 
 ![](../../figures/how-monty-works/voting_rf_transform.gif)
 
