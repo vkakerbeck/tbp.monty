@@ -42,7 +42,15 @@ If the object is in a different rotation than how it was learned, all the featur
 
 ![](../../figures/how-monty-works/object_moves.gif)
 
-What is not shown in this image is that the same rotation transform is also applied to the movement vector (displacement) that is applied to update the hypothesized location on the object.
+## Applying the Pose Hypothesis to the Sensor Movement
+
+What is not shown in the visualizations above is that the same rotation transform is also applied to the movement vector (displacement) of the sensor. In Monty we calculate how much the sensor has moved in the world by taking the difference between two successive location and orientation inputs to the LM ([code](https://github.com/thousandbrainsproject/tbp.monty/blob/a408bf6063852323b98e009da5e1373d097beb73/src/tbp/monty/frameworks/models/graph_matching.py#L1052)). The sensor movement is applied to update the hypothesized location on the object. 
+
+Before we can apply the movement to update our hypothesized location on the object, the movement needs to be transformed from a movement in the world to movement in the object's reference frame. To do this, the hypothesized object orientation (light blue) is applied, the same way it is applied to the incoming features. So for example, if object is rotated by 90 degrees to the left and the sensor moved right to left on the object (like in the animation shown below), then the orientation transform will update the location on the object model (red dot) to change from bottom to top of the object. 
+
+![](../../figures/how-monty-works/MovementTransform.gif)
+
+Applying the hypothesized object rotation to both the incoming movement and features means that Monty can recognize the object in any new location and orientation in the world.
 
 # Reference Frame Transforms for Voting
 Voting in Monty happens in object space. We directly translate between the object’s RF of the sending LM to the object RF of the receiving LM. This relies on the assumption that both LMs learned the object at the same time, and hence their reference frames line up in orientation and displacement (since we receive features rel. world, which will automatically line up if the LMs learn the object at the same time). Otherwise, we could store one displacement between their reference frames and apply that in addition.
