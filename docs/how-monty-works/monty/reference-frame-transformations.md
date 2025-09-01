@@ -39,7 +39,7 @@ This is one of the key definitions of the [CMP](../observations-transforms-senso
 
 If the object changes its pose in the world, the pose hypothesis in the LM comes into play. The LM has a hypothesis on how the object is rotated in the world relative to its model of the object. This is essentially the rotation that needs to be applied to rotate the incoming features and movements into the model’s reference frame.
 
-The plot below only shows one pose hypothesis, but in practice, Monty has many of them, and it needs to infer this pose from what it is sensing (dark green orientations are unknown).
+The plot below only shows one pose hypothesis, but in practice, Monty has many of them, and it needs to infer this pose from what it is sensing (dark green orientations are unknown). The animation also assumes that Monty is correctly inferring and updating it's hypothesis as the object is rotating in the world, which is not trivial.
 
 If the object is in a different rotation than how it was learned, all the features on the object will be sensed in different orientations and location in the world. This needs to be compensated by the light blue projection of the pose hypothesis.
 
