@@ -6,17 +6,17 @@ In a sensorimotor learning setup, one naturally encounters several different ref
 # Reference Frames in a Typical Monty Experiment
 ![](../../figures/how-monty-works/reference_frames_overview.png)
 
-### 🟢 Object rel. World
+### 🔴 Object rel. World
 The orientation of the object in the world (unknown to Monty). For instance, if we use a simulator, this would be the configuration that specifies where the object is placed in the environment (like we do [here](https://github.com/thousandbrainsproject/tbp.monty/blob/4844ef17a4cadce455acb8d852fe3ed7038a298f/src/tbp/monty/frameworks/config_utils/make_dataset_configs.py#L229)). In the real world we don't have a specific origin, but all objects are still in a common reference frame with relative displacements between each other.
-### 🟢⚫️ Feature rel. Object
+### 🔴⚫️ Feature rel. Object
 The pose of all the features on the object (also unknown to the Monty). For instance, if you use a 3D simulator, this could be defined in the object meshes.
-### 🟡 Sensor rel. World/Body
+### 🟢⚫️ Sensor rel. World/Body
 The sensor’s location and orientation in the world can be estimated from proprioceptive information and motor efference copies. Basically, as the system moves its sensors, it can use this information to update the locations of those sensors in a common reference frame. For the purposes of Monty it doesn't matter where the origin of this RF is (it could be the agent's body or an arbitrary location in the environment) but it matters that all sensor locations are represented in this common RF. Lastly, it's worth noting that in simulation environments, this pose estimation can be perfect / error-free if desired. 
-### 🟠 Feature rel. Sensor
+### 🟢⚪️ Feature rel. Sensor
 This is the feature's orientation relative to the sensor. For instance in Monty, we often use the surface normal and curvature direction to define the sensed pose, which are extracted from the depth image of the sensor ([code](https://github.com/thousandbrainsproject/tbp.monty/blob/main/src/tbp/monty/frameworks/models/sensor_modules.py#L161-L167)).
-### 🟢⚪️ Feature rel. World/Body
+### 🔵 Feature rel. World/Body
 The estimated orientation of the sensed feature in the world (sensor_rel_world * feature_rel_sensor). In Monty, this currently happens to the depth values in [DepthTo3DLocations](https://github.com/thousandbrainsproject/tbp.monty/blob/4844ef17a4cadce455acb8d852fe3ed7038a298f/src/tbp/monty/frameworks/environment_utils/transforms.py#L220) while the surface normal and curvature extraction then happens in the SM, but in the end you get the same results.
-### 🔵 Object rel. Model
+### 🟡 World rel. Model
 This is the hypothesized orientation of the learned model relative to the object (in the world). This orientation needs to be inferred by the LM based on its sensory inputs. There are usually multiple hypotheses which Monty learning modules keeps track of in [`self.possible_poses`](https://github.com/thousandbrainsproject/tbp.monty/blob/4844ef17a4cadce455acb8d852fe3ed7038a298f/src/tbp/monty/frameworks/models/evidence_matching/learning_module.py#L227)
 ### 🔵⚫️ Feature rel. Model
 This is the rotation of the currently sensed feature relative to the object model in the LM (feature_rel_world * object_rel_model, see code [here](https://github.com/thousandbrainsproject/tbp.monty/blob/main/src/tbp/monty/frameworks/models/evidence_matching/hypotheses_displacer.py#L141-L142)). The learning module uses its pose hypothesis to transform the feature relative to the world into its object's reference frame so that it can recognize the object in any orientation and location in the world, independent of where it was learned.
@@ -51,7 +51,7 @@ What is not shown in the visualizations above is that the same rotation transfor
 
 Before we can apply the movement to update our hypothesized location on the object, the movement needs to be transformed from a movement in the world to movement in the object's reference frame. To do this, the hypothesized object orientation (light blue) is applied, the same way it is applied to the incoming features. So for example, if object is rotated by 90 degrees to the left and the sensor moved right to left on the object (like in the animation shown below), then the orientation transform will update the location on the object model (red dot) to change from bottom to top of the object. 
 
-![](../../figures/how-monty-works/MovementTransform.gif)
+![](../../figures/how-monty-works/movement_transform.gif)
 
 Applying the hypothesized object rotation to both the incoming movement and features means that Monty can recognize the object in any new location and orientation in the world.
 
