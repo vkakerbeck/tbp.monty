@@ -70,7 +70,7 @@ This offset can be easily calculated from the difference of the two LM’s input
 Check out our evidence LM documentation for [more details on voting](../learning-module/evidence-based-learning-module.md#voting-with-evidence).
 
 ## Example: Both Sensors Sense Same Location
-The simplest example is if both learning modules receive input from the same location in the world (i.e. the two sensors "look" at the same point). In this case, no transformation needs to be applied to the incoming votes and they can directly be overlaid onto the receiving LM's reference frame.
+The simplest example is if both learning modules receive input from the same location in the world (i.e. the two sensors "look" at the same point). In this case, no transformation needs to be applied to the incoming votes (no transformation is represented as a green dot in the figure) and they can directly be overlaid onto the receiving LM's reference frame.
 ![](../../figures/how-monty-works/vote_same_loc.png#width=400px)
 
 However, voting in this case does not help reduce ambiguity as both LMs receive the same input.
@@ -84,7 +84,7 @@ The displaced votes are overlaid onto the existing location hypotheses of the re
 ## Example: Accounting for the Pose Hypothesis
 What we haven't shown so far is how voting accounts for the pose hypothesis. The examples above all illustrated cases where the object orientation in the world matched the orientation it was learned in (hence the yellow arrow did not rotate any of the input). The figures above were also simplified in that they only showed one pose hypothesis for the object. In reality, we have one pose hypothesis (yellow arrows) for each hypothesized location (pink dots).
 
-When voting, the sending LM does not only send it's location hypotheses but also the [hypothesized pose for each of those locations](https://github.com/thousandbrainsproject/tbp.monty/blob/87159d54e9fbef7ca602b5d4a3940be7f8f65e0a/src/tbp/monty/frameworks/models/evidence_matching/learning_module.py#L380). The receiving LM then used these poses to [rotate the sensor displacement](https://github.com/thousandbrainsproject/tbp.monty/blob/87159d54e9fbef7ca602b5d4a3940be7f8f65e0a/src/tbp/monty/frameworks/models/evidence_matching/model.py#L106) (thick green arrow). This is similar to how sensor movement in the world needs to be rotated into the model's reference frame.
+When voting, the sending LM does not only send it's location hypotheses but also the [hypothesized pose of the model](https://github.com/thousandbrainsproject/tbp.monty/blob/87159d54e9fbef7ca602b5d4a3940be7f8f65e0a/src/tbp/monty/frameworks/models/evidence_matching/learning_module.py#L380), where there will be one such pose for each location hypothesis sent. The receiving LM then used these poses to [rotate the sensor displacement](https://github.com/thousandbrainsproject/tbp.monty/blob/87159d54e9fbef7ca602b5d4a3940be7f8f65e0a/src/tbp/monty/frameworks/models/evidence_matching/model.py#L106) (thick green arrow). This is similar to how sensor movement in the world needs to be rotated into the model's reference frame.
 
 ![](../../figures/how-monty-works/vote_loc_rot_transform.png#width=400px)
 
