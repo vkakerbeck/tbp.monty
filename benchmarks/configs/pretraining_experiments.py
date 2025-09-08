@@ -85,6 +85,7 @@ supervised_pre_training_base = dict(
     ),
     logging_config=PretrainLoggingConfig(
         output_dir=fe_pretrain_dir,
+        python_log_level="INFO",
     ),
     monty_config=PatchAndViewMontyConfig(
         monty_args=MontyArgs(num_exploratory_steps=500),
@@ -330,8 +331,17 @@ two_stacked_constrained_lms_config = dict(
                     "principal_curvatures_log": np.ones(2),
                 }
             },
+            graph_delta_thresholds=dict(
+                patch_0=dict(
+                    distance=0.0001,
+                    # Only first pose vector (surface normal) is currently used
+                    pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
+                    principal_curvatures_log=[1, 1],
+                    hsv=[0.1, 1, 1],
+                )
+            ),
             feature_weights={},
-            max_graph_size=0.5,
+            max_graph_size=0.15,
             num_model_voxels_per_dim=100,
             max_nodes_per_graph=2000,
         ),
@@ -351,8 +361,17 @@ two_stacked_constrained_lms_config = dict(
                 # real similarity measure.
                 "learning_module_0": {"object_id": 1},
             },
+            graph_delta_thresholds=dict(
+                patch_1=dict(
+                    distance=0.0001,
+                    # Only first pose vector (surface normal) is currently used
+                    pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
+                    principal_curvatures_log=[1, 1],
+                    hsv=[0.1, 1, 1],
+                )
+            ),
             feature_weights={"learning_module_0": {"object_id": 1}},
-            max_graph_size=0.5,
+            max_graph_size=0.3,
             num_model_voxels_per_dim=100,
             max_nodes_per_graph=2000,
         ),
@@ -370,8 +389,14 @@ supervised_pre_training_objects_wo_logos.update(
         show_sensor_output=True,
     ),
     monty_config=TwoLMStackedMontyConfig(
-        monty_args=MontyArgs(num_exploratory_steps=5),
+        monty_args=MontyArgs(num_exploratory_steps=1000),
         learning_module_configs=two_stacked_constrained_lms_config,
+        motor_system_config=MotorSystemConfigNaiveScanSpiral(
+            motor_system_args=dict(
+                policy_class=NaiveScanPolicy,
+                policy_args=make_naive_scan_policy_config(step_size=0.1),
+            )
+        ),  # use spiral policy for more even object coverage during learning
     ),
     dataset_args=TwoLMStackedDistantMountHabitatDatasetArgs(
         env_init_args=EnvInitArgsTwoLMDistantStackedMount(
@@ -379,10 +404,15 @@ supervised_pre_training_objects_wo_logos.update(
         ).__dict__,
     ),
     train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
-        object_names=get_object_names_by_idx(0, 2, object_list=OBJECT_WO_LOGOS),
+        object_names=get_object_names_by_idx(
+            0, len(OBJECT_WO_LOGOS), object_list=OBJECT_WO_LOGOS
+        ),
         object_init_sampler=PredefinedObjectInitializer(rotations=train_rotations_all),
     ),
 )
+
+LOGO_POSITIONS = [[-0.03, 1.5, 0.0], [0.0, 1.5, 0.0], [0.03, 1.5, 0.0]]
+LOGO_ROTATIONS = [[0.0, 0.0, 0.0]]
 
 supervised_pre_training_compositional_logos = copy.deepcopy(
     supervised_pre_training_objects_wo_logos
@@ -390,7 +420,7 @@ supervised_pre_training_compositional_logos = copy.deepcopy(
 supervised_pre_training_compositional_logos.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
-        n_train_epochs=1,
+        n_train_epochs=len(LOGO_POSITIONS) * len(LOGO_ROTATIONS),
         show_sensor_output=True,
         model_name_or_path=os.path.join(
             fe_pretrain_dir,
@@ -398,8 +428,11 @@ supervised_pre_training_compositional_logos.update(
         ),
     ),
     train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
-        object_names=get_object_names_by_idx(0, 2, object_list=LOGOS),
-        object_init_sampler=PredefinedObjectInitializer(rotations=[[0.0, 0.0, 0.0]]),
+        object_names=get_object_names_by_idx(0, len(LOGOS), object_list=LOGOS),
+        object_init_sampler=PredefinedObjectInitializer(
+            positions=LOGO_POSITIONS,
+            rotations=LOGO_ROTATIONS,
+        ),
     ),
 )
 
