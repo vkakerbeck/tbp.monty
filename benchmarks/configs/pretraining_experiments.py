@@ -379,7 +379,7 @@ two_stacked_constrained_lms_config = dict(
 )
 
 OBJECT_WO_LOGOS = ["001_cube", "006_disk"]
-LOGOS = ["021_logo_tbp", "022_logo_numenta"]
+LOGOS = ["021_logo_tbp"]  # ["021_logo_tbp", "022_logo_numenta"]
 
 supervised_pre_training_objects_wo_logos = copy.deepcopy(supervised_pre_training_base)
 supervised_pre_training_objects_wo_logos.update(
