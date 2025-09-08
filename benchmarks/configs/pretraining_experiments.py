@@ -24,6 +24,7 @@ from tbp.monty.frameworks.config_utils.config_args import (
     PatchAndViewMontyConfig,
     PretrainLoggingConfig,
     SurfaceAndViewMontyConfig,
+    TwoLMStackedMontyConfig,
     get_cube_face_and_corner_views_rotations,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
@@ -46,16 +47,21 @@ from tbp.monty.frameworks.experiments import (
     MontySupervisedObjectPretrainingExperiment,
 )
 from tbp.monty.frameworks.models.displacement_matching import DisplacementGraphLM
+from tbp.monty.frameworks.models.evidence_matching.learning_module import (
+    EvidenceGraphLM,
+)
 from tbp.monty.frameworks.models.motor_policies import NaiveScanPolicy
 from tbp.monty.frameworks.models.sensor_modules import (
     DetailedLoggingSM,
     HabitatSurfacePatchSM,
 )
 from tbp.monty.simulators.habitat.configs import (
+    EnvInitArgsTwoLMDistantStackedMount,
     FiveLMMountHabitatDatasetArgs,
     PatchViewFinderMountHabitatDatasetArgs,
     SurfaceViewFinderMontyWorldMountHabitatDatasetArgs,
     SurfaceViewFinderMountHabitatDatasetArgs,
+    TwoLMStackedDistantMountHabitatDatasetArgs,
 )
 
 # FOR SUPERVISED PRETRAINING: 14 unique rotations that give good views of the object.
@@ -277,6 +283,73 @@ supervised_pre_training_5lms_all_objects.update(
     ),
 )
 
+two_stacked_lms_config = dict(
+    learning_module_0=dict(
+        learning_module_class=EvidenceGraphLM,
+        learning_module_args=dict(
+            max_match_distance=0.001,
+            tolerances={
+                "patch_0": {
+                    "hsv": np.array([0.1, 1, 1]),
+                    "principal_curvatures_log": np.ones(2),
+                }
+            },
+            feature_weights={},
+            max_graph_size=0.2,
+            num_model_voxels_per_dim=50,
+            max_nodes_per_graph=500,
+        ),
+    ),
+    learning_module_1=dict(
+        learning_module_class=EvidenceGraphLM,
+        learning_module_args=dict(
+            max_match_distance=0.001,  # TODO: C - Scale with receptive field size
+            tolerances={
+                "patch_1": {
+                    "hsv": np.array([0.1, 1, 1]),
+                    "principal_curvatures_log": np.ones(2),
+                },
+                # object Id currently is an int representation of the strings
+                # in the object label so we keep this tolerance high. This is
+                # just until we have added a way to encode object ID with some
+                # real similarity measure.
+                "learning_module_0": {"object_id": 1},
+            },
+            feature_weights={"learning_module_0": {"object_id": 1}},
+            max_graph_size=0.3,
+            num_model_voxels_per_dim=50,
+            max_nodes_per_graph=500,
+        ),
+    ),
+)
+
+LOGO_OBJECTS = ["001_cube", "006_disk", "021_logo_tbp", "022_logo_numenta"]
+
+supervised_pre_training_compositional_logos = copy.deepcopy(
+    supervised_pre_training_base
+)
+supervised_pre_training_compositional_logos.update(
+    experiment_args=ExperimentArgs(
+        do_eval=False,
+        n_train_epochs=1,
+        show_sensor_output=True,
+    ),
+    monty_config=TwoLMStackedMontyConfig(
+        monty_args=MontyArgs(num_exploratory_steps=500),
+        learning_module_configs=two_stacked_lms_config,
+    ),
+    dataset_args=TwoLMStackedDistantMountHabitatDatasetArgs(
+        env_init_args=EnvInitArgsTwoLMDistantStackedMount(
+            data_path=os.path.join(os.environ["MONTY_DATA"], "compositional_objects")
+        ).__dict__,
+    ),
+    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(0, 4, object_list=LOGO_OBJECTS),
+        object_init_sampler=PredefinedObjectInitializer(rotations=[[0.0, 0.0, 0.0]]),
+    ),
+)
+
+
 experiments = PretrainingExperiments(
     supervised_pre_training_base=supervised_pre_training_base,
     supervised_pre_training_5lms=supervised_pre_training_5lms,
@@ -285,5 +358,6 @@ experiments = PretrainingExperiments(
     only_surf_agent_training_10simobj=only_surf_agent_training_10simobj,
     only_surf_agent_training_allobj=only_surf_agent_training_allobj,
     only_surf_agent_training_numenta_lab_obj=only_surf_agent_training_numenta_lab_obj,
+    supervised_pre_training_compositional_logos=supervised_pre_training_compositional_logos,
 )
 CONFIGS = asdict(experiments)

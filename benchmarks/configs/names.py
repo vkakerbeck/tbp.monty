@@ -53,6 +53,7 @@ class PretrainingExperiments:
     only_surf_agent_training_10simobj: dict
     only_surf_agent_training_allobj: dict
     only_surf_agent_training_numenta_lab_obj: dict
+    supervised_pre_training_compositional_logos: dict
 
 
 @dataclass
