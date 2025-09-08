@@ -282,8 +282,44 @@ supervised_pre_training_5lms_all_objects.update(
         object_init_sampler=PredefinedObjectInitializer(rotations=train_rotations_all),
     ),
 )
+# two_stacked_lms_config = dict(
+#     learning_module_0=dict(
+#         learning_module_class=DisplacementGraphLM,
+#         learning_module_args=dict(
+#             k=10,
+#             match_attribute="displacement",
+#             tolerance=np.ones(3) * 0.0001,
+#             graph_delta_thresholds=dict(
+#                 patch_0=dict(
+#                     distance=0.001,
+#                     # Only first pose vector (surface normal) is currently used
+#                     pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
+#                     principal_curvatures_log=[1, 1],
+#                     hsv=[0.1, 1, 1],
+#                 )
+#             ),
+#         ),
+#     ),
+#     learning_module_1=dict(
+#         learning_module_class=DisplacementGraphLM,
+#         learning_module_args=dict(
+#             k=10,
+#             match_attribute="displacement",
+#             tolerance=np.ones(3) * 0.0001,
+#             graph_delta_thresholds=dict(
+#                 patch_0=dict(
+#                     distance=0.001,
+#                     # Only first pose vector (surface normal) is currently used
+#                     pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
+#                     principal_curvatures_log=[1, 1],
+#                     hsv=[0.1, 1, 1],
+#                 )
+#             ),
+#         ),
+#     ),
+# )
 
-two_stacked_lms_config = dict(
+two_stacked_constrained_lms_config = dict(
     learning_module_0=dict(
         learning_module_class=EvidenceGraphLM,
         learning_module_args=dict(
@@ -295,9 +331,9 @@ two_stacked_lms_config = dict(
                 }
             },
             feature_weights={},
-            max_graph_size=0.2,
-            num_model_voxels_per_dim=50,
-            max_nodes_per_graph=500,
+            max_graph_size=0.5,
+            num_model_voxels_per_dim=100,
+            max_nodes_per_graph=2000,
         ),
     ),
     learning_module_1=dict(
@@ -316,27 +352,26 @@ two_stacked_lms_config = dict(
                 "learning_module_0": {"object_id": 1},
             },
             feature_weights={"learning_module_0": {"object_id": 1}},
-            max_graph_size=0.3,
-            num_model_voxels_per_dim=50,
-            max_nodes_per_graph=500,
+            max_graph_size=0.5,
+            num_model_voxels_per_dim=100,
+            max_nodes_per_graph=2000,
         ),
     ),
 )
 
-LOGO_OBJECTS = ["001_cube", "006_disk", "021_logo_tbp", "022_logo_numenta"]
+OBJECT_WO_LOGOS = ["001_cube", "006_disk"]
+LOGOS = ["021_logo_tbp", "022_logo_numenta"]
 
-supervised_pre_training_compositional_logos = copy.deepcopy(
-    supervised_pre_training_base
-)
-supervised_pre_training_compositional_logos.update(
+supervised_pre_training_objects_wo_logos = copy.deepcopy(supervised_pre_training_base)
+supervised_pre_training_objects_wo_logos.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
-        n_train_epochs=1,
+        n_train_epochs=len(train_rotations_all),
         show_sensor_output=True,
     ),
     monty_config=TwoLMStackedMontyConfig(
-        monty_args=MontyArgs(num_exploratory_steps=500),
-        learning_module_configs=two_stacked_lms_config,
+        monty_args=MontyArgs(num_exploratory_steps=5),
+        learning_module_configs=two_stacked_constrained_lms_config,
     ),
     dataset_args=TwoLMStackedDistantMountHabitatDatasetArgs(
         env_init_args=EnvInitArgsTwoLMDistantStackedMount(
@@ -344,7 +379,26 @@ supervised_pre_training_compositional_logos.update(
         ).__dict__,
     ),
     train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
-        object_names=get_object_names_by_idx(0, 4, object_list=LOGO_OBJECTS),
+        object_names=get_object_names_by_idx(0, 2, object_list=OBJECT_WO_LOGOS),
+        object_init_sampler=PredefinedObjectInitializer(rotations=train_rotations_all),
+    ),
+)
+
+supervised_pre_training_compositional_logos = copy.deepcopy(
+    supervised_pre_training_objects_wo_logos
+)
+supervised_pre_training_compositional_logos.update(
+    experiment_args=ExperimentArgs(
+        do_eval=False,
+        n_train_epochs=1,
+        show_sensor_output=True,
+        model_name_or_path=os.path.join(
+            fe_pretrain_dir,
+            "supervised_pre_training_objects_wo_logos/pretrained/",
+        ),
+    ),
+    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(0, 2, object_list=LOGOS),
         object_init_sampler=PredefinedObjectInitializer(rotations=[[0.0, 0.0, 0.0]]),
     ),
 )
@@ -358,6 +412,7 @@ experiments = PretrainingExperiments(
     only_surf_agent_training_10simobj=only_surf_agent_training_10simobj,
     only_surf_agent_training_allobj=only_surf_agent_training_allobj,
     only_surf_agent_training_numenta_lab_obj=only_surf_agent_training_numenta_lab_obj,
+    supervised_pre_training_objects_wo_logos=supervised_pre_training_objects_wo_logos,
     supervised_pre_training_compositional_logos=supervised_pre_training_compositional_logos,
 )
 CONFIGS = asdict(experiments)
