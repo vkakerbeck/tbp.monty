@@ -16,14 +16,12 @@ from benchmarks.configs.defaults import (
     pretrained_dir,
 )
 from benchmarks.configs.names import CompositionalExperiments
-from benchmarks.configs.pretraining_experiments import (
-    two_stacked_constrained_lms_config,
-)
 from tbp.monty.frameworks.config_utils.config_args import (
     CSVLoggingConfig,
     FiveLMMontySOTAConfig,
     MontyArgs,
     MotorSystemConfigCurInformedSurfaceGoalStateDriven,
+    MotorSystemConfigInformedGoalStateDriven,
     MotorSystemConfigNaiveScanSpiral,
     ParallelEvidenceLMLoggingConfig,
     PatchAndViewFartherAwaySOTAMontyConfig,
@@ -57,6 +55,7 @@ from tbp.monty.frameworks.models.evidence_matching.learning_module import (
 from tbp.monty.frameworks.models.evidence_matching.model import (
     MontyForEvidenceGraphMatching,
 )
+from tbp.monty.frameworks.models.goal_state_generation import EvidenceGoalStateGenerator
 from tbp.monty.frameworks.models.motor_policies import NaiveScanPolicy
 from tbp.monty.frameworks.models.sensor_modules import (
     DetailedLoggingSM,
@@ -101,6 +100,80 @@ OBJECT_WITH_LOGOS = [
     "009_disk_numenta_horz",
 ]
 
+
+two_stacked_constrained_lms_inference_config = dict(
+    learning_module_0=dict(
+        learning_module_class=EvidenceGraphLM,
+        learning_module_args=dict(
+            max_match_distance=0.01,
+            tolerances={
+                "patch_0": {
+                    "hsv": np.array([0.1, 1, 1]),
+                    "principal_curvatures_log": np.ones(2),
+                }
+            },
+            # Note graph-delta-thresholds are not used for grid-based models
+            feature_weights={},
+            max_graph_size=0.3,
+            num_model_voxels_per_dim=200,
+            max_nodes_per_graph=2000,
+            gsg_class=EvidenceGoalStateGenerator,
+            gsg_args=dict(
+                goal_tolerances=dict(
+                    location=0.015,  # distance in meters
+                ),  # Tolerance(s) when determining goal-state success
+                elapsed_steps_factor=10,  # Factor that considers the number of elapsed
+                # steps as a possible condition for initiating a hypothesis-testing goal
+                # state; should be set to an integer reflecting a number of steps
+                min_post_goal_success_steps=5,  # Number of necessary steps for a hypothesis
+                # goal-state to be considered
+                x_percent_scale_factor=0.75,  # Scale x-percent threshold to decide
+                # when we should focus on pose rather than determining object ID; should
+                # be bounded between 0:1.0; "mod" for modifier
+                desired_object_distance=0.03,  # Distance from the object to the
+                # agent that is considered "close enough" to the object
+            ),
+        ),
+    ),
+    learning_module_1=dict(
+        learning_module_class=EvidenceGraphLM,
+        learning_module_args=dict(
+            max_match_distance=0.01,  # TODO: C - Scale with receptive field size
+            tolerances={
+                "patch_1": {
+                    "hsv": np.array([0.1, 1, 1]),
+                    "principal_curvatures_log": np.ones(2),
+                },
+                # object Id currently is an int representation of the strings
+                # in the object label so we keep this tolerance high. This is
+                # just until we have added a way to encode object ID with some
+                # real similarity measure.
+                "learning_module_0": {"object_id": 1},
+            },
+            feature_weights={"learning_module_0": {"object_id": 1}},
+            max_graph_size=0.4,
+            num_model_voxels_per_dim=200,
+            max_nodes_per_graph=2000,
+            gsg_class=EvidenceGoalStateGenerator,
+            gsg_args=dict(
+                goal_tolerances=dict(
+                    location=0.015,  # distance in meters
+                ),  # Tolerance(s) when determining goal-state success
+                elapsed_steps_factor=10,  # Factor that considers the number of elapsed
+                # steps as a possible condition for initiating a hypothesis-testing goal
+                # state; should be set to an integer reflecting a number of steps
+                min_post_goal_success_steps=5,  # Number of necessary steps for a hypothesis
+                # goal-state to be considered
+                x_percent_scale_factor=0.75,  # Scale x-percent threshold to decide
+                # when we should focus on pose rather than determining object ID; should
+                # be bounded between 0:1.0; "mod" for modifier
+                desired_object_distance=0.03,  # Distance from the object to the
+                # agent that is considered "close enough" to the object
+            ),
+        ),
+    ),
+)
+
 base_config_cube_disk_logos_dist_agent = dict(
     experiment_class=MontyObjectRecognitionExperiment,
     experiment_args=EvalExperimentArgs(
@@ -116,13 +189,8 @@ base_config_cube_disk_logos_dist_agent = dict(
     ),
     monty_config=TwoLMStackedMontyConfig(
         monty_args=MontyArgs(min_eval_steps=min_eval_steps),
-        learning_module_configs=two_stacked_constrained_lms_config,
-        # motor_system_config=MotorSystemConfigNaiveScanSpiral(
-        #     motor_system_args=dict(
-        #         policy_class=NaiveScanPolicy,
-        #         policy_args=make_naive_scan_policy_config(step_size=5),
-        #     )
-        # ),  # use spiral policy for more even object coverage during learning
+        learning_module_configs=two_stacked_constrained_lms_inference_config,
+        motor_system_config=MotorSystemConfigInformedGoalStateDriven(),
     ),
     dataset_class=ED.EnvironmentDataset,
     dataset_args=TwoLMStackedDistantMountHabitatDatasetArgs(

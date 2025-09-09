@@ -463,6 +463,22 @@ supervised_pre_training_compositional_objects_with_logos.update(
     ),
 )
 
+supervised_pre_training_compositional_objects_with_logos_small_step_size = (
+    copy.deepcopy(supervised_pre_training_compositional_objects_with_logos)
+)
+supervised_pre_training_compositional_objects_with_logos_small_step_size.update(
+    monty_config=TwoLMStackedMontyConfig(
+        monty_args=MontyArgs(num_exploratory_steps=1000),
+        learning_module_configs=two_stacked_constrained_lms_config,
+        motor_system_config=MotorSystemConfigNaiveScanSpiral(
+            motor_system_args=dict(
+                policy_class=NaiveScanPolicy,
+                policy_args=make_naive_scan_policy_config(step_size=1),
+            )
+        ),  # use spiral policy for more even object coverage during learning
+    ),
+)
+
 
 experiments = PretrainingExperiments(
     supervised_pre_training_base=supervised_pre_training_base,
@@ -475,5 +491,6 @@ experiments = PretrainingExperiments(
     supervised_pre_training_objects_wo_logos=supervised_pre_training_objects_wo_logos,
     supervised_pre_training_compositional_logos=supervised_pre_training_compositional_logos,
     supervised_pre_training_compositional_objects_with_logos=supervised_pre_training_compositional_objects_with_logos,
+    supervised_pre_training_compositional_objects_with_logos_small_step_size=supervised_pre_training_compositional_objects_with_logos_small_step_size,
 )
 CONFIGS = asdict(experiments)
