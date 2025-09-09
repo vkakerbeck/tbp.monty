@@ -333,7 +333,7 @@ two_stacked_constrained_lms_config = dict(
             },
             # Note graph-delta-thresholds are not used for grid-based models
             feature_weights={},
-            max_graph_size=0.2,
+            max_graph_size=0.3,
             num_model_voxels_per_dim=200,
             max_nodes_per_graph=2000,
         ),
@@ -391,12 +391,11 @@ supervised_pre_training_objects_wo_logos.update(
         ),
         object_init_sampler=PredefinedObjectInitializer(
             rotations=train_rotations_all,
-            # positions=[[-0.03, 1.5, 0.0], [0.0, 1.5, 0.0], [0.03, 1.5, 0.0]],
         ),
     ),
 )
 
-LOGOS = ["021_logo_tbp"]  # , "022_logo_numenta"]
+LOGOS = ["021_logo_tbp", "022_logo_numenta"]
 LOGO_POSITIONS = [[0.0, 1.5, 0.0], [-0.03, 1.5, 0.0], [0.03, 1.5, 0.0]]
 LOGO_ROTATIONS = [[0.0, 0.0, 0.0]]
 
