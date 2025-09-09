@@ -431,6 +431,38 @@ supervised_pre_training_compositional_logos.update(
     ),
 )
 
+OBJECT_WITH_LOGOS = [
+    "002_cube_tbp_horz",
+    "004_cube_numenta_horz",
+    "007_disk_tbp_horz",
+    "009_disk_numenta_horz",
+]
+
+
+supervised_pre_training_compositional_objects_with_logos = copy.deepcopy(
+    supervised_pre_training_objects_wo_logos
+)
+supervised_pre_training_compositional_objects_with_logos.update(
+    # We load the model trained on the individual objects
+    experiment_args=ExperimentArgs(
+        do_eval=False,
+        n_train_epochs=len(train_rotations_all),
+        show_sensor_output=False,
+        model_name_or_path=os.path.join(
+            fe_pretrain_dir,
+            "supervised_pre_training_compositional_logos/pretrained/",
+        ),
+    ),
+    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECT_WITH_LOGOS), object_list=OBJECT_WITH_LOGOS
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=train_rotations_all,
+        ),
+    ),
+)
+
 
 experiments = PretrainingExperiments(
     supervised_pre_training_base=supervised_pre_training_base,
@@ -442,5 +474,6 @@ experiments = PretrainingExperiments(
     only_surf_agent_training_numenta_lab_obj=only_surf_agent_training_numenta_lab_obj,
     supervised_pre_training_objects_wo_logos=supervised_pre_training_objects_wo_logos,
     supervised_pre_training_compositional_logos=supervised_pre_training_compositional_logos,
+    supervised_pre_training_compositional_objects_with_logos=supervised_pre_training_compositional_objects_with_logos,
 )
 CONFIGS = asdict(experiments)

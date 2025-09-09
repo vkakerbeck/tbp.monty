@@ -55,6 +55,7 @@ class PretrainingExperiments:
     only_surf_agent_training_numenta_lab_obj: dict
     supervised_pre_training_objects_wo_logos: dict
     supervised_pre_training_compositional_logos: dict
+    supervised_pre_training_compositional_objects_with_logos: dict
 
 @dataclass
 class YcbExperiments:
