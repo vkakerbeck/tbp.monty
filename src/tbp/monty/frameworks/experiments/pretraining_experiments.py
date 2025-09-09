@@ -82,6 +82,8 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
         num_steps = 0
         for observation in self.dataloader:
             num_steps += 1
+            if self.show_sensor_output:
+                self.show_observations(observation, num_steps)
             self.model.step(observation)
             if self.model.is_done:
                 break
@@ -114,6 +116,9 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
         self.max_steps = self.max_train_steps  # no eval mode here
 
         self.logger_handler.pre_episode(self.logger_args)
+
+        if self.show_sensor_output:
+            self.initialize_online_plotting()
 
     def post_epoch(self):
         """Post epoch without saving state_dict."""
