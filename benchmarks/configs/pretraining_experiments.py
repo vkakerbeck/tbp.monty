@@ -333,7 +333,7 @@ two_stacked_constrained_lms_config = dict(
             },
             # Note graph-delta-thresholds are not used for grid-based models
             feature_weights={},
-            max_graph_size=0.4,
+            max_graph_size=0.2,
             num_model_voxels_per_dim=200,
             max_nodes_per_graph=2000,
         ),
@@ -353,18 +353,9 @@ two_stacked_constrained_lms_config = dict(
                 # real similarity measure.
                 "learning_module_0": {"object_id": 1},
             },
-            graph_delta_thresholds=dict(
-                patch_1=dict(
-                    distance=0.0001,
-                    # Only first pose vector (surface normal) is currently used
-                    pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
-                    principal_curvatures_log=[1, 1],
-                    hsv=[0.1, 1, 1],
-                )
-            ),
             feature_weights={"learning_module_0": {"object_id": 1}},
-            max_graph_size=0.3,
-            num_model_voxels_per_dim=100,
+            max_graph_size=0.4,
+            num_model_voxels_per_dim=200,
             max_nodes_per_graph=2000,
         ),
     ),
@@ -406,7 +397,7 @@ supervised_pre_training_objects_wo_logos.update(
 )
 
 LOGOS = ["021_logo_tbp"]  # , "022_logo_numenta"]
-LOGO_POSITIONS = [[-0.03, 1.5, 0.0], [0.0, 1.5, 0.0], [0.03, 1.5, 0.0]]
+LOGO_POSITIONS = [[0.0, 1.5, 0.0], [-0.03, 1.5, 0.0], [0.03, 1.5, 0.0]]
 LOGO_ROTATIONS = [[0.0, 0.0, 0.0]]
 
 supervised_pre_training_compositional_logos = copy.deepcopy(
@@ -421,6 +412,16 @@ supervised_pre_training_compositional_logos.update(
             fe_pretrain_dir,
             "supervised_pre_training_objects_wo_logos/pretrained/",
         ),
+    ),
+    monty_config=TwoLMStackedMontyConfig(
+        monty_args=MontyArgs(num_exploratory_steps=1000),
+        learning_module_configs=two_stacked_constrained_lms_config,
+        motor_system_config=MotorSystemConfigNaiveScanSpiral(
+            motor_system_args=dict(
+                policy_class=NaiveScanPolicy,
+                policy_args=make_naive_scan_policy_config(step_size=1),
+            )
+        ),  # use spiral policy for more even object coverage during learning
     ),
     train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
         object_names=get_object_names_by_idx(0, len(LOGOS), object_list=LOGOS),
