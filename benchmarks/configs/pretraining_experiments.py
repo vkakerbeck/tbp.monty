@@ -331,18 +331,10 @@ two_stacked_constrained_lms_config = dict(
                     "principal_curvatures_log": np.ones(2),
                 }
             },
-            graph_delta_thresholds=dict(
-                patch_0=dict(
-                    distance=0.0001,
-                    # Only first pose vector (surface normal) is currently used
-                    pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
-                    principal_curvatures_log=[1, 1],
-                    hsv=[0.1, 1, 1],
-                )
-            ),
+            # Note graph-delta-thresholds are not used for grid-based models
             feature_weights={},
-            max_graph_size=0.15,
-            num_model_voxels_per_dim=100,
+            max_graph_size=0.4,
+            num_model_voxels_per_dim=200,
             max_nodes_per_graph=2000,
         ),
     ),
@@ -379,14 +371,13 @@ two_stacked_constrained_lms_config = dict(
 )
 
 OBJECT_WO_LOGOS = ["001_cube", "006_disk"]
-LOGOS = ["021_logo_tbp"]  # ["021_logo_tbp", "022_logo_numenta"]
 
 supervised_pre_training_objects_wo_logos = copy.deepcopy(supervised_pre_training_base)
 supervised_pre_training_objects_wo_logos.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(train_rotations_all),
-        show_sensor_output=True,
+        show_sensor_output=False,
     ),
     monty_config=TwoLMStackedMontyConfig(
         monty_args=MontyArgs(num_exploratory_steps=1000),
@@ -394,7 +385,7 @@ supervised_pre_training_objects_wo_logos.update(
         motor_system_config=MotorSystemConfigNaiveScanSpiral(
             motor_system_args=dict(
                 policy_class=NaiveScanPolicy,
-                policy_args=make_naive_scan_policy_config(step_size=0.1),
+                policy_args=make_naive_scan_policy_config(step_size=5),
             )
         ),  # use spiral policy for more even object coverage during learning
     ),
@@ -407,10 +398,14 @@ supervised_pre_training_objects_wo_logos.update(
         object_names=get_object_names_by_idx(
             0, len(OBJECT_WO_LOGOS), object_list=OBJECT_WO_LOGOS
         ),
-        object_init_sampler=PredefinedObjectInitializer(rotations=train_rotations_all),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=train_rotations_all,
+            # positions=[[-0.03, 1.5, 0.0], [0.0, 1.5, 0.0], [0.03, 1.5, 0.0]],
+        ),
     ),
 )
 
+LOGOS = ["021_logo_tbp"]  # , "022_logo_numenta"]
 LOGO_POSITIONS = [[-0.03, 1.5, 0.0], [0.0, 1.5, 0.0], [0.03, 1.5, 0.0]]
 LOGO_ROTATIONS = [[0.0, 0.0, 0.0]]
 
@@ -421,7 +416,7 @@ supervised_pre_training_compositional_logos.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(LOGO_POSITIONS) * len(LOGO_ROTATIONS),
-        show_sensor_output=True,
+        show_sensor_output=False,
         model_name_or_path=os.path.join(
             fe_pretrain_dir,
             "supervised_pre_training_objects_wo_logos/pretrained/",
