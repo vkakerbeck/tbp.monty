@@ -73,7 +73,7 @@ from tbp.monty.simulators.habitat.configs import (
 
 # 14 unique rotations that give good views of the object. Same rotations used
 # for supervised pretraining.
-#test_rotations_all = get_cube_face_and_corner_views_rotations()
+# test_rotations_all = get_cube_face_and_corner_views_rotations()
 test_rotations_all = [[0.0, 0.0, 0.0]]
 
 min_eval_steps = 20
@@ -92,13 +92,10 @@ model_path_individual_objects = os.path.join(
     "supervised_pre_training_compositional_logos/pretrained/",
 )
 
-
-OBJECT_WITH_LOGOS = [
-    "002_cube_tbp_horz",
-    "004_cube_numenta_horz",
-    "007_disk_tbp_horz",
-    "009_disk_numenta_horz",
-]
+model_path_compositional_models = os.path.join(
+    pretrained_dir,
+    "partial_supervised_pre_training_comp_objects/pretrained/",
+)
 
 
 two_stacked_constrained_lms_inference_config = dict(
@@ -174,6 +171,14 @@ two_stacked_constrained_lms_inference_config = dict(
     ),
 )
 
+OBJECT_WITH_LOGOS = [
+    "002_cube_tbp_horz",
+    "004_cube_numenta_horz",
+    "007_disk_tbp_horz",
+    "009_disk_numenta_horz",
+]
+
+
 base_config_cube_disk_logos_dist_agent = dict(
     experiment_class=MontyObjectRecognitionExperiment,
     experiment_args=EvalExperimentArgs(
@@ -211,7 +216,9 @@ base_config_cube_disk_logos_dist_agent = dict(
 
 INDIVIDUAL_OBJECTS = ["001_cube", "006_disk", "021_logo_tbp", "022_logo_numenta"]
 
-base_config_individual_objects_dist_agent = copy.deepcopy(base_config_cube_disk_logos_dist_agent)
+base_config_individual_objects_dist_agent = copy.deepcopy(
+    base_config_cube_disk_logos_dist_agent
+)
 base_config_individual_objects_dist_agent.update(
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_individual_objects,
@@ -228,8 +235,20 @@ base_config_individual_objects_dist_agent.update(
     ),
 )
 
+
+cube_disk_logos_with_pretrained_models = copy.deepcopy(
+    base_config_cube_disk_logos_dist_agent
+)
+cube_disk_logos_with_pretrained_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+)
+
 experiments = CompositionalExperiments(
     base_config_cube_disk_logos_dist_agent=base_config_cube_disk_logos_dist_agent,
     base_config_individual_objects_dist_agent=base_config_individual_objects_dist_agent,
+    cube_disk_logos_with_pretrained_models=cube_disk_logos_with_pretrained_models,
 )
 CONFIGS = asdict(experiments)

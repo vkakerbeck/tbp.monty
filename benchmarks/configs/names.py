@@ -63,6 +63,7 @@ class PretrainingExperiments:
 class CompositionalExperiments:
     base_config_cube_disk_logos_dist_agent: dict
     base_config_individual_objects_dist_agent: dict
+    cube_disk_logos_with_pretrained_models: dict
 
 
 @dataclass
