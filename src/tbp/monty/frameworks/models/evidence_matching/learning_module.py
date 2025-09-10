@@ -822,9 +822,11 @@ class EvidenceGraphLM(GraphLM):
                 self.possible_locations[graph_id] = np.array(new_hypotheses.locations)
                 self.possible_poses[graph_id] = np.array(new_hypotheses.poses)
                 self.evidence[graph_id] = np.array(new_evidence)
-
                 mapper.add_channel(new_hypotheses.input_channel, len(new_evidence))
+
                 return
+            else:
+                mapper.add_channel(new_hypotheses.input_channel, len(new_evidence))
 
             # Add current mean evidence to give the new hypotheses a fighting
             # chance.
