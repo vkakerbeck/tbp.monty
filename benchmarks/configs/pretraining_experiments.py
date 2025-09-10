@@ -336,6 +336,7 @@ two_stacked_constrained_lms_config = dict(
             max_graph_size=0.3,
             num_model_voxels_per_dim=200,
             max_nodes_per_graph=2000,
+            object_evidence_threshold=20,  # TODO - C: is this reasonable?
         ),
     ),
     learning_module_1=dict(
@@ -477,6 +478,17 @@ partial_supervised_pre_training_comp_objects.update(
             "supervised_pre_training_compositional_logos/pretrained/",
         ),
         supervised_lm_ids=["learning_module_1"],
+        min_lms_match=2,
+    ),
+    monty_config=TwoLMStackedMontyConfig(
+        monty_args=MontyArgs(num_exploratory_steps=1000, min_train_steps=100),
+        learning_module_configs=two_stacked_constrained_lms_config,
+        motor_system_config=MotorSystemConfigNaiveScanSpiral(
+            motor_system_args=dict(
+                policy_class=NaiveScanPolicy,
+                policy_args=make_naive_scan_policy_config(step_size=5),
+            )
+        ),  # use spiral policy for more even object coverage during learning
     ),
 )
 
