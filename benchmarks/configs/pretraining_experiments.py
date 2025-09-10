@@ -463,19 +463,20 @@ supervised_pre_training_compositional_objects_with_logos.update(
     ),
 )
 
-supervised_pre_training_compositional_objects_with_logos_small_step_size = (
-    copy.deepcopy(supervised_pre_training_compositional_objects_with_logos)
+partial_supervised_pre_training_comp_objects = copy.deepcopy(
+    supervised_pre_training_compositional_objects_with_logos
 )
-supervised_pre_training_compositional_objects_with_logos_small_step_size.update(
-    monty_config=TwoLMStackedMontyConfig(
-        monty_args=MontyArgs(num_exploratory_steps=1000),
-        learning_module_configs=two_stacked_constrained_lms_config,
-        motor_system_config=MotorSystemConfigNaiveScanSpiral(
-            motor_system_args=dict(
-                policy_class=NaiveScanPolicy,
-                policy_args=make_naive_scan_policy_config(step_size=1),
-            )
-        ),  # use spiral policy for more even object coverage during learning
+
+partial_supervised_pre_training_comp_objects.update(
+    experiment_args=ExperimentArgs(
+        do_eval=False,
+        n_train_epochs=len(train_rotations_all),
+        show_sensor_output=False,
+        model_name_or_path=os.path.join(
+            fe_pretrain_dir,
+            "supervised_pre_training_compositional_logos/pretrained/",
+        ),
+        supervised_lm_ids=["learning_module_1"],
     ),
 )
 
@@ -491,6 +492,6 @@ experiments = PretrainingExperiments(
     supervised_pre_training_objects_wo_logos=supervised_pre_training_objects_wo_logos,
     supervised_pre_training_compositional_logos=supervised_pre_training_compositional_logos,
     supervised_pre_training_compositional_objects_with_logos=supervised_pre_training_compositional_objects_with_logos,
-    supervised_pre_training_compositional_objects_with_logos_small_step_size=supervised_pre_training_compositional_objects_with_logos_small_step_size,
+    partial_supervised_pre_training_comp_objects=partial_supervised_pre_training_comp_objects,
 )
 CONFIGS = asdict(experiments)
