@@ -444,16 +444,17 @@ class EvidenceGraphLM(GraphLM):
             # selection for this.
             location=self.buffer.get_current_location(
                 input_channel="first"
-            ),  # location rel. body
+            ),  # location rel. body -> same as sensor input to higher LM (assuming they are colocated) so not used.
             morphological_features={
                 "pose_vectors": pose_features,
                 "pose_fully_defined": not self._enough_symmetry_evidence_accumulated(),
+                # on_object is also same as sensor input to higher LM (assuming they are colocated) so not used.
                 "on_object": self.buffer.get_currently_on_object(),
             },
             non_morphological_features={
                 "object_id": object_id_features,
                 # TODO H: test if this makes sense to communicate
-                "location_rel_model": mlh["location"],
+                # "location_rel_model": mlh["location"],
             },
             confidence=confidence,
             use_state=use_state,
