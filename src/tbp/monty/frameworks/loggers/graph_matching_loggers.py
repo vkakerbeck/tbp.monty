@@ -444,6 +444,7 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             overall_stats[f"{lm}/episode/individual_ts_rotation_error"] = lm_stats[
                 "individual_ts_rotation_error"
             ]
+            # TODO - C: Add individual performance per LM (correct, confused, no_match)
 
         if len(self.lms) > 1:  # add histograms when running multiple LMs
             overall_stats["episode/rotation_error_per_lm"] = wandb.Histogram(episode_re)
