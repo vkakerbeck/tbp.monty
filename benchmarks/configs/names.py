@@ -61,9 +61,9 @@ class PretrainingExperiments:
 
 @dataclass
 class CompositionalExperiments:
-    base_config_cube_disk_logos_dist_agent: dict
-    base_config_individual_objects_dist_agent: dict
-    cube_disk_logos_with_pretrained_models: dict
+    infer_comp_lvl1_with_monolithic_models: dict
+    infer_parts_with_part_models: dict
+    infer_comp_lvl1_with_comp_models: dict
 
 
 @dataclass

@@ -37,6 +37,11 @@ from tbp.monty.frameworks.config_utils.policy_setup_utils import (
     make_naive_scan_policy_config,
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
+from tbp.monty.frameworks.environments.logos_on_objs import (
+    FLAT_OBJECTS_WITHOUT_LOGOS,
+    LOGOS,
+    OBJECTS_WITH_LOGOS_LVL1,
+)
 from tbp.monty.frameworks.environments.two_d_data import NUMENTA_OBJECTS
 from tbp.monty.frameworks.environments.ycb import (
     DISTINCT_OBJECTS,
@@ -283,42 +288,6 @@ supervised_pre_training_5lms_all_objects.update(
         object_init_sampler=PredefinedObjectInitializer(rotations=train_rotations_all),
     ),
 )
-# two_stacked_lms_config = dict(
-#     learning_module_0=dict(
-#         learning_module_class=DisplacementGraphLM,
-#         learning_module_args=dict(
-#             k=10,
-#             match_attribute="displacement",
-#             tolerance=np.ones(3) * 0.0001,
-#             graph_delta_thresholds=dict(
-#                 patch_0=dict(
-#                     distance=0.001,
-#                     # Only first pose vector (surface normal) is currently used
-#                     pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
-#                     principal_curvatures_log=[1, 1],
-#                     hsv=[0.1, 1, 1],
-#                 )
-#             ),
-#         ),
-#     ),
-#     learning_module_1=dict(
-#         learning_module_class=DisplacementGraphLM,
-#         learning_module_args=dict(
-#             k=10,
-#             match_attribute="displacement",
-#             tolerance=np.ones(3) * 0.0001,
-#             graph_delta_thresholds=dict(
-#                 patch_0=dict(
-#                     distance=0.001,
-#                     # Only first pose vector (surface normal) is currently used
-#                     pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
-#                     principal_curvatures_log=[1, 1],
-#                     hsv=[0.1, 1, 1],
-#                 )
-#             ),
-#         ),
-#     ),
-# )
 
 two_stacked_constrained_lms_config = dict(
     learning_module_0=dict(
@@ -362,8 +331,6 @@ two_stacked_constrained_lms_config = dict(
     ),
 )
 
-OBJECT_WO_LOGOS = ["001_cube", "006_disk"]
-
 supervised_pre_training_objects_wo_logos = copy.deepcopy(supervised_pre_training_base)
 supervised_pre_training_objects_wo_logos.update(
     experiment_args=ExperimentArgs(
@@ -388,7 +355,7 @@ supervised_pre_training_objects_wo_logos.update(
     ),
     train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
         object_names=get_object_names_by_idx(
-            0, len(OBJECT_WO_LOGOS), object_list=OBJECT_WO_LOGOS
+            0, len(FLAT_OBJECTS_WITHOUT_LOGOS), object_list=FLAT_OBJECTS_WITHOUT_LOGOS
         ),
         object_init_sampler=PredefinedObjectInitializer(
             rotations=train_rotations_all,
@@ -396,7 +363,6 @@ supervised_pre_training_objects_wo_logos.update(
     ),
 )
 
-LOGOS = ["021_logo_tbp", "022_logo_numenta"]
 LOGO_POSITIONS = [[0.0, 1.5, 0.0], [-0.03, 1.5, 0.0], [0.03, 1.5, 0.0]]
 LOGO_ROTATIONS = [[0.0, 0.0, 0.0]]
 
@@ -432,13 +398,6 @@ supervised_pre_training_compositional_logos.update(
     ),
 )
 
-OBJECT_WITH_LOGOS = [
-    "002_cube_tbp_horz",
-    "004_cube_numenta_horz",
-    "007_disk_tbp_horz",
-    "009_disk_numenta_horz",
-]
-
 
 supervised_pre_training_compositional_objects_with_logos = copy.deepcopy(
     supervised_pre_training_objects_wo_logos
@@ -456,7 +415,7 @@ supervised_pre_training_compositional_objects_with_logos.update(
     ),
     train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
         object_names=get_object_names_by_idx(
-            0, len(OBJECT_WITH_LOGOS), object_list=OBJECT_WITH_LOGOS
+            0, len(OBJECTS_WITH_LOGOS_LVL1), object_list=OBJECTS_WITH_LOGOS_LVL1
         ),
         object_init_sampler=PredefinedObjectInitializer(
             rotations=train_rotations_all,
