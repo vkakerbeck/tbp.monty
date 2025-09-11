@@ -184,12 +184,13 @@ base_config_cube_disk_logos_dist_agent = dict(
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_compositional_logos,
         n_eval_epochs=len(test_rotations_all),
+        min_lms_match=2,
         # show_sensor_output=True,
     ),
     logging_config=ParallelEvidenceLMLoggingConfig(
         wandb_group="benchmark_experiments",
         # Comment in for quick debugging (turns of wandb and increases logging)
-        # wandb_handlers=[],
+        wandb_handlers=[],
         # python_log_level="INFO",
     ),
     monty_config=TwoLMStackedMontyConfig(
@@ -243,7 +244,6 @@ cube_disk_logos_with_pretrained_models.update(
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_compositional_models,
         n_eval_epochs=len(test_rotations_all),
-        min_lms_match=2,
     ),
 )
 
