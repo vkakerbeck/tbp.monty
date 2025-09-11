@@ -904,7 +904,9 @@ def accuracy_stats_for_compositional_objects(
     return compositional_object_accuracy, consistent_child_accuracy
 
 
-def stats_for_all_lms(eval_stats_comp, all_lm_ids, parent_to_child_mapping):
+def compositional_stats_for_all_lms(
+    eval_stats_comp, all_lm_ids, parent_to_child_mapping
+):
     for lm_id in all_lm_ids:
         eval_stats_for_lm = eval_stats_comp[eval_stats_comp["lm_id"] == f"LM_{lm_id}"]
         compositional_object_accuracy, consistent_child_accuracy = (
