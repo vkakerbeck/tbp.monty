@@ -101,6 +101,7 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             episode_confused_mlh=0,
             episode_pose_time_out=0,
             episode_time_out=0,
+            episode_avg_prediction_error=[],
             episode_lm_performances=[],
             # Total number of steps performed during the episode,
             # including steps where no sensory data was passed to the learning-modules:
@@ -255,6 +256,9 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             )
             stats["monty_steps"].append(episode_steps)
             stats["monty_matching_steps"].append(monty_matching_steps)
+            stats["episode_avg_prediction_error"].append(
+                episode_stats["episode_avg_prediction_error"]
+            )
 
             stats["goal_states_attempted"] = episode_stats["goal_states_attempted"]
 
@@ -394,6 +398,11 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
                 if len(stats["monty_matching_steps"]) > 0
                 else np.nan
             ),
+            "overall/avg_prediction_error": (
+                np.mean(stats["episode_avg_prediction_error"])
+                if len(stats["episode_avg_prediction_error"]) > 0
+                else np.nan
+            ),
             "overall/run_time": np.sum(stats["run_times"]) / len(self.lms),
             # NOTE: does not take into account different runtimes with multiple LMs
             "overall/avg_episode_run_time": (
@@ -435,6 +444,7 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             ),
             "episode/goal_states_attempted": stats["goal_states_attempted"],
             "episode/goal_state_success_rate": stats["goal_state_success_rate"],
+            "episode/avg_prediction_error": stats["episode_avg_prediction_error"],
         }
         for lm in self.lms:
             lm_stats = self.data["BASIC"][f"{mode}_stats"][episode][lm]
