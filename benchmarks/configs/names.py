@@ -56,13 +56,15 @@ class PretrainingExperiments:
     supervised_pre_training_objects_wo_logos: dict
     supervised_pre_training_compositional_logos: dict
     supervised_pre_training_compositional_objects_with_logos: dict
-    supervised_pre_training_compositional_objects_with_logos_small_step_size: dict
+    partial_supervised_pre_training_comp_objects: dict
 
 
 @dataclass
 class CompositionalExperiments:
     base_config_cube_disk_logos_dist_agent: dict
     base_config_individual_objects_dist_agent: dict
+    cube_disk_logos_with_pretrained_models: dict
+
 
 @dataclass
 class YcbExperiments:

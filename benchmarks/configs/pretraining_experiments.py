@@ -336,6 +336,7 @@ two_stacked_constrained_lms_config = dict(
             max_graph_size=0.3,
             num_model_voxels_per_dim=200,
             max_nodes_per_graph=2000,
+            object_evidence_threshold=20,  # TODO - C: is this reasonable?
         ),
     ),
     learning_module_1=dict(
@@ -463,17 +464,29 @@ supervised_pre_training_compositional_objects_with_logos.update(
     ),
 )
 
-supervised_pre_training_compositional_objects_with_logos_small_step_size = (
-    copy.deepcopy(supervised_pre_training_compositional_objects_with_logos)
+partial_supervised_pre_training_comp_objects = copy.deepcopy(
+    supervised_pre_training_compositional_objects_with_logos
 )
-supervised_pre_training_compositional_objects_with_logos_small_step_size.update(
+
+partial_supervised_pre_training_comp_objects.update(
+    experiment_args=ExperimentArgs(
+        do_eval=False,
+        n_train_epochs=len(train_rotations_all),
+        show_sensor_output=False,
+        model_name_or_path=os.path.join(
+            fe_pretrain_dir,
+            "supervised_pre_training_compositional_logos/pretrained/",
+        ),
+        supervised_lm_ids=["learning_module_1"],
+        min_lms_match=2,
+    ),
     monty_config=TwoLMStackedMontyConfig(
-        monty_args=MontyArgs(num_exploratory_steps=1000),
+        monty_args=MontyArgs(num_exploratory_steps=1000, min_train_steps=100),
         learning_module_configs=two_stacked_constrained_lms_config,
         motor_system_config=MotorSystemConfigNaiveScanSpiral(
             motor_system_args=dict(
                 policy_class=NaiveScanPolicy,
-                policy_args=make_naive_scan_policy_config(step_size=1),
+                policy_args=make_naive_scan_policy_config(step_size=5),
             )
         ),  # use spiral policy for more even object coverage during learning
     ),
@@ -491,6 +504,6 @@ experiments = PretrainingExperiments(
     supervised_pre_training_objects_wo_logos=supervised_pre_training_objects_wo_logos,
     supervised_pre_training_compositional_logos=supervised_pre_training_compositional_logos,
     supervised_pre_training_compositional_objects_with_logos=supervised_pre_training_compositional_objects_with_logos,
-    supervised_pre_training_compositional_objects_with_logos_small_step_size=supervised_pre_training_compositional_objects_with_logos_small_step_size,
+    partial_supervised_pre_training_comp_objects=partial_supervised_pre_training_comp_objects,
 )
 CONFIGS = asdict(experiments)
