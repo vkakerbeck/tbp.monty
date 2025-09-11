@@ -793,6 +793,7 @@ def add_evidence_lm_episode_stats(lm, stats):
         last_mlh["rotation"].inv().as_euler("xyz", degrees=True)
     )
     stats["highest_evidence"] = last_mlh["evidence"]
+    stats["average_prediction_error"] = np.mean(lm.buffer.stats["mlh_prediction_error"])
     stats = calculate_performance(stats, "primary_performance", lm, lm.primary_target)
     stats = calculate_performance(
         stats, "stepwise_performance", lm, lm.stepwise_target_object
