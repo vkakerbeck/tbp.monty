@@ -139,13 +139,13 @@ infer_comp_lvl1_with_monolithic_models = dict(
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_monolithic_models_lvl1,
         n_eval_epochs=len(test_rotations_all),
-        min_lms_match=2,
+        min_lms_match=1,
         # show_sensor_output=True,
     ),
     logging_config=ParallelEvidenceLMLoggingConfig(
         wandb_group="benchmark_experiments",
         # Comment in for quick debugging (turns of wandb and increases logging)
-        wandb_handlers=[],
+        # wandb_handlers=[],
         # python_log_level="INFO",
     ),
     monty_config=TwoLMStackedMontyConfig(
@@ -177,7 +177,7 @@ infer_parts_with_part_models.update(
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_part_models,
         n_eval_epochs=len(test_rotations_all),
-        show_sensor_output=True,
+        # show_sensor_output=True,
     ),
     eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
         object_names=get_object_names_by_idx(
