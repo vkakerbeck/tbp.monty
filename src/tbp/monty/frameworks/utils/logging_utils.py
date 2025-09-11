@@ -852,6 +852,68 @@ def target_data_to_dict(target):
 
     return output_dict
 
+def overall_accuracy(eval_stats):
+    acc = (
+        (
+            len(eval_stats[eval_stats["primary_performance"] == "correct"])
+            + len(eval_stats[eval_stats["primary_performance"] == "correct_mlh"])
+        )
+        / len(eval_stats)
+        * 100
+    )
+    return acc
+
+
+def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping):
+    """Check whether the most_likely_object is consistent with the parent_to_child_mapping.
+
+    Classified object is consistent if it is one of the children in the set of objects
+    corresponding to the compositional object.
+    """
+
+    consistent_child_count = 0
+    total_count = 0
+
+    for _, episode_stats in eval_stats_for_lm.iterrows():
+        if episode_stats.primary_target_object in parent_to_child_mapping:
+            total_count += 1
+            possible_children = parent_to_child_mapping[
+                episode_stats.primary_target_object
+            ]
+            if episode_stats.most_likely_object in possible_children:
+                consistent_child_count += 1
+        else:
+            print(
+                f"target object {episode_stats.primary_target_object} not in parent_to_child_mapping"
+            )
+    if total_count > 0:
+        consistent_child_percentage = consistent_child_count / total_count
+        return consistent_child_percentage
+    else:
+        raise ValueError("No mappings found for target object")
+
+
+def accuracy_stats_for_compositional_objects(
+    eval_stats_for_lm, parent_to_child_mapping
+):
+    compositional_object_accuracy = overall_accuracy(eval_stats_for_lm)
+    consistent_child_accuracy = consistent_child_objects_accuracy(
+        eval_stats_for_lm, parent_to_child_mapping
+    )
+
+    return compositional_object_accuracy, consistent_child_accuracy
+
+
+def stats_for_all_lms(eval_stats_comp, all_lm_ids, parent_to_child_mapping):
+    for lm_id in all_lm_ids:
+        eval_stats_for_lm = eval_stats_comp[eval_stats_comp["lm_id"] == f"LM_{lm_id}"]
+        compositional_object_accuracy, consistent_child_accuracy = (
+            accuracy_stats_for_compositional_objects(
+                eval_stats_for_lm, parent_to_child_mapping
+            )
+        )
+        print(f"LM_{lm_id} accuracy: {compositional_object_accuracy}")
+        print(f"LM_{lm_id} consistent child accuracy: {consistent_child_accuracy}")
 
 ###
 # Functions that assist handlers
