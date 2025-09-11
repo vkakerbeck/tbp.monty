@@ -852,6 +852,7 @@ def target_data_to_dict(target):
 
     return output_dict
 
+
 def overall_accuracy(eval_stats):
     acc = (
         (
@@ -916,6 +917,7 @@ def compositional_stats_for_all_lms(
         )
         print(f"LM_{lm_id} accuracy: {compositional_object_accuracy}")
         print(f"LM_{lm_id} consistent child accuracy: {consistent_child_accuracy}")
+
 
 ###
 # Functions that assist handlers
