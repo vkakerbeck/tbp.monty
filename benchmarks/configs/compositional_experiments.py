@@ -44,19 +44,19 @@ min_eval_steps = 20
 # runs with all 77 YCB objects.
 test_rotations_3 = test_rotations_all[:3]
 
-model_path_compositional_logos = os.path.join(
+model_path_monolithic_models_lvl1 = os.path.join(
     pretrained_dir,
-    "supervised_pre_training_compositional_objects_with_logos/pretrained/",
+    "supervised_pre_training_objects_with_logos_lvl1_monolithic_models/pretrained/",
 )
 
-model_path_individual_objects = os.path.join(
+model_path_part_models = os.path.join(
     pretrained_dir,
-    "supervised_pre_training_compositional_logos/pretrained/",
+    "supervised_pre_training_logos_after_flat_objects/pretrained/",
 )
 
-model_path_compositional_models = os.path.join(
+model_path_compositional_models_lvl1 = os.path.join(
     pretrained_dir,
-    "partial_supervised_pre_training_comp_objects/pretrained/",
+    "supervised_pre_training_objects_with_logos_lvl1_comp_models/pretrained/",
 )
 
 
@@ -137,7 +137,7 @@ two_stacked_constrained_lms_inference_config = dict(
 infer_comp_lvl1_with_monolithic_models = dict(
     experiment_class=MontyObjectRecognitionExperiment,
     experiment_args=EvalExperimentArgs(
-        model_name_or_path=model_path_compositional_logos,
+        model_name_or_path=model_path_monolithic_models_lvl1,
         n_eval_epochs=len(test_rotations_all),
         min_lms_match=2,
         # show_sensor_output=True,
@@ -175,7 +175,7 @@ INDIVIDUAL_OBJECTS = ["001_cube", "006_disk", "021_logo_tbp", "022_logo_numenta"
 infer_parts_with_part_models = copy.deepcopy(infer_comp_lvl1_with_monolithic_models)
 infer_parts_with_part_models.update(
     experiment_args=EvalExperimentArgs(
-        model_name_or_path=model_path_individual_objects,
+        model_name_or_path=model_path_part_models,
         n_eval_epochs=len(test_rotations_all),
         show_sensor_output=True,
     ),
@@ -193,7 +193,7 @@ infer_parts_with_part_models.update(
 infer_comp_lvl1_with_comp_models = copy.deepcopy(infer_comp_lvl1_with_monolithic_models)
 infer_comp_lvl1_with_comp_models.update(
     experiment_args=EvalExperimentArgs(
-        model_name_or_path=model_path_compositional_models,
+        model_name_or_path=model_path_compositional_models_lvl1,
         n_eval_epochs=len(test_rotations_all),
     ),
 )

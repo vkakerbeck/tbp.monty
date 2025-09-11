@@ -331,8 +331,13 @@ two_stacked_constrained_lms_config = dict(
     ),
 )
 
-supervised_pre_training_objects_wo_logos = copy.deepcopy(supervised_pre_training_base)
-supervised_pre_training_objects_wo_logos.update(
+# For learning and evaluating compostional models with the logos-on-objects dataset,
+# we first train on the flat objects without logos. These are viewed in multiple
+# rotations, like the standard YCB objects.
+supervised_pre_training_flat_objects_wo_logos = copy.deepcopy(
+    supervised_pre_training_base
+)
+supervised_pre_training_flat_objects_wo_logos.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(train_rotations_all),
@@ -363,20 +368,23 @@ supervised_pre_training_objects_wo_logos.update(
     ),
 )
 
+# For learning the logos, we present them in a single rotation, but at multiple
+# positions, as the naive scan policy otherwise samples peripheral points on the models
+# poorly. This must be run after supervised_pre_training_flat_objects_wo_logos.
 LOGO_POSITIONS = [[0.0, 1.5, 0.0], [-0.03, 1.5, 0.0], [0.03, 1.5, 0.0]]
 LOGO_ROTATIONS = [[0.0, 0.0, 0.0]]
 
-supervised_pre_training_compositional_logos = copy.deepcopy(
-    supervised_pre_training_objects_wo_logos
+supervised_pre_training_logos_after_flat_objects = copy.deepcopy(
+    supervised_pre_training_flat_objects_wo_logos
 )
-supervised_pre_training_compositional_logos.update(
+supervised_pre_training_logos_after_flat_objects.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(LOGO_POSITIONS) * len(LOGO_ROTATIONS),
         show_sensor_output=False,
         model_name_or_path=os.path.join(
             fe_pretrain_dir,
-            "supervised_pre_training_objects_wo_logos/pretrained/",
+            "supervised_pre_training_flat_objects_wo_logos/pretrained/",
         ),
     ),
     monty_config=TwoLMStackedMontyConfig(
@@ -398,11 +406,13 @@ supervised_pre_training_compositional_logos.update(
     ),
 )
 
-
-supervised_pre_training_compositional_objects_with_logos = copy.deepcopy(
-    supervised_pre_training_objects_wo_logos
+# Learn monolithic models on the compositional objects, i.e. where both the LLLM
+# and the HLLM learn the compositional *objects*, but without a compitional *model.
+# This must be run after supervised_pre_training_logos_after_flat_objects.
+supervised_pre_training_objects_with_logos_lvl1_monolithic_models = copy.deepcopy(
+    supervised_pre_training_flat_objects_wo_logos
 )
-supervised_pre_training_compositional_objects_with_logos.update(
+supervised_pre_training_objects_with_logos_lvl1_monolithic_models.update(
     # We load the model trained on the individual objects
     experiment_args=ExperimentArgs(
         do_eval=False,
@@ -410,7 +420,7 @@ supervised_pre_training_compositional_objects_with_logos.update(
         show_sensor_output=False,
         model_name_or_path=os.path.join(
             fe_pretrain_dir,
-            "supervised_pre_training_compositional_logos/pretrained/",
+            "supervised_pre_training_logos_after_flat_objects/pretrained/",
         ),
     ),
     train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
@@ -423,18 +433,18 @@ supervised_pre_training_compositional_objects_with_logos.update(
     ),
 )
 
-partial_supervised_pre_training_comp_objects = copy.deepcopy(
-    supervised_pre_training_compositional_objects_with_logos
+supervised_pre_training_objects_with_logos_lvl1_comp_models = copy.deepcopy(
+    supervised_pre_training_objects_with_logos_lvl1_monolithic_models
 )
 
-partial_supervised_pre_training_comp_objects.update(
+supervised_pre_training_objects_with_logos_lvl1_comp_models.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(train_rotations_all),
         show_sensor_output=False,
         model_name_or_path=os.path.join(
             fe_pretrain_dir,
-            "supervised_pre_training_compositional_logos/pretrained/",
+            "supervised_pre_training_logos_after_flat_objects/pretrained/",
         ),
         supervised_lm_ids=["learning_module_1"],
         min_lms_match=2,
@@ -460,9 +470,9 @@ experiments = PretrainingExperiments(
     only_surf_agent_training_10simobj=only_surf_agent_training_10simobj,
     only_surf_agent_training_allobj=only_surf_agent_training_allobj,
     only_surf_agent_training_numenta_lab_obj=only_surf_agent_training_numenta_lab_obj,
-    supervised_pre_training_objects_wo_logos=supervised_pre_training_objects_wo_logos,
-    supervised_pre_training_compositional_logos=supervised_pre_training_compositional_logos,
-    supervised_pre_training_compositional_objects_with_logos=supervised_pre_training_compositional_objects_with_logos,
-    partial_supervised_pre_training_comp_objects=partial_supervised_pre_training_comp_objects,
+    supervised_pre_training_flat_objects_wo_logos=supervised_pre_training_flat_objects_wo_logos,
+    supervised_pre_training_logos_after_flat_objects=supervised_pre_training_logos_after_flat_objects,
+    supervised_pre_training_objects_with_logos_lvl1_monolithic_models=supervised_pre_training_objects_with_logos_lvl1_monolithic_models,
+    supervised_pre_training_objects_with_logos_lvl1_comp_models=supervised_pre_training_objects_with_logos_lvl1_comp_models,
 )
 CONFIGS = asdict(experiments)
