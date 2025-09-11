@@ -906,12 +906,10 @@ def accuracy_stats_for_compositional_objects(
     return compositional_object_accuracy, consistent_child_accuracy
 
 
-def compositional_stats_for_all_lms(
-    eval_stats_comp, all_lm_ids, parent_to_child_mapping
-):
+def compositional_stats_for_all_lms(eval_stats, all_lm_ids, parent_to_child_mapping):
     lm_stats_dict = {}
     for lm_id in all_lm_ids:
-        eval_stats_for_lm = eval_stats_comp[eval_stats_comp["lm_id"] == f"LM_{lm_id}"]
+        eval_stats_for_lm = eval_stats[eval_stats["lm_id"] == f"LM_{lm_id}"]
         compositional_object_accuracy, consistent_child_accuracy = (
             accuracy_stats_for_compositional_objects(
                 eval_stats_for_lm, parent_to_child_mapping
@@ -921,9 +919,15 @@ def compositional_stats_for_all_lms(
             f"LM_{lm_id} accuracy: {compositional_object_accuracy}% correct (or correct_mlh)"
         )
         print(f"LM_{lm_id} consistent child accuracy: {consistent_child_accuracy}%")
+        print(
+            f"LM_{lm_id} average prediction error: {np.mean(eval_stats_for_lm['average_prediction_error'])}"
+        )
         lm_stats_dict[lm_id] = {
             "compositional_object_accuracy": compositional_object_accuracy,
             "consistent_child_accuracy": consistent_child_accuracy,
+            "average_prediction_error": np.mean(
+                eval_stats_for_lm["average_prediction_error"]
+            ),
         }
     return lm_stats_dict
 
