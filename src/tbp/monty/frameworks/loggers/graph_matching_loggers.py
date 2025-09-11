@@ -461,6 +461,9 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             overall_stats["episode/steps_per_lm"] = wandb.Histogram(
                 stats["episode_lm_steps"][-len(self.lms) :]
             )
+            overall_stats["episode/avg_prediction_error"] = wandb.Histogram(
+                stats["episode_avg_prediction_error"][-len(self.lms) :]
+            )
             overall_stats["episode/steps_per_lm_indv_ts"] = wandb.Histogram(
                 episode_individual_ts_steps
             )
