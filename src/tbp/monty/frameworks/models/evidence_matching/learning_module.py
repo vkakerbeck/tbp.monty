@@ -755,7 +755,7 @@ class EvidenceGraphLM(GraphLM):
             evidence_all_channels=self.evidence[graph_id],
         )
 
-        hypotheses_updates, hypotheses_update_telemetry = (
+        hypotheses_updates, hypotheses_update_telemetry, mlh_prediction_error = (
             self.hypotheses_updater.update_hypotheses(
                 hypotheses=Hypotheses(
                     evidence=self.evidence[graph_id],
@@ -769,6 +769,13 @@ class EvidenceGraphLM(GraphLM):
                 evidence_update_threshold=update_threshold,
             )
         )
+
+        if graph_id == self.current_mlh["graph_id"]:
+            self.buffer.update_stats(
+                {"mlh_prediction_error": mlh_prediction_error},
+                update_time=False,
+                append=True,
+            )
 
         if hypotheses_update_telemetry is not None:
             self.hypotheses_updater_telemetry[graph_id] = hypotheses_update_telemetry

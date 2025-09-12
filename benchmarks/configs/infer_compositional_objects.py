@@ -5,96 +5,74 @@ from dataclasses import asdict
 import numpy as np
 
 from benchmarks.configs.defaults import (
-    default_all_noise_params,
-    default_all_noisy_sensor_module,
-    default_evidence_1lm_config,
-    default_evidence_lm_config,
-    default_feature_weights,
-    default_tolerance_values,
-    default_tolerances,
     min_eval_steps,
     pretrained_dir,
 )
-from benchmarks.configs.names import CompositionalExperiments
+from benchmarks.configs.names import CompositionalInferenceExperiments
 from tbp.monty.frameworks.config_utils.config_args import (
-    CSVLoggingConfig,
-    FiveLMMontySOTAConfig,
     MontyArgs,
-    MotorSystemConfigCurInformedSurfaceGoalStateDriven,
     MotorSystemConfigInformedGoalStateDriven,
-    MotorSystemConfigNaiveScanSpiral,
     ParallelEvidenceLMLoggingConfig,
-    PatchAndViewFartherAwaySOTAMontyConfig,
-    PatchAndViewSOTAMontyConfig,
-    SurfaceAndViewMontyConfig,
-    SurfaceAndViewSOTAMontyConfig,
     TwoLMStackedMontyConfig,
     get_cube_face_and_corner_views_rotations,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
-    EnvironmentDataloaderMultiObjectArgs,
     EnvironmentDataloaderPerObjectArgs,
     EvalExperimentArgs,
-    ExperimentArgs,
     PredefinedObjectInitializer,
-    RandomRotationObjectInitializer,
     get_object_names_by_idx,
 )
-from tbp.monty.frameworks.config_utils.policy_setup_utils import (
-    make_naive_scan_policy_config,
-)
 from tbp.monty.frameworks.environments import embodied_data as ED
-from tbp.monty.frameworks.environments.ycb import (
-    DISTINCT_OBJECTS,
-    SIMILAR_OBJECTS,
+from tbp.monty.frameworks.environments.logos_on_objs import (
+    ALL_PART_OBJECTS,
+    OBJECTS_WITH_LOGOS_LVL1,
+    OBJECTS_WITH_LOGOS_LVL2,
+    OBJECTS_WITH_LOGOS_LVL3,
+    OBJECTS_WITH_LOGOS_LVL4,
 )
 from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
 )
-from tbp.monty.frameworks.models.evidence_matching.model import (
-    MontyForEvidenceGraphMatching,
-)
 from tbp.monty.frameworks.models.goal_state_generation import EvidenceGoalStateGenerator
-from tbp.monty.frameworks.models.motor_policies import NaiveScanPolicy
-from tbp.monty.frameworks.models.sensor_modules import (
-    DetailedLoggingSM,
-    FeatureChangeSM,
-)
 from tbp.monty.simulators.habitat.configs import (
     EnvInitArgsTwoLMDistantStackedMount,
-    FiveLMMountHabitatDatasetArgs,
-    NoisySurfaceViewFinderMountHabitatDatasetArgs,
-    PatchViewFinderMountHabitatDatasetArgs,
-    PatchViewFinderMultiObjectMountHabitatDatasetArgs,
-    SurfaceViewFinderMountHabitatDatasetArgs,
     TwoLMStackedDistantMountHabitatDatasetArgs,
 )
 
 # 14 unique rotations that give good views of the object. Same rotations used
 # for supervised pretraining.
-# test_rotations_all = get_cube_face_and_corner_views_rotations()
-test_rotations_all = [[0.0, 0.0, 0.0]]
+test_rotations_all = get_cube_face_and_corner_views_rotations()
+# test_rotations_all = [[0.0, 0.0, 0.0]]
 
-min_eval_steps = 20
-
-# Limited number of rotations to use for quicker evaluation when doing longer
-# runs with all 77 YCB objects.
-test_rotations_3 = test_rotations_all[:3]
-
-model_path_compositional_logos = os.path.join(
+model_path_monolithic_models_lvl1 = os.path.join(
     pretrained_dir,
-    "supervised_pre_training_compositional_objects_with_logos/pretrained/",
+    "supervised_pre_training_objects_with_logos_lvl1_monolithic_models/pretrained/",
 )
 
-model_path_individual_objects = os.path.join(
+model_path_part_models = os.path.join(
     pretrained_dir,
-    "supervised_pre_training_compositional_logos/pretrained/",
+    "supervised_pre_training_curved_objects_after_flat_and_logo/pretrained/",
 )
 
-model_path_compositional_models = os.path.join(
+model_path_compositional_models_lvl1 = os.path.join(
     pretrained_dir,
-    "partial_supervised_pre_training_comp_objects/pretrained/",
+    "supervised_pre_training_objects_with_logos_lvl1_comp_models/pretrained/",
+)
+
+model_path_compositional_models_lvl2 = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl2_comp_models/pretrained/",
+)
+
+model_path_compositional_models_lvl3 = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl3_comp_models/pretrained/",
+)
+
+model_path_compositional_models_lvl4 = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl4_comp_models/pretrained/",
 )
 
 
@@ -171,26 +149,17 @@ two_stacked_constrained_lms_inference_config = dict(
     ),
 )
 
-OBJECT_WITH_LOGOS = [
-    "002_cube_tbp_horz",
-    "004_cube_numenta_horz",
-    "007_disk_tbp_horz",
-    "009_disk_numenta_horz",
-]
-
-
-base_config_cube_disk_logos_dist_agent = dict(
+# See level description in src/tbp/monty/frameworks/environments/logos_on_objs.py
+infer_comp_base_config = dict(
     experiment_class=MontyObjectRecognitionExperiment,
     experiment_args=EvalExperimentArgs(
-        model_name_or_path=model_path_compositional_logos,
         n_eval_epochs=len(test_rotations_all),
-        min_lms_match=2,
-        # show_sensor_output=True,
+        min_lms_match=1,
     ),
     logging_config=ParallelEvidenceLMLoggingConfig(
         wandb_group="benchmark_experiments",
         # Comment in for quick debugging (turns of wandb and increases logging)
-        wandb_handlers=[],
+        # wandb_handlers=[],
         # python_log_level="INFO",
     ),
     monty_config=TwoLMStackedMontyConfig(
@@ -207,7 +176,7 @@ base_config_cube_disk_logos_dist_agent = dict(
     eval_dataloader_class=ED.InformedEnvironmentDataLoader,
     eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
         object_names=get_object_names_by_idx(
-            0, len(OBJECT_WITH_LOGOS), object_list=OBJECT_WITH_LOGOS
+            0, len(OBJECTS_WITH_LOGOS_LVL1), object_list=OBJECTS_WITH_LOGOS_LVL1
         ),
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
@@ -215,20 +184,25 @@ base_config_cube_disk_logos_dist_agent = dict(
     ),
 )
 
-INDIVIDUAL_OBJECTS = ["001_cube", "006_disk", "021_logo_tbp", "022_logo_numenta"]
-
-base_config_individual_objects_dist_agent = copy.deepcopy(
-    base_config_cube_disk_logos_dist_agent
-)
-base_config_individual_objects_dist_agent.update(
+infer_comp_lvl1_with_monolithic_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl1_with_monolithic_models.update(
     experiment_args=EvalExperimentArgs(
-        model_name_or_path=model_path_individual_objects,
+        model_name_or_path=model_path_monolithic_models_lvl1,
         n_eval_epochs=len(test_rotations_all),
-        show_sensor_output=True,
+    ),
+)
+
+
+infer_parts_with_part_models = copy.deepcopy(infer_comp_base_config)
+infer_parts_with_part_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_part_models,
+        n_eval_epochs=len(test_rotations_all),
+        # show_sensor_output=True,
     ),
     eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
         object_names=get_object_names_by_idx(
-            0, len(INDIVIDUAL_OBJECTS), object_list=INDIVIDUAL_OBJECTS
+            0, len(ALL_PART_OBJECTS), object_list=ALL_PART_OBJECTS
         ),
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
@@ -237,19 +211,69 @@ base_config_individual_objects_dist_agent.update(
 )
 
 
-cube_disk_logos_with_pretrained_models = copy.deepcopy(
-    base_config_cube_disk_logos_dist_agent
-)
-cube_disk_logos_with_pretrained_models.update(
+infer_comp_lvl1_with_comp_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl1_with_comp_models.update(
     experiment_args=EvalExperimentArgs(
-        model_name_or_path=model_path_compositional_models,
+        model_name_or_path=model_path_compositional_models_lvl1,
         n_eval_epochs=len(test_rotations_all),
     ),
 )
 
-experiments = CompositionalExperiments(
-    base_config_cube_disk_logos_dist_agent=base_config_cube_disk_logos_dist_agent,
-    base_config_individual_objects_dist_agent=base_config_individual_objects_dist_agent,
-    cube_disk_logos_with_pretrained_models=cube_disk_logos_with_pretrained_models,
+infer_comp_lvl2_with_comp_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl2_with_comp_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl2,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+    eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL2), object_list=OBJECTS_WITH_LOGOS_LVL2
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=test_rotations_all,
+        ),
+    ),
+)
+
+
+infer_comp_lvl3_with_comp_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl3_with_comp_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl3,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+    eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL3), object_list=OBJECTS_WITH_LOGOS_LVL3
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=test_rotations_all,
+        ),
+    ),
+)
+
+infer_comp_lvl4_with_comp_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl4_with_comp_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl4,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+    eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL4), object_list=OBJECTS_WITH_LOGOS_LVL4
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=test_rotations_all,
+        ),
+    ),
+)
+
+experiments = CompositionalInferenceExperiments(
+    infer_comp_lvl1_with_monolithic_models=infer_comp_lvl1_with_monolithic_models,
+    infer_parts_with_part_models=infer_parts_with_part_models,
+    infer_comp_lvl1_with_comp_models=infer_comp_lvl1_with_comp_models,
+    infer_comp_lvl2_with_comp_models=infer_comp_lvl2_with_comp_models,
+    infer_comp_lvl3_with_comp_models=infer_comp_lvl3_with_comp_models,
+    infer_comp_lvl4_with_comp_models=infer_comp_lvl4_with_comp_models,
 )
 CONFIGS = asdict(experiments)

@@ -24,7 +24,6 @@ from tbp.monty.frameworks.config_utils.config_args import (
     PatchAndViewMontyConfig,
     PretrainLoggingConfig,
     SurfaceAndViewMontyConfig,
-    TwoLMStackedMontyConfig,
     get_cube_face_and_corner_views_rotations,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
@@ -47,21 +46,16 @@ from tbp.monty.frameworks.experiments import (
     MontySupervisedObjectPretrainingExperiment,
 )
 from tbp.monty.frameworks.models.displacement_matching import DisplacementGraphLM
-from tbp.monty.frameworks.models.evidence_matching.learning_module import (
-    EvidenceGraphLM,
-)
 from tbp.monty.frameworks.models.motor_policies import NaiveScanPolicy
 from tbp.monty.frameworks.models.sensor_modules import (
     DetailedLoggingSM,
     HabitatSurfacePatchSM,
 )
 from tbp.monty.simulators.habitat.configs import (
-    EnvInitArgsTwoLMDistantStackedMount,
     FiveLMMountHabitatDatasetArgs,
     PatchViewFinderMountHabitatDatasetArgs,
     SurfaceViewFinderMontyWorldMountHabitatDatasetArgs,
     SurfaceViewFinderMountHabitatDatasetArgs,
-    TwoLMStackedDistantMountHabitatDatasetArgs,
 )
 
 # FOR SUPERVISED PRETRAINING: 14 unique rotations that give good views of the object.
@@ -283,215 +277,6 @@ supervised_pre_training_5lms_all_objects.update(
         object_init_sampler=PredefinedObjectInitializer(rotations=train_rotations_all),
     ),
 )
-# two_stacked_lms_config = dict(
-#     learning_module_0=dict(
-#         learning_module_class=DisplacementGraphLM,
-#         learning_module_args=dict(
-#             k=10,
-#             match_attribute="displacement",
-#             tolerance=np.ones(3) * 0.0001,
-#             graph_delta_thresholds=dict(
-#                 patch_0=dict(
-#                     distance=0.001,
-#                     # Only first pose vector (surface normal) is currently used
-#                     pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
-#                     principal_curvatures_log=[1, 1],
-#                     hsv=[0.1, 1, 1],
-#                 )
-#             ),
-#         ),
-#     ),
-#     learning_module_1=dict(
-#         learning_module_class=DisplacementGraphLM,
-#         learning_module_args=dict(
-#             k=10,
-#             match_attribute="displacement",
-#             tolerance=np.ones(3) * 0.0001,
-#             graph_delta_thresholds=dict(
-#                 patch_0=dict(
-#                     distance=0.001,
-#                     # Only first pose vector (surface normal) is currently used
-#                     pose_vectors=[np.pi / 8, np.pi * 2, np.pi * 2],
-#                     principal_curvatures_log=[1, 1],
-#                     hsv=[0.1, 1, 1],
-#                 )
-#             ),
-#         ),
-#     ),
-# )
-
-two_stacked_constrained_lms_config = dict(
-    learning_module_0=dict(
-        learning_module_class=EvidenceGraphLM,
-        learning_module_args=dict(
-            max_match_distance=0.001,
-            tolerances={
-                "patch_0": {
-                    "hsv": np.array([0.1, 1, 1]),
-                    "principal_curvatures_log": np.ones(2),
-                }
-            },
-            # Note graph-delta-thresholds are not used for grid-based models
-            feature_weights={},
-            max_graph_size=0.3,
-            num_model_voxels_per_dim=200,
-            max_nodes_per_graph=2000,
-            object_evidence_threshold=20,  # TODO - C: is this reasonable?
-        ),
-    ),
-    learning_module_1=dict(
-        learning_module_class=EvidenceGraphLM,
-        learning_module_args=dict(
-            max_match_distance=0.001,  # TODO: C - Scale with receptive field size
-            tolerances={
-                "patch_1": {
-                    "hsv": np.array([0.1, 1, 1]),
-                    "principal_curvatures_log": np.ones(2),
-                },
-                # object Id currently is an int representation of the strings
-                # in the object label so we keep this tolerance high. This is
-                # just until we have added a way to encode object ID with some
-                # real similarity measure.
-                "learning_module_0": {"object_id": 1},
-            },
-            feature_weights={"learning_module_0": {"object_id": 1}},
-            max_graph_size=0.4,
-            num_model_voxels_per_dim=200,
-            max_nodes_per_graph=2000,
-        ),
-    ),
-)
-
-OBJECT_WO_LOGOS = ["001_cube", "006_disk"]
-
-supervised_pre_training_objects_wo_logos = copy.deepcopy(supervised_pre_training_base)
-supervised_pre_training_objects_wo_logos.update(
-    experiment_args=ExperimentArgs(
-        do_eval=False,
-        n_train_epochs=len(train_rotations_all),
-        show_sensor_output=False,
-    ),
-    monty_config=TwoLMStackedMontyConfig(
-        monty_args=MontyArgs(num_exploratory_steps=1000),
-        learning_module_configs=two_stacked_constrained_lms_config,
-        motor_system_config=MotorSystemConfigNaiveScanSpiral(
-            motor_system_args=dict(
-                policy_class=NaiveScanPolicy,
-                policy_args=make_naive_scan_policy_config(step_size=5),
-            )
-        ),  # use spiral policy for more even object coverage during learning
-    ),
-    dataset_args=TwoLMStackedDistantMountHabitatDatasetArgs(
-        env_init_args=EnvInitArgsTwoLMDistantStackedMount(
-            data_path=os.path.join(os.environ["MONTY_DATA"], "compositional_objects")
-        ).__dict__,
-    ),
-    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
-        object_names=get_object_names_by_idx(
-            0, len(OBJECT_WO_LOGOS), object_list=OBJECT_WO_LOGOS
-        ),
-        object_init_sampler=PredefinedObjectInitializer(
-            rotations=train_rotations_all,
-        ),
-    ),
-)
-
-LOGOS = ["021_logo_tbp", "022_logo_numenta"]
-LOGO_POSITIONS = [[0.0, 1.5, 0.0], [-0.03, 1.5, 0.0], [0.03, 1.5, 0.0]]
-LOGO_ROTATIONS = [[0.0, 0.0, 0.0]]
-
-supervised_pre_training_compositional_logos = copy.deepcopy(
-    supervised_pre_training_objects_wo_logos
-)
-supervised_pre_training_compositional_logos.update(
-    experiment_args=ExperimentArgs(
-        do_eval=False,
-        n_train_epochs=len(LOGO_POSITIONS) * len(LOGO_ROTATIONS),
-        show_sensor_output=False,
-        model_name_or_path=os.path.join(
-            fe_pretrain_dir,
-            "supervised_pre_training_objects_wo_logos/pretrained/",
-        ),
-    ),
-    monty_config=TwoLMStackedMontyConfig(
-        monty_args=MontyArgs(num_exploratory_steps=1000),
-        learning_module_configs=two_stacked_constrained_lms_config,
-        motor_system_config=MotorSystemConfigNaiveScanSpiral(
-            motor_system_args=dict(
-                policy_class=NaiveScanPolicy,
-                policy_args=make_naive_scan_policy_config(step_size=1),
-            )
-        ),  # use spiral policy for more even object coverage during learning
-    ),
-    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
-        object_names=get_object_names_by_idx(0, len(LOGOS), object_list=LOGOS),
-        object_init_sampler=PredefinedObjectInitializer(
-            positions=LOGO_POSITIONS,
-            rotations=LOGO_ROTATIONS,
-        ),
-    ),
-)
-
-OBJECT_WITH_LOGOS = [
-    "002_cube_tbp_horz",
-    "004_cube_numenta_horz",
-    "007_disk_tbp_horz",
-    "009_disk_numenta_horz",
-]
-
-
-supervised_pre_training_compositional_objects_with_logos = copy.deepcopy(
-    supervised_pre_training_objects_wo_logos
-)
-supervised_pre_training_compositional_objects_with_logos.update(
-    # We load the model trained on the individual objects
-    experiment_args=ExperimentArgs(
-        do_eval=False,
-        n_train_epochs=len(train_rotations_all),
-        show_sensor_output=False,
-        model_name_or_path=os.path.join(
-            fe_pretrain_dir,
-            "supervised_pre_training_compositional_logos/pretrained/",
-        ),
-    ),
-    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
-        object_names=get_object_names_by_idx(
-            0, len(OBJECT_WITH_LOGOS), object_list=OBJECT_WITH_LOGOS
-        ),
-        object_init_sampler=PredefinedObjectInitializer(
-            rotations=train_rotations_all,
-        ),
-    ),
-)
-
-partial_supervised_pre_training_comp_objects = copy.deepcopy(
-    supervised_pre_training_compositional_objects_with_logos
-)
-
-partial_supervised_pre_training_comp_objects.update(
-    experiment_args=ExperimentArgs(
-        do_eval=False,
-        n_train_epochs=len(train_rotations_all),
-        show_sensor_output=False,
-        model_name_or_path=os.path.join(
-            fe_pretrain_dir,
-            "supervised_pre_training_compositional_logos/pretrained/",
-        ),
-        supervised_lm_ids=["learning_module_1"],
-        min_lms_match=2,
-    ),
-    monty_config=TwoLMStackedMontyConfig(
-        monty_args=MontyArgs(num_exploratory_steps=1000, min_train_steps=100),
-        learning_module_configs=two_stacked_constrained_lms_config,
-        motor_system_config=MotorSystemConfigNaiveScanSpiral(
-            motor_system_args=dict(
-                policy_class=NaiveScanPolicy,
-                policy_args=make_naive_scan_policy_config(step_size=5),
-            )
-        ),  # use spiral policy for more even object coverage during learning
-    ),
-)
-
 
 experiments = PretrainingExperiments(
     supervised_pre_training_base=supervised_pre_training_base,
@@ -501,9 +286,5 @@ experiments = PretrainingExperiments(
     only_surf_agent_training_10simobj=only_surf_agent_training_10simobj,
     only_surf_agent_training_allobj=only_surf_agent_training_allobj,
     only_surf_agent_training_numenta_lab_obj=only_surf_agent_training_numenta_lab_obj,
-    supervised_pre_training_objects_wo_logos=supervised_pre_training_objects_wo_logos,
-    supervised_pre_training_compositional_logos=supervised_pre_training_compositional_logos,
-    supervised_pre_training_compositional_objects_with_logos=supervised_pre_training_compositional_objects_with_logos,
-    partial_supervised_pre_training_comp_objects=partial_supervised_pre_training_comp_objects,
 )
 CONFIGS = asdict(experiments)
