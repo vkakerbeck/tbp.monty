@@ -26,6 +26,7 @@ import quaternion
 import torch
 from scipy.spatial.transform import Rotation
 
+from tbp.monty.frameworks.environments.logos_on_objs import PARENT_TO_CHILD_MAPPING
 from tbp.monty.frameworks.utils.spatial_arithmetics import (
     get_unique_rotations,
     rotations_to_quats,
@@ -694,6 +695,15 @@ def get_graph_lm_episode_stats(lm):
         "time": np.sum(lm.buffer.stats["relative_time"]),
     }
 
+    # TODO - C: make this conditional on doing a compositional experiment
+    stats.update(
+        {
+            "consistent_child_obj": consistent_child_obj(
+                result, lm.primary_target, PARENT_TO_CHILD_MAPPING
+            )
+        }
+    )
+
     graph_vs_object_stats = compute_unsupervised_stats(
         possible_matches,
         lm.primary_target,
@@ -866,6 +876,15 @@ def overall_accuracy(eval_stats):
         * 100
     )
     return acc
+
+
+def consistent_child_obj(detected_obj, target_obj, parent_to_child_mapping):
+    if detected_obj in parent_to_child_mapping:
+        possible_children = parent_to_child_mapping[target_obj]
+        return detected_obj in possible_children
+    else:
+        logger.warning(f"target object {target_obj} not in parent_to_child_mapping")
+        return False
 
 
 def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping):
