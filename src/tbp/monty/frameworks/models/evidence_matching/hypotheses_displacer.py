@@ -173,6 +173,8 @@ class DefaultHypothesesDisplacer:
 
             mlh_index = np.argmax(possible_hypotheses.evidence)
             evidence_for_mlh = evidence_to_add[mlh_index]
+            # Mapping evidence values from range [-1, 2] to [0, 3], then dividing by 3
+            # to get a value in range [0, 1].
             mlh_prediction_error = (-evidence_for_mlh + 2) / 3
 
             # If past and present weight add up to 1, equivalent to
