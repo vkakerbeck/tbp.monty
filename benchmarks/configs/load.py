@@ -78,7 +78,7 @@ def select_config(experiment: str) -> dict:
     pretraining_experiment_names = [
         field.name for field in fields(PretrainingExperiments)
     ]
-    compositional_experiment_names = [
+    compositional_inference_experiment_names = [
         field.name for field in fields(CompositionalInferenceExperiments)
     ]
     compositional_learning_experiment_names = [
@@ -104,10 +104,18 @@ def select_config(experiment: str) -> dict:
         from benchmarks.configs.pretraining_experiments import CONFIGS as PRETRAININGS
 
         return PRETRAININGS
-    elif experiment in compositional_experiment_names:
-        from benchmarks.configs.compositional_experiments import CONFIGS as COMPOSITINAL
+    elif experiment in compositional_inference_experiment_names:
+        from benchmarks.configs.infer_compositional_objects import (
+            CONFIGS as COMPOSITIONAL_INFERENCE,
+        )
 
-        return COMPOSITINAL
+        return COMPOSITIONAL_INFERENCE
+    elif experiment in compositional_learning_experiment_names:
+        from benchmarks.configs.learn_compositional_objects import (
+            CONFIGS as COMPOSITIONAL_LEARNING,
+        )
+
+        return COMPOSITIONAL_LEARNING
     elif experiment in ycb_experiment_names:
         from benchmarks.configs.ycb_experiments import CONFIGS as YCB
 
