@@ -641,6 +641,12 @@ def get_graph_lm_episode_stats(lm):
                 primary_performance = "pose_time_out"
                 stepwise_performance = "pose_time_out"
 
+        if consistent_child_obj(
+            lm.current_mlh["graph_id"], lm.primary_target, PARENT_TO_CHILD_MAPPING
+        ):
+            # TODO - C : provide parent to child mapping
+            primary_performance = "consistent_child_obj"
+
         individual_ts_perf = "time_out"
         # TODO eventually consider adding stepwise stats for the below
         if lm.buffer.stats["individual_ts_reached_at_step"] is not None:
@@ -694,15 +700,6 @@ def get_graph_lm_episode_stats(lm):
         "individual_ts_rotation_error": individual_ts_rotation_error,
         "time": np.sum(lm.buffer.stats["relative_time"]),
     }
-
-    # TODO - C: make this conditional on doing a compositional experiment
-    stats.update(
-        {
-            "consistent_child_obj": consistent_child_obj(
-                result, lm.primary_target, PARENT_TO_CHILD_MAPPING
-            )
-        }
-    )
 
     graph_vs_object_stats = compute_unsupervised_stats(
         possible_matches,

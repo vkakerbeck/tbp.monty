@@ -85,8 +85,11 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             num_time_out=0,
             num_patch_off_object=0,
             num_no_label=0,
+            num_consistent_child_obj=0,
+            num_correct_child_or_parent=0,
             num_correct_per_lm=0,
             num_correct_mlh_per_lm=0,
+            num_consistent_child_obj_per_lm=0,
             num_no_match_per_lm=0,
             num_confused_per_lm=0,
             num_confused_mlh_per_lm=0,
@@ -142,6 +145,7 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             "no_label",
             "pose_time_out",
             "time_out",
+            "consistent_child_obj",
             "confused_mlh",
             "correct_mlh",
             "no_match",
@@ -258,6 +262,14 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             stats["monty_matching_steps"].append(monty_matching_steps)
             stats["episode_avg_prediction_error"].append(
                 episode_stats["episode_avg_prediction_error"]
+            )
+            stats["num_consistent_child_obj"] += int(
+                performance == "consistent_child_obj"
+            )
+            stats["num_correct_child_or_parent"] += (
+                int(performance == "consistent_child_obj")
+                or int(performance == "correct")
+                or int(performance == "correct_mlh")
             )
 
             stats["goal_states_attempted"] = episode_stats["goal_states_attempted"]
@@ -403,6 +415,16 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
                 if len(stats["episode_avg_prediction_error"]) > 0
                 else np.nan
             ),
+            "overall/percent_consistent_child_obj": (
+                stats["num_consistent_child_obj"]
+                / (stats["num_episodes"] * len(self.lms))
+            )
+            * 100,
+            "overall/percent_correct_child_or_parent": (
+                stats["num_correct_child_or_parent"]
+                / (stats["num_episodes"] * len(self.lms))
+            )
+            * 100,
             "overall/run_time": np.sum(stats["run_times"]) / len(self.lms),
             # NOTE: does not take into account different runtimes with multiple LMs
             "overall/avg_episode_run_time": (
