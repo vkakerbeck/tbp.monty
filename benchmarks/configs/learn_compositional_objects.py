@@ -183,6 +183,26 @@ supervised_pre_training_curved_objects_after_flat_and_logo = copy.deepcopy(
     supervised_pre_training_flat_objects_wo_logos
 )
 
+supervised_pre_training_curved_objects_after_flat_and_logo.update(
+    experiment_args=ExperimentArgs(
+        do_eval=False,
+        n_train_epochs=len(train_rotations_all),
+        model_name_or_path=os.path.join(
+            fe_pretrain_dir,
+            "supervised_pre_training_logos_after_flat_objects/pretrained/",
+        ),
+    ),
+    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0,
+            len(CURVED_OBJECTS_WITHOUT_LOGOS),
+            object_list=CURVED_OBJECTS_WITHOUT_LOGOS,
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=train_rotations_all,
+        ),
+    ),
+)
 
 # ====== Learning Compositional Objects ======
 
@@ -197,7 +217,6 @@ supervised_pre_training_objects_with_logos_lvl1_monolithic_models.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(train_rotations_all),
-        show_sensor_output=False,
         model_name_or_path=os.path.join(
             fe_pretrain_dir,
             "supervised_pre_training_logos_after_flat_objects/pretrained/",
@@ -221,7 +240,6 @@ supervised_pre_training_objects_with_logos_lvl1_comp_models.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(train_rotations_all),
-        show_sensor_output=False,
         model_name_or_path=os.path.join(
             fe_pretrain_dir,
             "supervised_pre_training_logos_after_flat_objects/pretrained/",
@@ -241,10 +259,72 @@ supervised_pre_training_objects_with_logos_lvl1_comp_models.update(
     ),
 )
 
+MODEL_PATH_WITH_ALL_CHILD_OBJECTS = os.path.join(
+    fe_pretrain_dir,
+    "supervised_pre_training_curved_objects_after_flat_and_logo/pretrained/",
+)
+
+supervised_pre_training_objects_with_logos_lvl2_comp_models = copy.deepcopy(
+    supervised_pre_training_objects_with_logos_lvl1_comp_models
+)
+
+supervised_pre_training_objects_with_logos_lvl2_comp_models.update(
+    experiment_args=ExperimentArgs(
+        do_eval=False,
+        n_train_epochs=len(train_rotations_all),
+        model_name_or_path=MODEL_PATH_WITH_ALL_CHILD_OBJECTS,
+        supervised_lm_ids=["learning_module_1"],
+        min_lms_match=2,
+    ),
+    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL2), object_list=OBJECTS_WITH_LOGOS_LVL2
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=train_rotations_all,
+        ),
+    ),
+)
+
+supervised_pre_training_objects_with_logos_lvl3_comp_models = copy.deepcopy(
+    supervised_pre_training_objects_with_logos_lvl2_comp_models
+)
+
+supervised_pre_training_objects_with_logos_lvl3_comp_models.update(
+    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL3), object_list=OBJECTS_WITH_LOGOS_LVL3
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=train_rotations_all,
+        ),
+    ),
+)
+
+
+supervised_pre_training_objects_with_logos_lvl4_comp_models = copy.deepcopy(
+    supervised_pre_training_objects_with_logos_lvl2_comp_models
+)
+
+supervised_pre_training_objects_with_logos_lvl4_comp_models.update(
+    train_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL4), object_list=OBJECTS_WITH_LOGOS_LVL4
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=train_rotations_all,
+        ),
+    ),
+)
+
 experiments = CompositionalLearningExperiments(
     supervised_pre_training_flat_objects_wo_logos=supervised_pre_training_flat_objects_wo_logos,
     supervised_pre_training_logos_after_flat_objects=supervised_pre_training_logos_after_flat_objects,
+    supervised_pre_training_curved_objects_after_flat_and_logo=supervised_pre_training_curved_objects_after_flat_and_logo,
     supervised_pre_training_objects_with_logos_lvl1_monolithic_models=supervised_pre_training_objects_with_logos_lvl1_monolithic_models,
     supervised_pre_training_objects_with_logos_lvl1_comp_models=supervised_pre_training_objects_with_logos_lvl1_comp_models,
+    supervised_pre_training_objects_with_logos_lvl2_comp_models=supervised_pre_training_objects_with_logos_lvl2_comp_models,
+    supervised_pre_training_objects_with_logos_lvl3_comp_models=supervised_pre_training_objects_with_logos_lvl3_comp_models,
+    supervised_pre_training_objects_with_logos_lvl4_comp_models=supervised_pre_training_objects_with_logos_lvl4_comp_models,
 )
 CONFIGS = asdict(experiments)
