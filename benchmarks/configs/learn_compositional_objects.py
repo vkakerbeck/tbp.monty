@@ -32,9 +32,13 @@ from tbp.monty.frameworks.config_utils.policy_setup_utils import (
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
 from tbp.monty.frameworks.environments.logos_on_objs import (
+    CURVED_OBJECTS_WITHOUT_LOGOS,
     FLAT_OBJECTS_WITHOUT_LOGOS,
     LOGOS,
     OBJECTS_WITH_LOGOS_LVL1,
+    OBJECTS_WITH_LOGOS_LVL2,
+    OBJECTS_WITH_LOGOS_LVL3,
+    OBJECTS_WITH_LOGOS_LVL4,
 )
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
@@ -95,6 +99,8 @@ two_stacked_constrained_lms_config = dict(
         ),
     ),
 )
+
+# ====== Learn Child / Part Objects ======
 
 # For learning and evaluating compostional models with the logos-on-objects dataset,
 # we first train on the flat objects without logos. These are viewed in multiple
@@ -170,6 +176,15 @@ supervised_pre_training_logos_after_flat_objects.update(
         ),
     ),
 )
+
+# NOTE: we load the model trained on flat objects and logos, but we inheret from the
+# config used for 3D "flat" objects, since it is similar in step-size, rotations, etc.
+supervised_pre_training_curved_objects_after_flat_and_logo = copy.deepcopy(
+    supervised_pre_training_flat_objects_wo_logos
+)
+
+
+# ====== Learning Compositional Objects ======
 
 # Learn monolithic models on the compositional objects, i.e. where both the LLLM
 # and the HLLM learn the compositional *objects*, but without a compitional *model.
