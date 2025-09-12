@@ -263,9 +263,6 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             stats["episode_avg_prediction_error"].append(
                 episode_stats["episode_avg_prediction_error"]
             )
-            stats["num_consistent_child_obj"] += int(
-                performance == "consistent_child_obj"
-            )
             stats["num_correct_child_or_parent"] += (
                 int(performance == "consistent_child_obj")
                 or int(performance == "correct")
@@ -416,8 +413,7 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
                 else np.nan
             ),
             "overall/percent_consistent_child_obj": (
-                stats["num_consistent_child_obj"]
-                / (stats["num_episodes"] * len(self.lms))
+                stats["num_consistent_child_obj"] / (stats["num_episodes"])
             )
             * 100,
             "overall/percent_correct_child_or_parent": (
@@ -479,6 +475,11 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             overall_stats[f"{lm}/episode/avg_prediction_error"] = lm_stats[
                 "episode_avg_prediction_error"
             ]
+
+        for p in self.performance_options:
+            overall_stats[f"overall/percent_{p}_per_lm"] = (
+                stats[f"num_{p}_per_lm"] / (stats["num_episodes"] * len(self.lms))
+            ) * 100
 
         if len(self.lms) > 1:  # add histograms when running multiple LMs
             overall_stats["episode/rotation_error_per_lm"] = wandb.Histogram(episode_re)
