@@ -876,6 +876,13 @@ def overall_accuracy(eval_stats):
 
 
 def consistent_child_obj(detected_obj, target_obj, parent_to_child_mapping):
+    """Check if the detected object is a child object of the target object.
+
+    Args:
+        detected_obj: detected object
+        target_obj: target object
+        parent_to_child_mapping: parent to child mapping
+    """
     if detected_obj in parent_to_child_mapping:
         possible_children = parent_to_child_mapping[target_obj]
         return detected_obj in possible_children
