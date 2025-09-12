@@ -26,6 +26,32 @@ OBJECTS_WITH_LOGOS_LVL1 = [
     "009_disk_numenta_horz",
 ]
 
+CURVED_OBJECTS_WITHOUT_LOGOS = ["011_cylinder", "016_sphere", "023_mug"]
+
+OBJECTS_WITH_LOGOS_LVL2 = OBJECTS_WITH_LOGOS_LVL1 + [
+    "012_cylinder_tbp_horz",
+    "014_cylinder_numenta_horz",
+    "017_sphere_tbp_horz",
+    "019_sphere_numenta_horz",
+    "024_mug_tbp_horz",
+    "026_mug_numenta_horz",
+]
+
+OBJECTS_WITH_LOGOS_LVL3 = OBJECTS_WITH_LOGOS_LVL2 + [
+    "003_cube_tbp_vert",
+    "005_cube_numenta_vert",
+    "008_disk_tbp_vert",
+    "010_disk_numenta_vert",
+    "013_cylinder_tbp_vert",
+    "015_cylinder_numenta_vert",
+    "018_sphere_tbp_vert",
+    "020_sphere_numenta_vert",
+    "025_mug_tbp_vert",
+    "027_mug_numenta_vert",
+]
+
+OBJECTS_WITH_LOGOS_LVL4 = OBJECTS_WITH_LOGOS_LVL3 + ["028_mug_tbp_horz_bent"]
+
 PARENT_TO_CHILD_MAPPING = {
     "001_cube": ["001_cube"],
     "002_cube_tbp_horz": ["001_cube", "021_logo_tbp"],
