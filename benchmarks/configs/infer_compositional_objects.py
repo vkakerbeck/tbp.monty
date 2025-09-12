@@ -8,7 +8,7 @@ from benchmarks.configs.defaults import (
     min_eval_steps,
     pretrained_dir,
 )
-from benchmarks.configs.names import CompositionalExperiments
+from benchmarks.configs.names import CompositionalInferenceExperiments
 from tbp.monty.frameworks.config_utils.config_args import (
     MontyArgs,
     MotorSystemConfigInformedGoalStateDriven,
@@ -198,7 +198,7 @@ infer_comp_lvl1_with_comp_models.update(
     ),
 )
 
-experiments = CompositionalExperiments(
+experiments = CompositionalInferenceExperiments(
     infer_comp_lvl1_with_monolithic_models=infer_comp_lvl1_with_monolithic_models,
     infer_parts_with_part_models=infer_parts_with_part_models,
     infer_comp_lvl1_with_comp_models=infer_comp_lvl1_with_comp_models,

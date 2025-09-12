@@ -60,10 +60,17 @@ class PretrainingExperiments:
 
 
 @dataclass
-class CompositionalExperiments:
+class CompositionalInferenceExperiments:
     infer_comp_lvl1_with_monolithic_models: dict
     infer_parts_with_part_models: dict
     infer_comp_lvl1_with_comp_models: dict
+
+@dataclass
+class CompositionalLearningExperiments:
+    supervised_pre_training_flat_objects_wo_logos: dict
+    supervised_pre_training_logos_after_flat_objects: dict
+    supervised_pre_training_objects_with_logos_lvl1_monolithic_models: dict
+    supervised_pre_training_objects_with_logos_lvl1_comp_models: dict
 
 
 @dataclass

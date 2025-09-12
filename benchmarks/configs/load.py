@@ -13,7 +13,8 @@ from dataclasses import fields
 
 from benchmarks.configs.follow_ups.names import NAMES as FOLLOW_UP_NAMES
 from benchmarks.configs.names import (
-    CompositionalExperiments,
+    CompositionalInferenceExperiments,
+    CompositionalLearningExperiments,
     MontyWorldExperiments,
     MontyWorldHabitatExperiments,
     MyExperiments,
@@ -78,7 +79,10 @@ def select_config(experiment: str) -> dict:
         field.name for field in fields(PretrainingExperiments)
     ]
     compositional_experiment_names = [
-        field.name for field in fields(CompositionalExperiments)
+        field.name for field in fields(CompositionalInferenceExperiments)
+    ]
+    compositional_learning_experiment_names = [
+        field.name for field in fields(CompositionalLearningExperiments)
     ]
     ycb_experiment_names = [field.name for field in fields(YcbExperiments)]
     unsupervised_inference_experiment_names = [
