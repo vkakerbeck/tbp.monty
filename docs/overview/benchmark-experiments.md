@@ -129,6 +129,19 @@ The following experiments evaluate Monty's ability to learn and infer compositio
 
 We want to determine the ability of a Monty system with a hierarchy of LMs (here, a single low-level LM sending input to a single high-level LM) to build compositional models of these kinds of objects. To enable learning such models, we provide some amount of supervision to the LMs. The low and high-level LMs begin by learning the 3D objects and logos in isolation, as standalone objects. These are referred to as object "parts" in the configs. We then present Monty the compositional objects, while the low-level LM is set to perform unsupervised inference. Any object IDs it detects to the high level LM. The high level LM continues learning, and is provided with a supervised label for the compositional object (e.g. `024_mug_tbp_horz`).
 
+To measure performance, we introduced two new metrics:
+
+* `consistent_child_obj`, which measures when a learning module detects an object within the set of plausible children objects. For example, the consistent child objects for `mug_tbp_horz` would be `mug` and `tbp_logo`. We use this since the lower level LM doesn't have the compositional model and we have no ability, e.g. a semantic sensor, to know which part it was sensing.
+* `mlh_prediction_error`, which measures how closely the prediction of the most likely hypothesis matches the current input.
+
+### Results
+
+!table[../../benchmarks/results/logos_on_objects.csv]
+
+> [!WARNING]
+>
+> These benchmarks are not currently expected to have good performance and are used to track our research progress for compositional datasets.
+
 
 # Monty-Meets-World
 
