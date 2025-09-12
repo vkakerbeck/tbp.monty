@@ -14,6 +14,7 @@ from tbp.monty.frameworks.config_utils.config_args import (
     MotorSystemConfigInformedGoalStateDriven,
     ParallelEvidenceLMLoggingConfig,
     TwoLMStackedMontyConfig,
+    get_cube_face_and_corner_views_rotations,
 )
 from tbp.monty.frameworks.config_utils.make_dataset_configs import (
     EnvironmentDataloaderPerObjectArgs,
@@ -41,12 +42,8 @@ from tbp.monty.simulators.habitat.configs import (
 
 # 14 unique rotations that give good views of the object. Same rotations used
 # for supervised pretraining.
-# test_rotations_all = get_cube_face_and_corner_views_rotations()
-test_rotations_all = [[0.0, 0.0, 0.0]]
-
-# Limited number of rotations to use for quicker evaluation when doing longer
-# runs with all 77 YCB objects.
-test_rotations_3 = test_rotations_all[:3]
+test_rotations_all = get_cube_face_and_corner_views_rotations()
+# test_rotations_all = [[0.0, 0.0, 0.0]]
 
 model_path_monolithic_models_lvl1 = os.path.join(
     pretrained_dir,
