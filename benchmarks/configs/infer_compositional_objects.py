@@ -22,7 +22,13 @@ from tbp.monty.frameworks.config_utils.make_dataset_configs import (
     get_object_names_by_idx,
 )
 from tbp.monty.frameworks.environments import embodied_data as ED
-from tbp.monty.frameworks.environments.logos_on_objs import OBJECTS_WITH_LOGOS_LVL1
+from tbp.monty.frameworks.environments.logos_on_objs import (
+    ALL_PART_OBJECTS,
+    OBJECTS_WITH_LOGOS_LVL1,
+    OBJECTS_WITH_LOGOS_LVL2,
+    OBJECTS_WITH_LOGOS_LVL3,
+    OBJECTS_WITH_LOGOS_LVL4,
+)
 from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
@@ -38,8 +44,6 @@ from tbp.monty.simulators.habitat.configs import (
 # test_rotations_all = get_cube_face_and_corner_views_rotations()
 test_rotations_all = [[0.0, 0.0, 0.0]]
 
-min_eval_steps = 20
-
 # Limited number of rotations to use for quicker evaluation when doing longer
 # runs with all 77 YCB objects.
 test_rotations_3 = test_rotations_all[:3]
@@ -51,12 +55,27 @@ model_path_monolithic_models_lvl1 = os.path.join(
 
 model_path_part_models = os.path.join(
     pretrained_dir,
-    "supervised_pre_training_logos_after_flat_objects/pretrained/",
+    "supervised_pre_training_curved_objects_after_flat_and_logo/pretrained/",
 )
 
 model_path_compositional_models_lvl1 = os.path.join(
     pretrained_dir,
     "supervised_pre_training_objects_with_logos_lvl1_comp_models/pretrained/",
+)
+
+model_path_compositional_models_lvl2 = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl2_comp_models/pretrained/",
+)
+
+model_path_compositional_models_lvl3 = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl3_comp_models/pretrained/",
+)
+
+model_path_compositional_models_lvl4 = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl4_comp_models/pretrained/",
 )
 
 
@@ -134,13 +153,11 @@ two_stacked_constrained_lms_inference_config = dict(
 )
 
 # See level description in src/tbp/monty/frameworks/environments/logos_on_objs.py
-infer_comp_lvl1_with_monolithic_models = dict(
+infer_comp_base_config = dict(
     experiment_class=MontyObjectRecognitionExperiment,
     experiment_args=EvalExperimentArgs(
-        model_name_or_path=model_path_monolithic_models_lvl1,
         n_eval_epochs=len(test_rotations_all),
         min_lms_match=1,
-        # show_sensor_output=True,
     ),
     logging_config=ParallelEvidenceLMLoggingConfig(
         wandb_group="benchmark_experiments",
@@ -170,9 +187,16 @@ infer_comp_lvl1_with_monolithic_models = dict(
     ),
 )
 
-INDIVIDUAL_OBJECTS = ["001_cube", "006_disk", "021_logo_tbp", "022_logo_numenta"]
+infer_comp_lvl1_with_monolithic_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl1_with_monolithic_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_monolithic_models_lvl1,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+)
 
-infer_parts_with_part_models = copy.deepcopy(infer_comp_lvl1_with_monolithic_models)
+
+infer_parts_with_part_models = copy.deepcopy(infer_comp_base_config)
 infer_parts_with_part_models.update(
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_part_models,
@@ -181,7 +205,7 @@ infer_parts_with_part_models.update(
     ),
     eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
         object_names=get_object_names_by_idx(
-            0, len(INDIVIDUAL_OBJECTS), object_list=INDIVIDUAL_OBJECTS
+            0, len(ALL_PART_OBJECTS), object_list=ALL_PART_OBJECTS
         ),
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
@@ -190,7 +214,7 @@ infer_parts_with_part_models.update(
 )
 
 
-infer_comp_lvl1_with_comp_models = copy.deepcopy(infer_comp_lvl1_with_monolithic_models)
+infer_comp_lvl1_with_comp_models = copy.deepcopy(infer_comp_base_config)
 infer_comp_lvl1_with_comp_models.update(
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_compositional_models_lvl1,
@@ -198,9 +222,61 @@ infer_comp_lvl1_with_comp_models.update(
     ),
 )
 
+infer_comp_lvl2_with_comp_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl2_with_comp_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl2,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+    eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL2), object_list=OBJECTS_WITH_LOGOS_LVL2
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=test_rotations_all,
+        ),
+    ),
+)
+
+
+infer_comp_lvl3_with_comp_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl3_with_comp_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl3,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+    eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL3), object_list=OBJECTS_WITH_LOGOS_LVL3
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=test_rotations_all,
+        ),
+    ),
+)
+
+infer_comp_lvl4_with_comp_models = copy.deepcopy(infer_comp_base_config)
+infer_comp_lvl4_with_comp_models.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl4,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+    eval_dataloader_args=EnvironmentDataloaderPerObjectArgs(
+        object_names=get_object_names_by_idx(
+            0, len(OBJECTS_WITH_LOGOS_LVL4), object_list=OBJECTS_WITH_LOGOS_LVL4
+        ),
+        object_init_sampler=PredefinedObjectInitializer(
+            rotations=test_rotations_all,
+        ),
+    ),
+)
+
 experiments = CompositionalInferenceExperiments(
     infer_comp_lvl1_with_monolithic_models=infer_comp_lvl1_with_monolithic_models,
     infer_parts_with_part_models=infer_parts_with_part_models,
     infer_comp_lvl1_with_comp_models=infer_comp_lvl1_with_comp_models,
+    infer_comp_lvl2_with_comp_models=infer_comp_lvl2_with_comp_models,
+    infer_comp_lvl3_with_comp_models=infer_comp_lvl3_with_comp_models,
+    infer_comp_lvl4_with_comp_models=infer_comp_lvl4_with_comp_models,
 )
 CONFIGS = asdict(experiments)
