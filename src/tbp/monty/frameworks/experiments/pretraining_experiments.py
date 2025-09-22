@@ -73,7 +73,9 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
         for lm in self.model.learning_modules:
             lm.detected_object = target["object"]
             lm.buffer.stats["possible_matches"] = [target["object"]]
-            lm.buffer.stats["detected_location_on_model"] = np.array(target["position"])
+            lm.buffer.stats["detected_location_on_model"] = (
+                self.first_epoch_object_location
+            )
             lm.buffer.stats["detected_location_rel_body"] = np.array(target["position"])
             lm.buffer.stats["detected_rotation"] = target["euler_rotation"]
             lm.detected_rotation_r = Rotation.from_quat(target["quat_rotation"]).inv()
@@ -121,6 +123,15 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
 
         self.train_epochs += 1
         self.train_dataloader.post_epoch()
+
+    def pre_epoch(self):
+        super().pre_epoch()
+        # if it's the first epoch, save the primary target position. This is needed to
+        # provide the correct offset from the learned model when supervising.
+        if not self.train_epochs:
+            self.first_epoch_object_location = self.dataloader.primary_target[
+                "position"
+            ]
 
     def train(self):
         """Save state_dict at the end of training."""
