@@ -16,7 +16,6 @@ import os
 import pprint
 from typing import Any, Dict, Literal
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from typing_extensions import Self
@@ -45,9 +44,6 @@ from tbp.monty.frameworks.utils.dataclass_utils import (
     get_subset_of_args,
 )
 from tbp.monty.frameworks.utils.live_plotter import LivePlotter
-
-# turn interactive plotting off -- call plt.show() to open all figures
-plt.ioff()
 
 __all__ = ["MontyExperiment"]
 

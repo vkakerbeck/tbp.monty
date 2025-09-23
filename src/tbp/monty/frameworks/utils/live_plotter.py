@@ -12,6 +12,9 @@ import numpy as np
 
 from tbp.monty.frameworks.utils.plot_utils import add_patch_outline_to_view_finder
 
+# turn interactive plotting off -- call plt.show() to open all figures
+plt.ioff()
+
 
 class LivePlotter:
     def __init__(self):

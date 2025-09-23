@@ -10,14 +10,10 @@
 
 import os
 
-import matplotlib.pyplot as plt
 import torch
 from tqdm import tqdm
 
 from .object_recognition_experiments import MontyObjectRecognitionExperiment
-
-# turn interactive plotting off -- call plt.show() to open all figures
-plt.ioff()
 
 
 class DataCollectionExperiment(MontyObjectRecognitionExperiment):
