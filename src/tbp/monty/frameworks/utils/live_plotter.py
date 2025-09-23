@@ -29,6 +29,7 @@ class LivePlotter:
     - "rgba" modality in "view_finder" sensor observation
     - "depth" modality in "patch" sensor observation
     """
+
     def __init__(self):
         pass
 
