@@ -122,12 +122,9 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
         # needed to provide the correct offset from the learned model when supervising.
         current_object = self.dataloader.primary_target["object"]
         if current_object not in self.first_epoch_object_location:
-            print(f"Saving first epoch object location for {current_object}")
             self.first_epoch_object_location[current_object] = (
                 self.dataloader.primary_target["position"]
             )
-        else:
-            print(f"First epoch object location for {current_object} already saved")
 
     def post_epoch(self):
         """Post epoch without saving state_dict."""
