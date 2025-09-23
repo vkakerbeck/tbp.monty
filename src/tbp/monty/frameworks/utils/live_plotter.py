@@ -17,6 +17,18 @@ plt.ioff()
 
 
 class LivePlotter:
+    """Class for plotting sensor observations during an experiment.
+
+    Set the `show_sensor_output` flag in the experiment config to True to enable live
+    plotting.
+
+    WARNING: This plotter makes a bunch of assumptions right now. For example, it
+    assumes that
+    - sensor with ID "view_finder" exists
+    - sensor with ID "patch" exists
+    - "rgba" modality in "view_finder" sensor observation
+    - "depth" modality in "patch" sensor observation
+    """
     def __init__(self):
         pass
 
