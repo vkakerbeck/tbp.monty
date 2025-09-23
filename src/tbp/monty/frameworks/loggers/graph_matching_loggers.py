@@ -417,12 +417,14 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             # may have no_match but the overall model still recognized the object.
             if p == "correct":
                 overall_stats["overall/percent_correct_per_lm"] = (
-                (stats["num_correct_per_lm"] + stats["num_correct_mlh_per_lm"])
-                / (stats["num_episodes"] * len(self.lms))) * 100
+                    (stats["num_correct_per_lm"] + stats["num_correct_mlh_per_lm"])
+                    / (stats["num_episodes"] * len(self.lms))
+                ) * 100
             elif p == "confused":
                 overall_stats["overall/percent_confused_per_lm"] = (
-                (stats["num_confused_per_lm"] + stats["num_confused_mlh_per_lm"])
-                / (stats["num_episodes"] * len(self.lms))) * 100
+                    (stats["num_confused_per_lm"] + stats["num_confused_mlh_per_lm"])
+                    / (stats["num_episodes"] * len(self.lms))
+                ) * 100
             elif p == "correct_mlh" or p == "confused_mlh":
                 # skip because they are already included in correct and confused stats
                 pass
