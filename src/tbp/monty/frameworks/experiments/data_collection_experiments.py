@@ -34,7 +34,10 @@ class DataCollectionExperiment(MontyObjectRecognitionExperiment):
             if step > self.max_steps:
                 break
             if self.show_sensor_output:
-                self.live_plotter.show_observations(observation, self.model, step)
+                self.live_plotter.show_observations(
+                    *self.live_plotter.hardcoded_assumptions(observation, self.model),
+                    step,
+                )
             self.pass_features_to_motor_system(observation, step)
         self.post_episode()
 

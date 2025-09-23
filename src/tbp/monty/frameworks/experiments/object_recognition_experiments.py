@@ -81,8 +81,7 @@ class MontyObjectRecognitionExperiment(MontyExperiment):
                     self.dataloader, SaccadeOnImageDataLoader
                 )
                 self.live_plotter.show_observations(
-                    observation,
-                    self.model,
+                    *self.live_plotter.hardcoded_assumptions(observation, self.model),
                     loader_step,
                     is_saccade_on_image_data_loader,
                 )

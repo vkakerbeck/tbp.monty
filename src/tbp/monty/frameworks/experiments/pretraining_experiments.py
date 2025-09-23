@@ -91,7 +91,9 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
                     self.dataloader, SaccadeOnImageDataLoader
                 )
                 self.live_plotter.show_observations(
-                    observation, self.model, num_steps, is_saccade_on_image_data_loader
+                    *self.live_plotter.hardcoded_assumptions(observation, self.model),
+                    num_steps,
+                    is_saccade_on_image_data_loader,
                 )
             self.model.step(observation)
             if self.model.is_done:

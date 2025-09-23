@@ -42,50 +42,83 @@ class LivePlotter:
         self.setup_camera_ax()
         self.setup_sensor_ax()
 
+    def hardcoded_assumptions(self, observation, model):
+        """Extract some of the hardcoded assumptions from the observation.
+
+        TODO: Don't do this. It is here for now to highlight the fragility of the
+        live plotter implementation at the call site. We should make this less
+        fragile by passing the necessary information to the live plotter.
+
+        Args:
+            observation: The observation from the data loader.
+            model: The model.
+
+        Returns:
+            A tuple of the first learning module, the first sensor module raw
+            observations, the patch depth, and the view finder rgba.
+        """
+        first_learning_module = model.learning_modules[0]
+        first_sensor_module_raw_observations = model.sensor_modules[0].raw_observations
+        patch_depth = observation[model.motor_system._policy.agent_id]["patch"]["depth"]
+        view_finder_rgba = observation[model.motor_system._policy.agent_id][
+            "view_finder"
+        ]["rgba"]
+        return (
+            first_learning_module,
+            first_sensor_module_raw_observations,
+            patch_depth,
+            view_finder_rgba,
+        )
+
     def show_observations(
-        self, observation, model, step: int, is_saccade_on_image_data_loader=False
+        self,
+        first_learning_module,
+        first_sensor_module_raw_observations,
+        patch_depth,
+        view_finder_rgba,
+        step: int,
+        is_saccade_on_image_data_loader=False,
     ) -> None:
         self.fig.suptitle(f"Observation at step {step}")
-        self.show_view_finder(observation, model, step, is_saccade_on_image_data_loader)
-        self.show_patch(observation, model)
+        self.show_view_finder(
+            first_sensor_module_raw_observations,
+            first_learning_module,
+            patch_depth,
+            view_finder_rgba,
+            is_saccade_on_image_data_loader,
+        )
+        self.show_patch(patch_depth)
         plt.pause(0.00001)
 
     def show_view_finder(
         self,
-        observation,
-        model,
-        step,
+        first_sensor_module_raw_observations,
+        first_learning_module,
+        patch_depth,
+        view_finder_rgba,
         is_saccade_on_image_data_loader,
-        sensor_id="view_finder",
     ):
         if self.camera_image:
             self.camera_image.remove()
 
-        view_finder_image = observation[model.motor_system._policy.agent_id][sensor_id][
-            "rgba"
-        ]
         if is_saccade_on_image_data_loader:
             center_pixel_id = np.array([200, 200])
-            patch_size = np.array(
-                observation[model.motor_system._policy.agent_id]["patch"]["depth"]
-            ).shape[0]
-            raw_obs = model.sensor_modules[0].raw_observations
+            patch_size = np.array(patch_depth).shape[0]
+            raw_obs = first_sensor_module_raw_observations
             if len(raw_obs) > 0:
                 center_pixel_id = np.array(raw_obs[-1]["pixel_loc"])
-                view_finder_image = add_patch_outline_to_view_finder(
-                    view_finder_image, center_pixel_id, patch_size
+                view_finder_rgba = add_patch_outline_to_view_finder(
+                    view_finder_rgba, center_pixel_id, patch_size
                 )
-            self.camera_image = self.ax[0].imshow(view_finder_image, zorder=-99)
+            self.camera_image = self.ax[0].imshow(view_finder_rgba, zorder=-99)
         else:
             self.camera_image = self.ax[0].imshow(
-                view_finder_image,
+                view_finder_rgba,
                 zorder=-99,
             )
             # Show a square in the middle as a rough estimate of where the patch is
             # Note: This isn't exactly the size that the patch actually is.
-            image_shape = observation[model.motor_system._policy.agent_id][sensor_id][
-                "rgba"
-            ].shape
+            image_shape = view_finder_rgba.shape
             square = plt.Rectangle(
                 (image_shape[1] * 4.5 // 10, image_shape[0] * 4.5 // 10),
                 image_shape[1] / 10,
@@ -94,21 +127,37 @@ class LivePlotter:
                 ec="white",
             )
             self.ax[0].add_patch(square)
-        if hasattr(model.learning_modules[0].graph_memory, "current_mlh"):
-            mlh = model.learning_modules[0].get_current_mlh()
+        if hasattr(first_learning_module.graph_memory, "current_mlh"):
+            mlh = first_learning_module.get_current_mlh()
             if mlh is not None:
-                self.add_text(mlh, pos=view_finder_image.shape[0], model=model)
+                graph_ids, evidences = (
+                    first_learning_module.graph_memory.get_evidence_for_each_graph()
+                )
+                self.add_text(
+                    mlh,
+                    pos=view_finder_rgba.shape[0],
+                    possible_matches=first_learning_module.get_possible_matches(),
+                    graph_ids=graph_ids,
+                    evidences=evidences,
+                )
 
-    def show_patch(self, observation, model, sensor_id="patch"):
+    def show_patch(self, patch_depth):
         if self.depth_image:
             self.depth_image.remove()
         self.depth_image = self.ax[1].imshow(
-            observation[model.motor_system._policy.agent_id][sensor_id]["depth"],
+            patch_depth,
             cmap="viridis_r",
         )
         # self.colorbar.update_normal(self.depth_image)
 
-    def add_text(self, mlh, pos, model):
+    def add_text(
+        self,
+        mlh,
+        pos,
+        possible_matches,
+        graph_ids,
+        evidences,
+    ):
         if self.text:
             self.text.remove()
         new_text = r"MLH: "
@@ -116,10 +165,6 @@ class LivePlotter:
         for word in mlh_id:
             new_text += r"$\bf{" + word + "}$ "
         new_text += f"with evidence {np.round(mlh['evidence'], 2)}\n\n"
-        pms = model.learning_modules[0].get_possible_matches()
-        graph_ids, evidences = model.learning_modules[
-            0
-        ].graph_memory.get_evidence_for_each_graph()
 
         # Highlight 2nd MLH if present
         if len(evidences) > 1:
@@ -132,7 +177,7 @@ class LivePlotter:
 
         new_text += r"$\bf{Possible}$ $\bf{matches:}$"
         for gid, ev in zip(graph_ids, evidences):
-            if gid in pms:
+            if gid in possible_matches:
                 new_text += f"\n{gid}: {np.round(ev, 1)}"
 
         self.text = self.ax[0].text(0, pos + 30, new_text, va="top")
