@@ -38,7 +38,7 @@ class DataCollectionExperiment(MontyObjectRecognitionExperiment):
             if step > self.max_steps:
                 break
             if self.show_sensor_output:
-                self.show_observations(observation, step)
+                self.live_plotter.show_observations(observation, self.model, step)
             self.pass_features_to_motor_system(observation, step)
         self.post_episode()
 
@@ -73,7 +73,7 @@ class DataCollectionExperiment(MontyObjectRecognitionExperiment):
         self.max_steps = self.max_train_steps
         self.logger_handler.pre_episode(self.logger_args)
         if self.show_sensor_output:
-            self.initialize_online_plotting()
+            self.live_plotter.initialize_online_plotting()
 
     def post_episode(self):
         torch.save(

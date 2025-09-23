@@ -13,6 +13,8 @@ import os
 
 import torch
 
+from tbp.monty.frameworks.environments.embodied_data import SaccadeOnImageDataLoader
+
 from .monty_experiment import MontyExperiment
 
 logger = logging.getLogger(__name__)
@@ -61,7 +63,7 @@ class MontyObjectRecognitionExperiment(MontyExperiment):
         self.logger_handler.pre_episode(self.logger_args)
 
         if self.show_sensor_output:
-            self.initialize_online_plotting()
+            self.live_plotter.initialize_online_plotting()
 
     def run_episode_steps(self):
         """Runs one episode of the experiment.
@@ -75,7 +77,15 @@ class MontyObjectRecognitionExperiment(MontyExperiment):
         """
         for loader_step, observation in enumerate(self.dataloader):
             if self.show_sensor_output:
-                self.show_observations(observation, loader_step)
+                is_saccade_on_image_data_loader = isinstance(
+                    self.dataloader, SaccadeOnImageDataLoader
+                )
+                self.live_plotter.show_observations(
+                    observation,
+                    self.model,
+                    loader_step,
+                    is_saccade_on_image_data_loader,
+                )
 
             if self.model.check_reached_max_matching_steps(self.max_steps):
                 logger.info(
