@@ -54,7 +54,7 @@ train_rotations_all = get_cube_face_and_corner_views_rotations()
 monty_models_dir = os.getenv("MONTY_MODELS", "")
 
 fe_pretrain_dir = os.path.expanduser(
-    os.path.join(monty_models_dir, "pretrained_ycb_v10_test")
+    os.path.join(monty_models_dir, "pretrained_ycb_v10")
 )
 
 two_stacked_constrained_lms_config = dict(
@@ -111,7 +111,7 @@ supervised_pre_training_flat_objects_wo_logos.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(train_rotations_all),
-        show_sensor_output=True,
+        # show_sensor_output=True,
     ),
     monty_config=TwoLMStackedMontyConfig(
         monty_args=MontyArgs(num_exploratory_steps=1000),
