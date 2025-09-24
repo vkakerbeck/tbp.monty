@@ -882,6 +882,10 @@ def consistent_child_obj(detected_obj, target_obj, parent_to_child_mapping):
         detected_obj: detected object
         target_obj: target object
         parent_to_child_mapping: parent to child mapping
+
+    Returns:
+        True if the detected object is a child object of the target object.
+        False otherwise.
     """
     if detected_obj in parent_to_child_mapping:
         possible_children = parent_to_child_mapping[target_obj]
@@ -896,8 +900,13 @@ def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping
 
     Classified object is consistent if it is one of the children in the set of objects
     corresponding to the compositional object.
-    """
 
+    Returns:
+        The percentage of episodes in which a consistent child object is detected.
+
+    Raises:
+        ValueError: If none of the target objects are in the parent_to_child_mapping.
+    """
     consistent_child_count = 0
     total_count = 0
 
