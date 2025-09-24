@@ -473,11 +473,6 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
                 "episode_avg_prediction_error"
             ]
 
-        for p in self.performance_options:
-            overall_stats[f"overall/percent_{p}_per_lm"] = (
-                stats[f"num_{p}_per_lm"] / (stats["num_episodes"] * len(self.lms))
-            ) * 100
-
         if len(self.lms) > 1:  # add histograms when running multiple LMs
             overall_stats["episode/rotation_error_per_lm"] = wandb.Histogram(episode_re)
             overall_stats["episode/steps_per_lm"] = wandb.Histogram(
