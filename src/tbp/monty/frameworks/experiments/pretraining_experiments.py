@@ -174,9 +174,6 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
         self.train_epochs += 1
         self.train_dataloader.post_epoch()
 
-    def pre_epoch(self):
-        super().pre_epoch()
-
     def train(self):
         """Save state_dict at the end of training."""
         self.logger_handler.pre_train(self.logger_args)
