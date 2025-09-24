@@ -491,12 +491,12 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             overall_stats["episode/lm_performances"] = wandb.Histogram(
                 episode_lm_performances
             )
-            # check that prediction errors are not all nan
-            if not np.all(
-                np.isnan(stats["episode_avg_prediction_error"][-len(self.lms) :])
-            ):
+            # filter out prediction errors that are nan
+            prediction_errors = stats["episode_avg_prediction_error"][-len(self.lms) :]
+            valid_prediction_errors = [e for e in prediction_errors if not np.isnan(e)]
+            if len(valid_prediction_errors) > 0:
                 overall_stats["episode/avg_prediction_error"] = wandb.Histogram(
-                    stats["episode_avg_prediction_error"][-len(self.lms) :]
+                    valid_prediction_errors
                 )
 
         return overall_stats
