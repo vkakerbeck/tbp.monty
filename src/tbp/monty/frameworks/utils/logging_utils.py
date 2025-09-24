@@ -892,7 +892,7 @@ def consistent_child_obj(detected_obj, target_obj, parent_to_child_mapping):
 
 
 def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping):
-    """Check whether the most_likely_object is consistent with the parent_to_child_mapping.
+    """Check whether most_likely_object is consistent with the parent_to_child_mapping.
 
     Classified object is consistent if it is one of the children in the set of objects
     corresponding to the compositional object.
@@ -909,10 +909,6 @@ def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping
             ]
             if episode_stats.most_likely_object in possible_children:
                 consistent_child_count += 1
-        else:
-            print(
-                f"target object {episode_stats.primary_target_object} not in parent_to_child_mapping"
-            )
     if total_count > 0:
         consistent_child_percentage = consistent_child_count / total_count * 100
         return consistent_child_percentage
@@ -939,13 +935,6 @@ def compositional_stats_for_all_lms(eval_stats, all_lm_ids, parent_to_child_mapp
             accuracy_stats_for_compositional_objects(
                 eval_stats_for_lm, parent_to_child_mapping
             )
-        )
-        print(
-            f"LM_{lm_id} accuracy: {compositional_object_accuracy}% correct (or correct_mlh)"
-        )
-        print(f"LM_{lm_id} consistent child accuracy: {consistent_child_accuracy}%")
-        print(
-            f"LM_{lm_id} average prediction error: {np.mean(eval_stats_for_lm['episode_avg_prediction_error'])}"
         )
         lm_stats_dict[lm_id] = {
             "compositional_object_accuracy": compositional_object_accuracy,
