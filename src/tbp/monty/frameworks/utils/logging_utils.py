@@ -641,11 +641,15 @@ def get_graph_lm_episode_stats(lm):
                 primary_performance = "pose_time_out"
                 stepwise_performance = "pose_time_out"
 
-        if consistent_child_obj(
-            lm.current_mlh["graph_id"], lm.primary_target, PARENT_TO_CHILD_MAPPING
-        ):
-            # TODO - C : provide parent to child mapping
-            primary_performance = "consistent_child_obj"
+        # only look for consistent child object if the lm has an mlh (only the
+        # EvidenceLM, not older versions).
+        # TODO - C: should we just use lm.detected_object instead?
+        if hasattr(lm, "current_mlh"):
+            if consistent_child_obj(
+                lm.current_mlh["graph_id"], lm.primary_target, PARENT_TO_CHILD_MAPPING
+            ):
+                # TODO - C : provide parent to child mapping
+                primary_performance = "consistent_child_obj"
 
         individual_ts_perf = "time_out"
         # TODO eventually consider adding stepwise stats for the below

@@ -260,9 +260,12 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             )
             stats["monty_steps"].append(episode_steps)
             stats["monty_matching_steps"].append(monty_matching_steps)
-            stats["episode_avg_prediction_error"].append(
-                episode_stats["episode_avg_prediction_error"]
-            )
+            # older LMs don't have prediction error stats
+            if hasattr(episode_stats, "episode_avg_prediction_error"):
+                stats["episode_avg_prediction_error"].append(
+                    episode_stats["episode_avg_prediction_error"]
+                )
+
             stats["num_correct_child_or_parent"] += (
                 int(performance == "consistent_child_obj")
                 or int(performance == "correct")
@@ -469,9 +472,10 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             overall_stats[f"{lm}/episode/individual_ts_rotation_error"] = lm_stats[
                 "individual_ts_rotation_error"
             ]
-            overall_stats[f"{lm}/episode/avg_prediction_error"] = lm_stats[
-                "episode_avg_prediction_error"
-            ]
+            if hasattr(lm_stats, "episode_avg_prediction_error"):
+                overall_stats[f"{lm}/episode/avg_prediction_error"] = lm_stats[
+                    "episode_avg_prediction_error"
+                ]
 
         if len(self.lms) > 1:  # add histograms when running multiple LMs
             overall_stats["episode/rotation_error_per_lm"] = wandb.Histogram(episode_re)
