@@ -44,7 +44,7 @@ from tbp.monty.frameworks.utils.dataclass_utils import (
     config_to_dict,
     get_subset_of_args,
 )
-from tbp.monty.frameworks.utils.plot_utils import add_patch_outline_to_view_finder
+from tbp.monty.frameworks.utils.live_plotter import LivePlotter
 
 # turn interactive plotting off -- call plt.show() to open all figures
 plt.ioff()
@@ -72,6 +72,9 @@ class MontyExperiment:
         self.config = config
 
         self.unpack_experiment_args(config["experiment_args"])
+
+        if self.show_sensor_output:
+            self.live_plotter = LivePlotter()
 
     def setup_experiment(self, config: Dict[str, Any]) -> None:
         """Set up the basic elements of a Monty experiment and initialize counters.
@@ -595,7 +598,7 @@ class MontyExperiment:
         self.logger_handler.pre_episode(self.logger_args)
 
         if self.show_sensor_output:
-            self.initialize_online_plotting()
+            self.live_plotter.initialize_online_plotting()
 
     def post_episode(self, steps):
         """Call post_episode on elements in experiment and increment counters.
