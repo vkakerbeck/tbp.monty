@@ -67,19 +67,6 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
         objects.
         """
         self.pre_episode()
-        # Pass target info to model
-        target = self.dataloader.primary_target
-        self.model.detected_object = self.model.primary_target["object"]
-        for lm in self.model.learning_modules:
-            lm.detected_object = target["object"]
-            lm.buffer.stats["possible_matches"] = [target["object"]]
-            lm.buffer.stats["detected_location_on_model"] = (
-                self.first_epoch_object_location[target["object"]]
-            )
-            lm.buffer.stats["detected_location_rel_body"] = np.array(target["position"])
-            lm.buffer.stats["detected_rotation"] = target["euler_rotation"]
-            lm.detected_rotation_r = Rotation.from_quat(target["quat_rotation"]).inv()
-            lm.buffer.stats["detected_scale"] = target["scale"]
         # Save compute if we are providing labels to all models, so don't need to
         # perform matching parts of LM updates (default is matching_step)
         if self.supervised_lm_ids == "all":
@@ -120,7 +107,7 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
                 lm.detected_object = target["object"]
                 lm.buffer.stats["possible_matches"] = [target["object"]]
                 lm.buffer.stats["detected_location_on_model"] = (
-                    self.first_epoch_object_location
+                    self.first_epoch_object_location[target["object"]]
                 )
                 lm.buffer.stats["detected_location_rel_body"] = np.array(
                     target["position"]
