@@ -14,6 +14,7 @@ import os
 import numpy as np
 from scipy.spatial.transform import Rotation
 
+from tbp.monty.frameworks.environments.embodied_data import SaccadeOnImageDataLoader
 from tbp.monty.frameworks.utils.dataclass_utils import config_to_dict
 
 from .monty_experiment import MontyExperiment
@@ -85,6 +86,15 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
         num_steps = 0
         for observation in self.dataloader:
             num_steps += 1
+            if self.show_sensor_output:
+                is_saccade_on_image_data_loader = isinstance(
+                    self.dataloader, SaccadeOnImageDataLoader
+                )
+                self.live_plotter.show_observations(
+                    *self.live_plotter.hardcoded_assumptions(observation, self.model),
+                    num_steps,
+                    is_saccade_on_image_data_loader,
+                )
             self.model.step(observation)
             if self.model.is_done:
                 break
@@ -125,6 +135,9 @@ class MontySupervisedObjectPretrainingExperiment(MontyExperiment):
             self.first_epoch_object_location[current_object] = (
                 self.dataloader.primary_target["position"]
             )
+
+        if self.show_sensor_output:
+            self.live_plotter.initialize_online_plotting()
 
     def post_epoch(self):
         """Post epoch without saving state_dict."""
