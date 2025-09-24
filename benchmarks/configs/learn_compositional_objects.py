@@ -30,7 +30,6 @@ from tbp.monty.frameworks.config_utils.make_dataset_configs import (
 from tbp.monty.frameworks.config_utils.policy_setup_utils import (
     make_naive_scan_policy_config,
 )
-from tbp.monty.frameworks.environments import embodied_data as ED
 from tbp.monty.frameworks.environments.logos_on_objs import (
     CURVED_OBJECTS_WITHOUT_LOGOS,
     FLAT_OBJECTS_WITHOUT_LOGOS,
@@ -55,7 +54,7 @@ train_rotations_all = get_cube_face_and_corner_views_rotations()
 monty_models_dir = os.getenv("MONTY_MODELS", "")
 
 fe_pretrain_dir = os.path.expanduser(
-    os.path.join(monty_models_dir, "pretrained_ycb_v10")
+    os.path.join(monty_models_dir, "pretrained_ycb_v10_test")
 )
 
 two_stacked_constrained_lms_config = dict(
@@ -112,7 +111,7 @@ supervised_pre_training_flat_objects_wo_logos.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(train_rotations_all),
-        show_sensor_output=False,
+        show_sensor_output=True,
     ),
     monty_config=TwoLMStackedMontyConfig(
         monty_args=MontyArgs(num_exploratory_steps=1000),
