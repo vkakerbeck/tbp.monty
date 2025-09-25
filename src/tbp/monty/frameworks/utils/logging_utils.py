@@ -641,7 +641,7 @@ def get_graph_lm_episode_stats(lm):
                 primary_performance = "pose_time_out"
                 stepwise_performance = "pose_time_out"
 
-        # only look for consistent child object if the lm has an mlh (only the
+        # Only look for consistent child object if the lm has an mlh (only the
         # EvidenceLM, not older versions).
         # TODO - C: should we just use lm.detected_object instead?
         if hasattr(lm, "current_mlh"):
