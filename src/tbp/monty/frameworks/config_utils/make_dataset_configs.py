@@ -16,11 +16,11 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
     Mapping,
     Optional,
     Sequence,
     Union,
-    Literal,
 )
 
 import numpy as np

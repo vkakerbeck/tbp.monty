@@ -30,7 +30,6 @@ from tbp.monty.frameworks.config_utils.make_dataset_configs import (
 from tbp.monty.frameworks.config_utils.policy_setup_utils import (
     make_naive_scan_policy_config,
 )
-from tbp.monty.frameworks.environments import embodied_data as ED
 from tbp.monty.frameworks.environments.logos_on_objs import (
     CURVED_OBJECTS_WITHOUT_LOGOS,
     FLAT_OBJECTS_WITHOUT_LOGOS,
@@ -112,7 +111,6 @@ supervised_pre_training_flat_objects_wo_logos.update(
     experiment_args=ExperimentArgs(
         do_eval=False,
         n_train_epochs=len(train_rotations_all),
-        show_sensor_output=False,
     ),
     monty_config=TwoLMStackedMontyConfig(
         monty_args=MontyArgs(num_exploratory_steps=1000),

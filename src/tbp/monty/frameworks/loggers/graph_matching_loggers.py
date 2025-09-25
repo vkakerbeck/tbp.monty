@@ -260,9 +260,12 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             )
             stats["monty_steps"].append(episode_steps)
             stats["monty_matching_steps"].append(monty_matching_steps)
-            stats["episode_avg_prediction_error"].append(
-                episode_stats["episode_avg_prediction_error"]
-            )
+            # older LMs don't have prediction error stats
+            if "episode_avg_prediction_error" in episode_stats.keys():
+                stats["episode_avg_prediction_error"].append(
+                    episode_stats["episode_avg_prediction_error"]
+                )
+
             stats["num_correct_child_or_parent"] += (
                 int(performance == "consistent_child_obj")
                 or int(performance == "correct")
@@ -469,17 +472,15 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             overall_stats[f"{lm}/episode/individual_ts_rotation_error"] = lm_stats[
                 "individual_ts_rotation_error"
             ]
-            overall_stats[f"{lm}/episode/avg_prediction_error"] = lm_stats[
-                "episode_avg_prediction_error"
-            ]
+            if "episode_avg_prediction_error" in lm_stats.keys():
+                overall_stats[f"{lm}/episode/avg_prediction_error"] = lm_stats[
+                    "episode_avg_prediction_error"
+                ]
 
         if len(self.lms) > 1:  # add histograms when running multiple LMs
             overall_stats["episode/rotation_error_per_lm"] = wandb.Histogram(episode_re)
             overall_stats["episode/steps_per_lm"] = wandb.Histogram(
                 stats["episode_lm_steps"][-len(self.lms) :]
-            )
-            overall_stats["episode/avg_prediction_error"] = wandb.Histogram(
-                stats["episode_avg_prediction_error"][-len(self.lms) :]
             )
             overall_stats["episode/steps_per_lm_indv_ts"] = wandb.Histogram(
                 episode_individual_ts_steps
@@ -490,6 +491,13 @@ class BasicGraphMatchingLogger(BaseMontyLogger):
             overall_stats["episode/lm_performances"] = wandb.Histogram(
                 episode_lm_performances
             )
+            # filter out prediction errors that are nan
+            prediction_errors = stats["episode_avg_prediction_error"][-len(self.lms) :]
+            valid_prediction_errors = [e for e in prediction_errors if not np.isnan(e)]
+            if len(valid_prediction_errors) > 0:
+                overall_stats["episode/avg_prediction_error"] = wandb.Histogram(
+                    valid_prediction_errors
+                )
 
         return overall_stats
 

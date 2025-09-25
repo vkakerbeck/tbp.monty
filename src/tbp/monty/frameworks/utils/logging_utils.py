@@ -641,11 +641,15 @@ def get_graph_lm_episode_stats(lm):
                 primary_performance = "pose_time_out"
                 stepwise_performance = "pose_time_out"
 
-        if consistent_child_obj(
-            lm.current_mlh["graph_id"], lm.primary_target, PARENT_TO_CHILD_MAPPING
-        ):
-            # TODO - C : provide parent to child mapping
-            primary_performance = "consistent_child_obj"
+        # Only look for consistent child object if the lm has an mlh (only the
+        # EvidenceLM, not older versions).
+        # TODO - C: should we just use lm.detected_object instead?
+        if hasattr(lm, "current_mlh"):
+            if consistent_child_obj(
+                lm.current_mlh["graph_id"], lm.primary_target, PARENT_TO_CHILD_MAPPING
+            ):
+                # TODO - C : provide parent to child mapping
+                primary_performance = "consistent_child_obj"
 
         individual_ts_perf = "time_out"
         # TODO eventually consider adding stepwise stats for the below
@@ -882,6 +886,10 @@ def consistent_child_obj(detected_obj, target_obj, parent_to_child_mapping):
         detected_obj: detected object
         target_obj: target object
         parent_to_child_mapping: parent to child mapping
+
+    Returns:
+        True if the detected object is a child object of the target object.
+        False otherwise.
     """
     if detected_obj in parent_to_child_mapping:
         possible_children = parent_to_child_mapping[target_obj]
@@ -892,12 +900,23 @@ def consistent_child_obj(detected_obj, target_obj, parent_to_child_mapping):
 
 
 def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping):
-    """Check whether the most_likely_object is consistent with the parent_to_child_mapping.
+    """Check whether most_likely_object is consistent with the parent_to_child_mapping.
 
     Classified object is consistent if it is one of the children in the set of objects
     corresponding to the compositional object.
-    """
 
+    NOTE: This function is only called in compositional_stats_for_all_lms, which is a
+    logging util, called from a notebook and hence none of our previous experiments
+    should be affected by this or raise the ValueError, even if they don't have a
+    parent_to_child_mapping.
+
+    Returns:
+        The percentage of episodes in which a consistent child object is detected.
+
+    Raises:
+        ValueError: If the target object of an episode is not in the
+        parent_to_child_mapping.
+    """
     consistent_child_count = 0
     total_count = 0
 
@@ -910,14 +929,12 @@ def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping
             if episode_stats.most_likely_object in possible_children:
                 consistent_child_count += 1
         else:
-            print(
-                f"target object {episode_stats.primary_target_object} not in parent_to_child_mapping"
+            raise ValueError(
+                f"No mappings found for target object",
+                f" {episode_stats.primary_target_object}",
             )
-    if total_count > 0:
-        consistent_child_percentage = consistent_child_count / total_count * 100
-        return consistent_child_percentage
-    else:
-        raise ValueError("No mappings found for target object")
+    consistent_child_percentage = consistent_child_count / total_count * 100
+    return consistent_child_percentage
 
 
 def accuracy_stats_for_compositional_objects(
@@ -941,11 +958,13 @@ def compositional_stats_for_all_lms(eval_stats, all_lm_ids, parent_to_child_mapp
             )
         )
         print(
-            f"LM_{lm_id} accuracy: {compositional_object_accuracy}% correct (or correct_mlh)"
+            f"LM_{lm_id} accuracy: {compositional_object_accuracy}% correct",
+            "(or correct_mlh)",
         )
         print(f"LM_{lm_id} consistent child accuracy: {consistent_child_accuracy}%")
         print(
-            f"LM_{lm_id} average prediction error: {np.mean(eval_stats_for_lm['episode_avg_prediction_error'])}"
+            f"LM_{lm_id} average prediction error: ",
+            f"{np.mean(eval_stats_for_lm['episode_avg_prediction_error'])}",
         )
         lm_stats_dict[lm_id] = {
             "compositional_object_accuracy": compositional_object_accuracy,

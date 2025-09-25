@@ -1,3 +1,12 @@
+# Copyright 2025 Thousand Brains Project
+#
+# Copyright may exist in Contributors' modifications
+# and/or contributions to the work.
+#
+# Use of this source code is governed by the MIT
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+
 import copy
 import os
 from dataclasses import asdict
@@ -95,18 +104,12 @@ two_stacked_constrained_lms_inference_config = dict(
             gsg_class=EvidenceGoalStateGenerator,
             gsg_args=dict(
                 goal_tolerances=dict(
-                    location=0.015,  # distance in meters
-                ),  # Tolerance(s) when determining goal-state success
-                elapsed_steps_factor=10,  # Factor that considers the number of elapsed
-                # steps as a possible condition for initiating a hypothesis-testing goal
-                # state; should be set to an integer reflecting a number of steps
-                min_post_goal_success_steps=5,  # Number of necessary steps for a hypothesis
-                # goal-state to be considered
-                x_percent_scale_factor=0.75,  # Scale x-percent threshold to decide
-                # when we should focus on pose rather than determining object ID; should
-                # be bounded between 0:1.0; "mod" for modifier
-                desired_object_distance=0.03,  # Distance from the object to the
-                # agent that is considered "close enough" to the object
+                    location=0.015,
+                ),
+                elapsed_steps_factor=10,
+                min_post_goal_success_steps=5,
+                x_percent_scale_factor=0.75,
+                desired_object_distance=0.03,
             ),
         ),
     ),
@@ -132,18 +135,12 @@ two_stacked_constrained_lms_inference_config = dict(
             gsg_class=EvidenceGoalStateGenerator,
             gsg_args=dict(
                 goal_tolerances=dict(
-                    location=0.015,  # distance in meters
-                ),  # Tolerance(s) when determining goal-state success
-                elapsed_steps_factor=10,  # Factor that considers the number of elapsed
-                # steps as a possible condition for initiating a hypothesis-testing goal
-                # state; should be set to an integer reflecting a number of steps
-                min_post_goal_success_steps=5,  # Number of necessary steps for a hypothesis
-                # goal-state to be considered
-                x_percent_scale_factor=0.75,  # Scale x-percent threshold to decide
-                # when we should focus on pose rather than determining object ID; should
-                # be bounded between 0:1.0; "mod" for modifier
-                desired_object_distance=0.03,  # Distance from the object to the
-                # agent that is considered "close enough" to the object
+                    location=0.015,
+                ),
+                elapsed_steps_factor=10,
+                min_post_goal_success_steps=5,
+                x_percent_scale_factor=0.75,
+                desired_object_distance=0.03,
             ),
         ),
     ),
