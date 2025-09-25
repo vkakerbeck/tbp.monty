@@ -905,6 +905,11 @@ def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping
     Classified object is consistent if it is one of the children in the set of objects
     corresponding to the compositional object.
 
+    NOTE: This function is only called in compositional_stats_for_all_lms, which is a
+    logging util, called from a notebook and hence none of our previous experiments
+    should be affected by this or raise the ValueError, even if they don't have a
+    parent_to_child_mapping.
+
     Returns:
         The percentage of episodes in which a consistent child object is detected.
 
