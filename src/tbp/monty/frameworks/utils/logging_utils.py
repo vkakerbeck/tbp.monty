@@ -909,7 +909,8 @@ def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping
         The percentage of episodes in which a consistent child object is detected.
 
     Raises:
-        ValueError: If none of the target objects are in the parent_to_child_mapping.
+        ValueError: If the target object of an episode is not in the
+        parent_to_child_mapping.
     """
     consistent_child_count = 0
     total_count = 0
@@ -922,11 +923,13 @@ def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping
             ]
             if episode_stats.most_likely_object in possible_children:
                 consistent_child_count += 1
-    if total_count > 0:
-        consistent_child_percentage = consistent_child_count / total_count * 100
-        return consistent_child_percentage
-    else:
-        raise ValueError("No mappings found for target object")
+        else:
+            raise ValueError(
+                f"No mappings found for target object",
+                f" {episode_stats.primary_target_object}",
+            )
+    consistent_child_percentage = consistent_child_count / total_count * 100
+    return consistent_child_percentage
 
 
 def accuracy_stats_for_compositional_objects(
