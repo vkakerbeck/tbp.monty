@@ -45,14 +45,11 @@ from tbp.monty.frameworks.environments.logos_on_objs import (
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
 )
-from tbp.monty.frameworks.models.evidence_matching.model import (
-    MontyForEvidenceGraphMatching,
+from tbp.monty.frameworks.models.evidence_matching.resampling_hypotheses_updater import (
+    ResamplingHypothesesUpdater,
 )
 from tbp.monty.frameworks.models.goal_state_generation import EvidenceGoalStateGenerator
 from tbp.monty.frameworks.models.motor_policies import InformedPolicy, NaiveScanPolicy
-from tbp.monty.frameworks.models.no_reset_evidence_matching import (
-    NoResetEvidenceGraphLM,
-)
 from tbp.monty.simulators.habitat.configs import (
     EnvInitArgsTwoLMDistantStackedMount,
     TwoLMStackedDistantMountHabitatDatasetArgs,
@@ -113,8 +110,8 @@ two_stacked_constrained_lms_config_with_resampling = copy.deepcopy(
     two_stacked_constrained_lms_config
 )
 two_stacked_constrained_lms_config_with_resampling["learning_module_0"][
-    "learning_module_class"
-] = NoResetEvidenceGraphLM
+    "hypotheses_updater_class"
+] = ResamplingHypothesesUpdater
 two_stacked_constrained_lms_config_with_resampling["learning_module_0"][
     "learning_module_args"
 ]["evidence_threshold_config"] = "all"
@@ -134,6 +131,7 @@ two_stacked_constrained_lms_config_with_resampling["learning_module_0"][
     min_post_goal_success_steps=20,
     x_percent_scale_factor=0.75,
     desired_object_distance=0.03,
+    wait_growth_multiplier=1,
 )
 
 # ====== Learn Child / Part Objects ======
@@ -303,7 +301,6 @@ supervised_pre_training_objects_with_logos_lvl1_comp_models_resampling.update(
         monty_args=MontyArgs(
             num_exploratory_steps=0, min_train_steps=100, max_total_steps=1000
         ),
-        monty_class=MontyForEvidenceGraphMatching,
         learning_module_configs=two_stacked_constrained_lms_config_with_resampling,
         motor_system_config=MotorSystemConfigInformedGoalStateDriven(
             motor_system_args=dict(
