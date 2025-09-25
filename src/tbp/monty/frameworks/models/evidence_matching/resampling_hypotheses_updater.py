@@ -316,6 +316,9 @@ class ResamplingHypothesesUpdater:
             )
             hypotheses_updates.append(channel_hypotheses)
 
+            # Update tracker evidence
+            tracker.update(channel_hypotheses.evidence, input_channel)
+
             if self.include_telemetry:
                 resampling_telemetry[input_channel] = asdict(
                     ChannelHypothesesResamplingTelemetry(
@@ -331,9 +334,6 @@ class ResamplingHypothesesUpdater:
                         removed_ids=remove_ids,
                     )
                 )
-
-            # Update tracker evidence
-            tracker.update(channel_hypotheses.evidence, input_channel)
 
         return (
             hypotheses_updates,
