@@ -38,6 +38,7 @@ from tbp.monty.frameworks.environments.logos_on_objs import (
     OBJECTS_WITH_LOGOS_LVL2,
     OBJECTS_WITH_LOGOS_LVL3,
     OBJECTS_WITH_LOGOS_LVL4,
+    PARENT_TO_CHILD_MAPPING,
 )
 from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
@@ -178,6 +179,7 @@ infer_comp_base_config = dict(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -204,6 +206,7 @@ infer_parts_with_part_models.update(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -229,6 +232,7 @@ infer_comp_lvl2_with_comp_models.update(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -246,6 +250,7 @@ infer_comp_lvl3_with_comp_models.update(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -262,6 +267,7 @@ infer_comp_lvl4_with_comp_models.update(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
