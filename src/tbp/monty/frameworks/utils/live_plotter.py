@@ -130,11 +130,11 @@ class LivePlotter:
                 ec="white",
             )
             self.ax[0].add_patch(square)
-        if hasattr(first_learning_module.graph_memory, "current_mlh"):
+        if hasattr(first_learning_module, "current_mlh"):
             mlh = first_learning_module.get_current_mlh()
             if mlh is not None:
                 graph_ids, evidences = (
-                    first_learning_module.graph_memory.get_evidence_for_each_graph()
+                    first_learning_module.get_evidence_for_each_graph()
                 )
                 self.add_text(
                     mlh,
@@ -163,7 +163,7 @@ class LivePlotter:
     ):
         if self.text:
             self.text.remove()
-        new_text = r"MLH: "
+        new_text = r"MLH of first LM: "
         mlh_id = mlh["graph_id"].split("_")
         for word in mlh_id:
             new_text += r"$\bf{" + word + "}$ "
