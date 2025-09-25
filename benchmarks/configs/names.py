@@ -60,6 +60,7 @@ class CompositionalInferenceExperiments:
     infer_comp_lvl1_with_monolithic_models: dict
     infer_parts_with_part_models: dict
     infer_comp_lvl1_with_comp_models: dict
+    infer_comp_lvl1_with_comp_models_and_resampling: dict
     infer_comp_lvl2_with_comp_models: dict
     infer_comp_lvl3_with_comp_models: dict
     infer_comp_lvl4_with_comp_models: dict

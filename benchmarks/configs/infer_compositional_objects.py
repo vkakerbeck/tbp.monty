@@ -44,6 +44,9 @@ from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
 )
+from tbp.monty.frameworks.models.evidence_matching.resampling_hypotheses_updater import (
+    ResamplingHypothesesUpdater,
+)
 from tbp.monty.frameworks.models.goal_state_generation import EvidenceGoalStateGenerator
 from tbp.monty.simulators.habitat.configs import (
     EnvInitArgsTwoLMDistantStackedMount,
@@ -147,6 +150,20 @@ two_stacked_constrained_lms_inference_config = dict(
     ),
 )
 
+two_stacked_constrained_lms_inference_config_with_resampling = copy.deepcopy(
+    two_stacked_constrained_lms_inference_config
+)
+for lm_id in ["learning_module_0", "learning_module_1"]:
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "hypotheses_updater_class"
+    ] = ResamplingHypothesesUpdater
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "learning_module_args"
+    ]["evidence_threshold_config"] = "all"
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "learning_module_args"
+    ]["object_evidence_threshold"] = 1
+
 # See level description in src/tbp/monty/frameworks/environments/logos_on_objs.py
 infer_comp_base_config = dict(
     experiment_class=MontyObjectRecognitionExperiment,
@@ -219,6 +236,17 @@ infer_comp_lvl1_with_comp_models.update(
     ),
 )
 
+infer_comp_lvl1_with_comp_models_and_resampling = copy.deepcopy(
+    infer_comp_lvl1_with_comp_models
+)
+infer_comp_lvl1_with_comp_models_and_resampling.update(
+    monty_config=TwoLMStackedMontyConfig(
+        monty_args=MontyArgs(min_eval_steps=min_eval_steps),
+        learning_module_configs=two_stacked_constrained_lms_inference_config_with_resampling,
+        motor_system_config=MotorSystemConfigInformedGoalStateDriven(),
+    ),
+)
+
 infer_comp_lvl2_with_comp_models = copy.deepcopy(infer_comp_base_config)
 infer_comp_lvl2_with_comp_models.update(
     experiment_args=EvalExperimentArgs(
@@ -275,6 +303,7 @@ experiments = CompositionalInferenceExperiments(
     infer_comp_lvl1_with_monolithic_models=infer_comp_lvl1_with_monolithic_models,
     infer_parts_with_part_models=infer_parts_with_part_models,
     infer_comp_lvl1_with_comp_models=infer_comp_lvl1_with_comp_models,
+    infer_comp_lvl1_with_comp_models_and_resampling=infer_comp_lvl1_with_comp_models_and_resampling,
     infer_comp_lvl2_with_comp_models=infer_comp_lvl2_with_comp_models,
     infer_comp_lvl3_with_comp_models=infer_comp_lvl3_with_comp_models,
     infer_comp_lvl4_with_comp_models=infer_comp_lvl4_with_comp_models,
