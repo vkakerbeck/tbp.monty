@@ -44,6 +44,9 @@ from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
 )
+from tbp.monty.frameworks.models.evidence_matching.resampling_hypotheses_updater import (
+    ResamplingHypothesesUpdater,
+)
 from tbp.monty.frameworks.models.goal_state_generation import EvidenceGoalStateGenerator
 from tbp.monty.simulators.habitat.configs import (
     EnvInitArgsTwoLMDistantStackedMount,
@@ -68,6 +71,11 @@ model_path_part_models = os.path.join(
 model_path_compositional_models_lvl1 = os.path.join(
     pretrained_dir,
     "supervised_pre_training_objects_with_logos_lvl1_comp_models/pretrained/",
+)
+
+model_path_compositional_models_lvl1_resampling = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl1_comp_models_resampling/pretrained/",
 )
 
 model_path_compositional_models_lvl2 = os.path.join(
@@ -147,6 +155,20 @@ two_stacked_constrained_lms_inference_config = dict(
     ),
 )
 
+two_stacked_constrained_lms_inference_config_with_resampling = copy.deepcopy(
+    two_stacked_constrained_lms_inference_config
+)
+for lm_id in ["learning_module_0", "learning_module_1"]:
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "learning_module_args"
+    ]["hypotheses_updater_class"] = ResamplingHypothesesUpdater
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "learning_module_args"
+    ]["evidence_threshold_config"] = "all"
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "learning_module_args"
+    ]["object_evidence_threshold"] = 1
+
 # See level description in src/tbp/monty/frameworks/environments/logos_on_objs.py
 infer_comp_base_config = dict(
     experiment_class=MontyObjectRecognitionExperiment,
@@ -219,6 +241,21 @@ infer_comp_lvl1_with_comp_models.update(
     ),
 )
 
+infer_comp_lvl1_with_comp_models_and_resampling = copy.deepcopy(
+    infer_comp_lvl1_with_comp_models
+)
+infer_comp_lvl1_with_comp_models_and_resampling.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl1_resampling,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+    monty_config=TwoLMStackedMontyConfig(
+        monty_args=MontyArgs(min_eval_steps=min_eval_steps),
+        learning_module_configs=two_stacked_constrained_lms_inference_config_with_resampling,
+        motor_system_config=MotorSystemConfigInformedGoalStateDriven(),
+    ),
+)
+
 infer_comp_lvl2_with_comp_models = copy.deepcopy(infer_comp_base_config)
 infer_comp_lvl2_with_comp_models.update(
     experiment_args=EvalExperimentArgs(
@@ -275,6 +312,7 @@ experiments = CompositionalInferenceExperiments(
     infer_comp_lvl1_with_monolithic_models=infer_comp_lvl1_with_monolithic_models,
     infer_parts_with_part_models=infer_parts_with_part_models,
     infer_comp_lvl1_with_comp_models=infer_comp_lvl1_with_comp_models,
+    infer_comp_lvl1_with_comp_models_and_resampling=infer_comp_lvl1_with_comp_models_and_resampling,
     infer_comp_lvl2_with_comp_models=infer_comp_lvl2_with_comp_models,
     infer_comp_lvl3_with_comp_models=infer_comp_lvl3_with_comp_models,
     infer_comp_lvl4_with_comp_models=infer_comp_lvl4_with_comp_models,
