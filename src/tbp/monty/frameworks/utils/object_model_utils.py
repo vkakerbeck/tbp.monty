@@ -387,6 +387,16 @@ def get_most_common_bool(booleans):
         return False
 
 
+def get_most_common_value(values):
+    """Get most common value out of a list of values.
+
+    Returns:
+        Most common value.
+    """
+    values = np.array(values, dtype=int).flatten()
+    return np.argmax(np.bincount(values))
+
+
 def circular_mean(values):
     """Calculate the mean of a circular value such as hue where 0==1.
 
