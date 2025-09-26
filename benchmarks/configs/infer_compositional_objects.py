@@ -155,8 +155,8 @@ two_stacked_constrained_lms_inference_config_with_resampling = copy.deepcopy(
 )
 for lm_id in ["learning_module_0", "learning_module_1"]:
     two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
-        "hypotheses_updater_class"
-    ] = ResamplingHypothesesUpdater
+        "learning_module_args"
+    ]["hypotheses_updater_class"] = ResamplingHypothesesUpdater
     two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
         "learning_module_args"
     ]["evidence_threshold_config"] = "all"
