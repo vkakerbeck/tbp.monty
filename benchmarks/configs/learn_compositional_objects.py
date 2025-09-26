@@ -131,7 +131,7 @@ two_stacked_constrained_lms_config_with_resampling["learning_module_0"][
     min_post_goal_success_steps=20,
     x_percent_scale_factor=0.75,
     desired_object_distance=0.03,
-    wait_growth_multiplier=1,
+    wait_growth_multiplier=1,   # Since learning, enable more frequent jumps
 )
 
 # ====== Learn Child / Part Objects ======
