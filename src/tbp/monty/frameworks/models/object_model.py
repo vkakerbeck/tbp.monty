@@ -535,7 +535,7 @@ class GridObjectModel(GraphObjectModel):
         # The offset is set such that the first observed location starts at the
         # center of the grid. To preserve the relative locations, the offset is
         # applied to all following locations.
-        # set start location to the first location in the list that is not nan
+        # Set start location to the first location in the list that is not nan
         # TODO - C: Why is there a nan location?
         start_location = locations[~np.isnan(locations[:, 0])][0]
         self._initialize_location_mapping(start_location=start_location)
