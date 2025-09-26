@@ -298,9 +298,7 @@ supervised_pre_training_objects_with_logos_lvl1_comp_models_resampling = copy.de
 
 supervised_pre_training_objects_with_logos_lvl1_comp_models_resampling.update(
     monty_config=TwoLMStackedMontyConfig(
-        monty_args=MontyArgs(
-            num_exploratory_steps=0, min_train_steps=100, max_total_steps=1000
-        ),
+        monty_args=MontyArgs(num_exploratory_steps=0, min_train_steps=500),
         learning_module_configs=two_stacked_constrained_lms_config_with_resampling,
         motor_system_config=MotorSystemConfigInformedGoalStateDriven(
             motor_system_args=dict(
@@ -308,7 +306,7 @@ supervised_pre_training_objects_with_logos_lvl1_comp_models_resampling.update(
                 policy_args=make_informed_policy_config(
                     action_space_type="distant_agent_no_translation",
                     action_sampler_class=ConstantSampler,
-                    rotation_degrees=5.0,
+                    rotation_degrees=2.0,
                     use_goal_state_driven_actions=True,
                 ),
             ),
