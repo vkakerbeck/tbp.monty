@@ -288,7 +288,7 @@ class ResamplingHypothesesUpdater:
             # We only displace existing hypotheses since the newly resampled hypotheses
             # should not be affected by the displacement from the last sensory input.
             if existing_count > 0:
-                existing_hypotheses, prediction_error = (
+                existing_hypotheses, mlh_prediction_error = (
                     self.hypotheses_displacer.displace_hypotheses_and_compute_evidence(
                         channel_displacement=displacements[input_channel],
                         channel_features=features[input_channel],
@@ -301,7 +301,7 @@ class ResamplingHypothesesUpdater:
             else:
                 # If there are no existing hypotheses, there are no predictions and
                 # hence no error.
-                prediction_error = np.nan
+                mlh_prediction_error = np.nan
 
             # Concatenate and rebuild channel hypotheses
             channel_hypotheses = ChannelHypotheses(
@@ -338,7 +338,7 @@ class ResamplingHypothesesUpdater:
         return (
             hypotheses_updates,
             resampling_telemetry if self.include_telemetry else None,
-            prediction_error,
+            mlh_prediction_error,
         )
 
     def _num_hyps_per_node(self, channel_features: dict) -> int:
