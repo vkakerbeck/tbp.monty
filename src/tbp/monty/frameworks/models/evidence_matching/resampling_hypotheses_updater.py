@@ -35,6 +35,7 @@ from tbp.monty.frameworks.models.evidence_matching.hypotheses_displacer import (
     DefaultHypothesesDisplacer,
 )
 from tbp.monty.frameworks.models.evidence_matching.hypotheses_updater import (
+    ChannelHypothesesUpdateTelemetry,
     HypothesesUpdateTelemetry,
     all_usable_input_channels,
 )
@@ -52,7 +53,7 @@ from tbp.monty.frameworks.utils.spatial_arithmetics import (
 
 
 @dataclass
-class ChannelHypothesesResamplingTelemetry:
+class ChannelHypothesesResamplingTelemetry(ChannelHypothesesUpdateTelemetry):
     """Hypotheses resampling telemetry for a channel.
 
     For a given input channel, this class stores which hypotheses were removed or
@@ -322,6 +323,7 @@ class ResamplingHypothesesUpdater:
             if self.include_telemetry:
                 resampling_telemetry[input_channel] = asdict(
                     ChannelHypothesesResamplingTelemetry(
+                        mlh_prediction_error=mlh_prediction_error,
                         added_ids=(
                             np.arange(len(channel_hypotheses.evidence))[
                                 -len(informed_hypotheses.evidence) :
@@ -334,12 +336,14 @@ class ResamplingHypothesesUpdater:
                         removed_ids=remove_ids,
                     )
                 )
+            else:
+                # Still return prediction error.
+                # TODO: make this nicer like dependent on log_level.
+                resampling_telemetry[input_channel] = ChannelHypothesesUpdateTelemetry(
+                    mlh_prediction_error=mlh_prediction_error,
+                )
 
-        return (
-            hypotheses_updates,
-            resampling_telemetry if self.include_telemetry else None,
-            mlh_prediction_error,
-        )
+        return (hypotheses_updates, resampling_telemetry)
 
     def _num_hyps_per_node(self, channel_features: dict) -> int:
         """Calculate the number of hypotheses per node.

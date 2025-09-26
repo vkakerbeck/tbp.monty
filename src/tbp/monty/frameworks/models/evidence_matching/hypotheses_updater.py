@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import Any, Dict, Literal, Optional, Protocol
 
 import numpy as np
@@ -46,6 +47,11 @@ logger = logging.getLogger(__name__)
 
 HypothesesUpdateTelemetry = Optional[Dict[str, Any]]
 HypothesesUpdaterTelemetry = Dict[str, Any]
+
+
+@dataclass
+class ChannelHypothesesUpdateTelemetry:
+    mlh_prediction_error: float | None
 
 
 class HypothesesUpdater(Protocol):
@@ -210,6 +216,7 @@ class DefaultHypothesesUpdater(HypothesesUpdater):
 
         hypotheses_updates = []
         mlh_prediction_error = None
+        telemetry: dict[str, Any] = {}
 
         for input_channel in input_channels_to_use:
             # Determine if the hypothesis space exists
@@ -246,8 +253,11 @@ class DefaultHypothesesUpdater(HypothesesUpdater):
                 )
 
             hypotheses_updates.append(channel_possible_hypotheses)
+            telemetry[input_channel] = ChannelHypothesesUpdateTelemetry(
+                mlh_prediction_error=mlh_prediction_error
+            )
 
-        return hypotheses_updates, None, mlh_prediction_error
+        return hypotheses_updates, telemetry
 
     def _get_all_informed_possible_poses(
         self, graph_id: str, sensed_channel_features: dict, input_channel: str
