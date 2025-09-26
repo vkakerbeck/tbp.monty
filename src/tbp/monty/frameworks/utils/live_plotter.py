@@ -58,10 +58,10 @@ class LivePlotter:
         """
         first_learning_module = model.learning_modules[0]
         first_sensor_module_raw_observations = model.sensor_modules[0].raw_observations
-        # TODO - C: Get 'patch_0' from the model's sensor_module_configs
-        patch_depth = observation[model.motor_system._policy.agent_id]["patch_0"][
-            "depth"
-        ]
+        first_sensor_module_id = model.sensor_modules[0].sensor_module_id
+        patch_depth = observation[model.motor_system._policy.agent_id][
+            first_sensor_module_id
+        ]["depth"]
         view_finder_rgba = observation[model.motor_system._policy.agent_id][
             "view_finder"
         ]["rgba"]
@@ -70,7 +70,7 @@ class LivePlotter:
             mlh_model = None
         else:
             mlh_model = first_learning_module.graph_memory.get_graph(mlh["graph_id"])[
-                "patch_0"
+                first_sensor_module_id
             ]
         return (
             first_learning_module,
