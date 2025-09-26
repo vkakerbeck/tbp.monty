@@ -131,7 +131,7 @@ two_stacked_constrained_lms_config_with_resampling["learning_module_0"][
     min_post_goal_success_steps=20,
     x_percent_scale_factor=0.75,
     desired_object_distance=0.03,
-    wait_growth_multiplier=1,
+    wait_growth_multiplier=1,  # Since learning, enable more frequent jumps
 )
 
 # ====== Learn Child / Part Objects ======
@@ -306,7 +306,7 @@ supervised_pre_training_objects_with_logos_lvl1_comp_models_resampling.update(
                 policy_args=make_informed_policy_config(
                     action_space_type="distant_agent_no_translation",
                     action_sampler_class=ConstantSampler,
-                    rotation_degrees=2.0,
+                    rotation_degrees=2.0,  # As learning with random saccades + hypothesis jumps, make saccades smaller
                     use_goal_state_driven_actions=True,
                 ),
             ),
