@@ -810,7 +810,7 @@ class GridObjectModel(GraphObjectModel):
             if num_obs_in_voxel > num_new_obs:
                 old_ids = self.feature_mapping[feature]
                 previous_average = previous_feat_in_voxel[old_ids[0] : old_ids[1],]
-                num_old_obs = num_obs_in_voxel - len(feats)
+                num_old_obs = num_obs_in_voxel - num_new_obs
 
                 if feature == "pose_vectors":
                     if avg_feat is None:
