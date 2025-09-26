@@ -388,7 +388,7 @@ def get_most_common_bool(booleans):
 
 
 def get_most_common_value(values):
-    """Get most common value out of a list of values.
+    """Get most common value out of a list of values (i.e., the mode).
 
     Returns:
         Most common value.
