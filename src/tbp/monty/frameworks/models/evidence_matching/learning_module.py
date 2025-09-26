@@ -775,20 +775,22 @@ class EvidenceGraphLM(GraphLM):
             prediction_errors = []
             mlh_prediction_error = None
             for input_channel in hypotheses_update_telemetry:
+                # Check if there is displacer telemetry and if it contains a prediction
+                # error. This would not be the case if there are no existing hypotheses
+                # or if a channel was newly initialized.
                 if hasattr(
-                    hypotheses_update_telemetry[input_channel], "mlh_prediction_error"
+                    hypotheses_update_telemetry[input_channel],
+                    "channel_hypothesis_displacer_telemetry",
+                ) and hasattr(
+                    hypotheses_update_telemetry[
+                        input_channel
+                    ].channel_hypothesis_displacer_telemetry,
+                    "mlh_prediction_error",
                 ):
                     channel_prediction_error = hypotheses_update_telemetry[
                         input_channel
-                    ].mlh_prediction_error
-                    if not np.isnan(channel_prediction_error):
-                        # if a channel was newly initialized, the PE will be nan. We
-                        # want to ignore these.
-                        prediction_errors.append(
-                            hypotheses_update_telemetry[
-                                input_channel
-                            ].mlh_prediction_error
-                        )
+                    ].channel_hypothesis_displacer_telemetry.mlh_prediction_error
+                    prediction_errors.append(channel_prediction_error)
 
                 if len(prediction_errors) > 0:
                     mlh_prediction_error = np.mean(prediction_errors)
