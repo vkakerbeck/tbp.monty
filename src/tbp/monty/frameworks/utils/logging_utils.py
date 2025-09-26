@@ -814,7 +814,6 @@ def add_evidence_lm_episode_stats(lm, stats, consistent_child_objects):
         stats["primary_performance"] not in ["correct_mlh", "correct"]
         and consistent_child_objects is not None
     ):
-        # TODO - C: should we use lm.detected_object instead of mlh?
         if last_mlh["graph_id"] in consistent_child_objects:
             stats["primary_performance"] = "consistent_child_obj"
     return stats
