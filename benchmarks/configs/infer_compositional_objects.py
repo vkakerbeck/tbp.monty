@@ -73,6 +73,11 @@ model_path_compositional_models_lvl1 = os.path.join(
     "supervised_pre_training_objects_with_logos_lvl1_comp_models/pretrained/",
 )
 
+model_path_compositional_models_lvl1_resampling = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl1_comp_models_resampling/pretrained/",
+)
+
 model_path_compositional_models_lvl2 = os.path.join(
     pretrained_dir,
     "supervised_pre_training_objects_with_logos_lvl2_comp_models/pretrained/",
@@ -240,6 +245,10 @@ infer_comp_lvl1_with_comp_models_and_resampling = copy.deepcopy(
     infer_comp_lvl1_with_comp_models
 )
 infer_comp_lvl1_with_comp_models_and_resampling.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl1_resampling,
+        n_eval_epochs=len(test_rotations_all),
+    ),
     monty_config=TwoLMStackedMontyConfig(
         monty_args=MontyArgs(min_eval_steps=min_eval_steps),
         learning_module_configs=two_stacked_constrained_lms_inference_config_with_resampling,
