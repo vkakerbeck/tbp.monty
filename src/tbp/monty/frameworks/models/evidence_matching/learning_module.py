@@ -1185,7 +1185,10 @@ class EvidenceGraphLM(GraphLM):
         # self.buffer.update_stats(vote_data, update_time=False)
         pass
 
-    def _append_mlh_prediction_error_to_stats(self, stats):
+        """Append the MLH prediction error for this step to the buffer stats."""
+        # We need to look at the previous mlh (which is the most likely hypothesis at
+        # the time the prediction error was calculated) since the mlh is updated between
+        # prediction error calculation and stats collection.
         graph_id = self.previous_mlh["graph_id"]
 
         if graph_id == "no_observations_yet":
@@ -1212,9 +1215,8 @@ class EvidenceGraphLM(GraphLM):
                 prediction_errors.append(channel_prediction_error)
 
         if len(prediction_errors) > 0:
+            # Get the average prediction error over all channels for this step.
             mlh_prediction_error = np.mean(prediction_errors)
-        # At the first step with have no predictions in any channel, so no error.
-        if mlh_prediction_error is not None:
             self.buffer.update_stats(
                 {"mlh_prediction_error": mlh_prediction_error},
                 update_time=False,
