@@ -688,7 +688,7 @@ class EvidenceGraphLM(GraphLM):
             "possible_matches": self.get_possible_matches(),
             "current_mlh": self.get_current_mlh(),
         }
-        self._append_mlh_prediction_error_to_stats(stats)
+        self._append_mlh_prediction_error_to_stats()
         if self.has_detailed_logger:
             stats = self._add_detailed_stats(stats)
         return stats
@@ -1185,6 +1185,7 @@ class EvidenceGraphLM(GraphLM):
         # self.buffer.update_stats(vote_data, update_time=False)
         pass
 
+    def _append_mlh_prediction_error_to_stats(self):
         """Append the MLH prediction error for this step to the buffer stats."""
         # We need to look at the previous mlh (which is the most likely hypothesis at
         # the time the prediction error was calculated) since the mlh is updated between
