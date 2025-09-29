@@ -33,6 +33,7 @@ from tbp.monty.frameworks.models.evidence_matching.hypotheses import (
 )
 from tbp.monty.frameworks.models.evidence_matching.hypotheses_displacer import (
     DefaultHypothesesDisplacer,
+    HypothesisDisplacerTelemetry,
 )
 from tbp.monty.frameworks.models.evidence_matching.hypotheses_updater import (
     ChannelHypothesesUpdateTelemetry,
@@ -64,6 +65,7 @@ class ChannelHypothesesResamplingTelemetry(ChannelHypothesesUpdateTelemetry):
         identified by `removed_ids`.
     """
 
+    channel_hypothesis_displacer_telemetry: HypothesisDisplacerTelemetry
     added_ids: npt.NDArray[np.int_]
     ages: npt.NDArray[np.int_]
     evidence_slopes: npt.NDArray[np.float64]
@@ -259,6 +261,9 @@ class ResamplingHypothesesUpdater:
 
         hypotheses_updates = []
         resampling_telemetry: dict[str, Any] = {}
+        channel_hypothesis_displacer_telemetry: dict[
+            str, HypothesisDisplacerTelemetry
+        ] = {}
 
         for input_channel in input_channels_to_use:
             # Calculate sample count for each type
@@ -289,7 +294,7 @@ class ResamplingHypothesesUpdater:
             # We only displace existing hypotheses since the newly resampled hypotheses
             # should not be affected by the displacement from the last sensory input.
             if existing_count > 0:
-                existing_hypotheses, mlh_prediction_error = (
+                existing_hypotheses, channel_hypothesis_displacer_telemetry = (
                     self.hypotheses_displacer.displace_hypotheses_and_compute_evidence(
                         channel_displacement=displacements[input_channel],
                         channel_features=features[input_channel],
@@ -299,10 +304,6 @@ class ResamplingHypothesesUpdater:
                         total_hypotheses_count=hypotheses.evidence.shape[0],
                     )
                 )
-            else:
-                # If there are no existing hypotheses, there are no predictions and
-                # hence no error.
-                mlh_prediction_error = np.nan
 
             # Concatenate and rebuild channel hypotheses
             channel_hypotheses = ChannelHypotheses(
@@ -323,7 +324,7 @@ class ResamplingHypothesesUpdater:
             if self.include_telemetry:
                 resampling_telemetry[input_channel] = asdict(
                     ChannelHypothesesResamplingTelemetry(
-                        mlh_prediction_error=mlh_prediction_error,
+                        channel_hypothesis_displacer_telemetry=channel_hypothesis_displacer_telemetry,
                         added_ids=(
                             np.arange(len(channel_hypotheses.evidence))[
                                 -len(informed_hypotheses.evidence) :
@@ -340,7 +341,7 @@ class ResamplingHypothesesUpdater:
                 # Still return prediction error.
                 # TODO: make this nicer like dependent on log_level.
                 resampling_telemetry[input_channel] = ChannelHypothesesUpdateTelemetry(
-                    mlh_prediction_error=mlh_prediction_error,
+                    channel_hypothesis_displacer_telemetry=channel_hypothesis_displacer_telemetry
                 )
 
         return (hypotheses_updates, resampling_telemetry)
