@@ -1196,7 +1196,6 @@ class EvidenceGraphLM(GraphLM):
             return
         graph_telemetry = self.hypotheses_updater_telemetry[graph_id]
         prediction_errors = []
-        mlh_prediction_error = None
         for input_channel in graph_telemetry:
             channel_telemetry = graph_telemetry[input_channel]
             # Check if there is displacer telemetry and if it contains a prediction
