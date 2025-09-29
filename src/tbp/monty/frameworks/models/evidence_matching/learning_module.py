@@ -1213,7 +1213,7 @@ class EvidenceGraphLM(GraphLM):
 
         if len(prediction_errors) > 0:
             mlh_prediction_error = np.mean(prediction_errors)
-        # At the first step with have no predictions in any channel, so no error.
+        # At the first step we have no predictions in any channel, so no error.
         if mlh_prediction_error is not None:
             self.buffer.update_stats(
                 {"mlh_prediction_error": mlh_prediction_error},
