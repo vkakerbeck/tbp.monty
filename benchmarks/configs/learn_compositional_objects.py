@@ -80,7 +80,7 @@ two_stacked_constrained_lms_config = dict(
             max_graph_size=0.3,
             num_model_voxels_per_dim=200,
             max_nodes_per_graph=2000,
-            object_evidence_threshold=20,  # TODO - C: is this reasonable?
+            object_evidence_threshold=20,
         ),
     ),
     learning_module_1=dict(
