@@ -76,7 +76,6 @@ class LivePlotter:
         else:
             mlh = None
             mlh_model = None
-
         return (
             first_learning_module,
             first_sensor_module_raw_observations,
