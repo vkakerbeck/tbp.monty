@@ -59,7 +59,7 @@ class LivePlotter:
         first_learning_module = model.learning_modules[0]
         first_sensor_module_raw_observations = model.sensor_modules[0].raw_observations
         first_sensor_module_id = model.sensor_modules[0].sensor_module_id
-        patch_depth = observation[model.motor_system._policy.agent_id][
+        first_sensor_depth = observation[model.motor_system._policy.agent_id][
             first_sensor_module_id
         ]["depth"]
         view_finder_rgba = observation[model.motor_system._policy.agent_id][
@@ -79,7 +79,7 @@ class LivePlotter:
         return (
             first_learning_module,
             first_sensor_module_raw_observations,
-            patch_depth,
+            first_sensor_depth,
             view_finder_rgba,
             mlh,
             mlh_model,
@@ -89,7 +89,7 @@ class LivePlotter:
         self,
         first_learning_module,
         first_sensor_module_raw_observations,
-        patch_depth,
+        first_sensor_depth,
         view_finder_rgba,
         mlh,
         mlh_model,
@@ -100,11 +100,11 @@ class LivePlotter:
         self.show_view_finder(
             first_sensor_module_raw_observations,
             first_learning_module,
-            patch_depth,
+            first_sensor_depth,
             view_finder_rgba,
             is_saccade_on_image_data_loader,
         )
-        self.show_patch(patch_depth)
+        self.show_patch(first_sensor_depth)
         self.show_mlh(mlh, mlh_model)
         plt.pause(0.00001)
 
@@ -112,7 +112,7 @@ class LivePlotter:
         self,
         first_sensor_module_raw_observations,
         first_learning_module,
-        patch_depth,
+        first_sensor_depth,
         view_finder_rgba,
         is_saccade_on_image_data_loader,
     ):
@@ -121,7 +121,7 @@ class LivePlotter:
 
         if is_saccade_on_image_data_loader:
             center_pixel_id = np.array([200, 200])
-            patch_size = np.array(patch_depth).shape[0]
+            patch_size = np.array(first_sensor_depth).shape[0]
             raw_obs = first_sensor_module_raw_observations
             if len(raw_obs) > 0:
                 center_pixel_id = np.array(raw_obs[-1]["pixel_loc"])
@@ -159,11 +159,11 @@ class LivePlotter:
                     evidences=evidences,
                 )
 
-    def show_patch(self, patch_depth):
+    def show_patch(self, first_sensor_depth):
         if self.depth_image:
             self.depth_image.remove()
         self.depth_image = self.ax[1].imshow(
-            patch_depth,
+            first_sensor_depth,
             cmap="viridis_r",
         )
         # self.colorbar.update_normal(self.depth_image)
