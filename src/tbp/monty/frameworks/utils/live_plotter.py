@@ -76,6 +76,7 @@ class LivePlotter:
         else:
             mlh = None
             mlh_model = None
+
         return (
             first_learning_module,
             first_sensor_module_raw_observations,
@@ -105,7 +106,8 @@ class LivePlotter:
             is_saccade_on_image_data_loader,
         )
         self.show_patch(first_sensor_depth)
-        self.show_mlh(mlh, mlh_model)
+        if mlh_model is not None:
+            self.show_mlh(mlh, mlh_model)
         plt.pause(0.00001)
 
     def show_view_finder(
@@ -172,6 +174,7 @@ class LivePlotter:
         if not mlh_model:
             self.ax[2].set_title("No MLH")
             return
+
         self.ax[2].cla()
         self.ax[2].scatter(
             mlh_model.pos[:, 1],

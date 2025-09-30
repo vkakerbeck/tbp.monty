@@ -26,7 +26,6 @@ import quaternion
 import torch
 from scipy.spatial.transform import Rotation
 
-from tbp.monty.frameworks.environments.logos_on_objs import PARENT_TO_CHILD_MAPPING
 from tbp.monty.frameworks.utils.spatial_arithmetics import (
     get_unique_rotations,
     rotations_to_quats,
@@ -641,12 +640,6 @@ def get_graph_lm_episode_stats(lm):
                 primary_performance = "pose_time_out"
                 stepwise_performance = "pose_time_out"
 
-        if consistent_child_obj(
-            lm.current_mlh["graph_id"], lm.primary_target, PARENT_TO_CHILD_MAPPING
-        ):
-            # TODO - C : provide parent to child mapping
-            primary_performance = "consistent_child_obj"
-
         individual_ts_perf = "time_out"
         # TODO eventually consider adding stepwise stats for the below
         if lm.buffer.stats["individual_ts_reached_at_step"] is not None:
@@ -764,7 +757,9 @@ def get_stats_per_lm(model, target):
     for i, lm in enumerate(model.learning_modules):
         lm_stats = get_graph_lm_episode_stats(lm)
         if hasattr(lm, "evidence"):
-            lm_stats = add_evidence_lm_episode_stats(lm, lm_stats)
+            lm_stats = add_evidence_lm_episode_stats(
+                lm, lm_stats, target["consistent_child_objects"]
+            )
         else:
             lm_stats = add_pose_lm_episode_stats(lm, lm_stats)
         lm_stats = add_policy_episode_stats(lm, lm_stats)
@@ -791,7 +786,7 @@ def add_policy_episode_stats(lm, stats):
     return stats
 
 
-def add_evidence_lm_episode_stats(lm, stats):
+def add_evidence_lm_episode_stats(lm, stats, consistent_child_objects):
     last_mlh = lm.get_current_mlh()
 
     stats["most_likely_object"] = last_mlh["graph_id"]
@@ -815,6 +810,13 @@ def add_evidence_lm_episode_stats(lm, stats):
             ),
             4,
         )
+    if (
+        stats["primary_performance"] not in ["correct_mlh", "correct"]
+        and consistent_child_objects is not None
+    ):
+        # TODO - C: should we use lm.detected_object instead of mlh?
+        if last_mlh["graph_id"] in consistent_child_objects:
+            stats["primary_performance"] = "consistent_child_obj"
     return stats
 
 
@@ -875,29 +877,24 @@ def overall_accuracy(eval_stats):
     return acc
 
 
-def consistent_child_obj(detected_obj, target_obj, parent_to_child_mapping):
-    """Check if the detected object is a child object of the target object.
-
-    Args:
-        detected_obj: detected object
-        target_obj: target object
-        parent_to_child_mapping: parent to child mapping
-    """
-    if detected_obj in parent_to_child_mapping:
-        possible_children = parent_to_child_mapping[target_obj]
-        return detected_obj in possible_children
-    else:
-        logger.warning(f"target object {target_obj} not in parent_to_child_mapping")
-        return False
-
-
 def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping):
-    """Check whether the most_likely_object is consistent with the parent_to_child_mapping.
+    """Check whether most_likely_object is consistent with the parent_to_child_mapping.
 
     Classified object is consistent if it is one of the children in the set of objects
     corresponding to the compositional object.
-    """
 
+    NOTE: This function is only called in compositional_stats_for_all_lms, which is a
+    logging util, called from a notebook and hence none of our previous experiments
+    should be affected by this or raise the ValueError, even if they don't have a
+    parent_to_child_mapping.
+
+    Returns:
+        The percentage of episodes in which a consistent child object is detected.
+
+    Raises:
+        ValueError: If the target object of an episode is not in the
+        parent_to_child_mapping.
+    """
     consistent_child_count = 0
     total_count = 0
 
@@ -910,14 +907,12 @@ def consistent_child_objects_accuracy(eval_stats_for_lm, parent_to_child_mapping
             if episode_stats.most_likely_object in possible_children:
                 consistent_child_count += 1
         else:
-            print(
-                f"target object {episode_stats.primary_target_object} not in parent_to_child_mapping"
+            raise ValueError(
+                f"No mappings found for target object",
+                f" {episode_stats.primary_target_object}",
             )
-    if total_count > 0:
-        consistent_child_percentage = consistent_child_count / total_count * 100
-        return consistent_child_percentage
-    else:
-        raise ValueError("No mappings found for target object")
+    consistent_child_percentage = consistent_child_count / total_count * 100
+    return consistent_child_percentage
 
 
 def accuracy_stats_for_compositional_objects(
@@ -941,11 +936,13 @@ def compositional_stats_for_all_lms(eval_stats, all_lm_ids, parent_to_child_mapp
             )
         )
         print(
-            f"LM_{lm_id} accuracy: {compositional_object_accuracy}% correct (or correct_mlh)"
+            f"LM_{lm_id} accuracy: {compositional_object_accuracy}% correct",
+            "(or correct_mlh)",
         )
         print(f"LM_{lm_id} consistent child accuracy: {consistent_child_accuracy}%")
         print(
-            f"LM_{lm_id} average prediction error: {np.mean(eval_stats_for_lm['episode_avg_prediction_error'])}"
+            f"LM_{lm_id} average prediction error: ",
+            f"{np.mean(eval_stats_for_lm['episode_avg_prediction_error'])}",
         )
         lm_stats_dict[lm_id] = {
             "compositional_object_accuracy": compositional_object_accuracy,

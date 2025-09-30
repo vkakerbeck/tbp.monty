@@ -16,11 +16,11 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
     Mapping,
     Optional,
     Sequence,
     Union,
-    Literal,
 )
 
 import numpy as np
@@ -320,6 +320,7 @@ class RandomRotationObjectInitializer(DefaultObjectInitializer):
 class EnvironmentDataloaderPerObjectArgs:
     object_names: List
     object_init_sampler: Callable
+    parent_to_child_mapping: Dict = None
 
 
 @dataclass

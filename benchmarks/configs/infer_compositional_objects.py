@@ -1,3 +1,12 @@
+# Copyright 2025 Thousand Brains Project
+#
+# Copyright may exist in Contributors' modifications
+# and/or contributions to the work.
+#
+# Use of this source code is governed by the MIT
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+
 import copy
 import os
 from dataclasses import asdict
@@ -29,10 +38,14 @@ from tbp.monty.frameworks.environments.logos_on_objs import (
     OBJECTS_WITH_LOGOS_LVL2,
     OBJECTS_WITH_LOGOS_LVL3,
     OBJECTS_WITH_LOGOS_LVL4,
+    PARENT_TO_CHILD_MAPPING,
 )
 from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
+)
+from tbp.monty.frameworks.models.evidence_matching.resampling_hypotheses_updater import (
+    ResamplingHypothesesUpdater,
 )
 from tbp.monty.frameworks.models.goal_state_generation import EvidenceGoalStateGenerator
 from tbp.monty.simulators.habitat.configs import (
@@ -58,6 +71,11 @@ model_path_part_models = os.path.join(
 model_path_compositional_models_lvl1 = os.path.join(
     pretrained_dir,
     "supervised_pre_training_objects_with_logos_lvl1_comp_models/pretrained/",
+)
+
+model_path_compositional_models_lvl1_resampling = os.path.join(
+    pretrained_dir,
+    "supervised_pre_training_objects_with_logos_lvl1_comp_models_resampling/pretrained/",
 )
 
 model_path_compositional_models_lvl2 = os.path.join(
@@ -95,18 +113,12 @@ two_stacked_constrained_lms_inference_config = dict(
             gsg_class=EvidenceGoalStateGenerator,
             gsg_args=dict(
                 goal_tolerances=dict(
-                    location=0.015,  # distance in meters
-                ),  # Tolerance(s) when determining goal-state success
-                elapsed_steps_factor=10,  # Factor that considers the number of elapsed
-                # steps as a possible condition for initiating a hypothesis-testing goal
-                # state; should be set to an integer reflecting a number of steps
-                min_post_goal_success_steps=5,  # Number of necessary steps for a hypothesis
-                # goal-state to be considered
-                x_percent_scale_factor=0.75,  # Scale x-percent threshold to decide
-                # when we should focus on pose rather than determining object ID; should
-                # be bounded between 0:1.0; "mod" for modifier
-                desired_object_distance=0.03,  # Distance from the object to the
-                # agent that is considered "close enough" to the object
+                    location=0.015,
+                ),
+                elapsed_steps_factor=10,
+                min_post_goal_success_steps=5,
+                x_percent_scale_factor=0.75,
+                desired_object_distance=0.03,
             ),
         ),
     ),
@@ -132,22 +144,30 @@ two_stacked_constrained_lms_inference_config = dict(
             gsg_class=EvidenceGoalStateGenerator,
             gsg_args=dict(
                 goal_tolerances=dict(
-                    location=0.015,  # distance in meters
-                ),  # Tolerance(s) when determining goal-state success
-                elapsed_steps_factor=10,  # Factor that considers the number of elapsed
-                # steps as a possible condition for initiating a hypothesis-testing goal
-                # state; should be set to an integer reflecting a number of steps
-                min_post_goal_success_steps=5,  # Number of necessary steps for a hypothesis
-                # goal-state to be considered
-                x_percent_scale_factor=0.75,  # Scale x-percent threshold to decide
-                # when we should focus on pose rather than determining object ID; should
-                # be bounded between 0:1.0; "mod" for modifier
-                desired_object_distance=0.03,  # Distance from the object to the
-                # agent that is considered "close enough" to the object
+                    location=0.015,
+                ),
+                elapsed_steps_factor=10,
+                min_post_goal_success_steps=5,
+                x_percent_scale_factor=0.75,
+                desired_object_distance=0.03,
             ),
         ),
     ),
 )
+
+two_stacked_constrained_lms_inference_config_with_resampling = copy.deepcopy(
+    two_stacked_constrained_lms_inference_config
+)
+for lm_id in ["learning_module_0", "learning_module_1"]:
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "learning_module_args"
+    ]["hypotheses_updater_class"] = ResamplingHypothesesUpdater
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "learning_module_args"
+    ]["evidence_threshold_config"] = "all"
+    two_stacked_constrained_lms_inference_config_with_resampling[lm_id][
+        "learning_module_args"
+    ]["object_evidence_threshold"] = 1
 
 # See level description in src/tbp/monty/frameworks/environments/logos_on_objs.py
 infer_comp_base_config = dict(
@@ -181,6 +201,7 @@ infer_comp_base_config = dict(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -207,6 +228,7 @@ infer_parts_with_part_models.update(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -216,6 +238,21 @@ infer_comp_lvl1_with_comp_models.update(
     experiment_args=EvalExperimentArgs(
         model_name_or_path=model_path_compositional_models_lvl1,
         n_eval_epochs=len(test_rotations_all),
+    ),
+)
+
+infer_comp_lvl1_with_comp_models_and_resampling = copy.deepcopy(
+    infer_comp_lvl1_with_comp_models
+)
+infer_comp_lvl1_with_comp_models_and_resampling.update(
+    experiment_args=EvalExperimentArgs(
+        model_name_or_path=model_path_compositional_models_lvl1_resampling,
+        n_eval_epochs=len(test_rotations_all),
+    ),
+    monty_config=TwoLMStackedMontyConfig(
+        monty_args=MontyArgs(min_eval_steps=min_eval_steps),
+        learning_module_configs=two_stacked_constrained_lms_inference_config_with_resampling,
+        motor_system_config=MotorSystemConfigInformedGoalStateDriven(),
     ),
 )
 
@@ -232,6 +269,7 @@ infer_comp_lvl2_with_comp_models.update(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -249,6 +287,7 @@ infer_comp_lvl3_with_comp_models.update(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -265,6 +304,7 @@ infer_comp_lvl4_with_comp_models.update(
         object_init_sampler=PredefinedObjectInitializer(
             rotations=test_rotations_all,
         ),
+        parent_to_child_mapping=PARENT_TO_CHILD_MAPPING,
     ),
 )
 
@@ -272,6 +312,7 @@ experiments = CompositionalInferenceExperiments(
     infer_comp_lvl1_with_monolithic_models=infer_comp_lvl1_with_monolithic_models,
     infer_parts_with_part_models=infer_parts_with_part_models,
     infer_comp_lvl1_with_comp_models=infer_comp_lvl1_with_comp_models,
+    infer_comp_lvl1_with_comp_models_and_resampling=infer_comp_lvl1_with_comp_models_and_resampling,
     infer_comp_lvl2_with_comp_models=infer_comp_lvl2_with_comp_models,
     infer_comp_lvl3_with_comp_models=infer_comp_lvl3_with_comp_models,
     infer_comp_lvl4_with_comp_models=infer_comp_lvl4_with_comp_models,
