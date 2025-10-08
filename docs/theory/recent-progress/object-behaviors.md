@@ -10,13 +10,11 @@ Learning the behaviors of objects is an essential component of any intelligent s
 
 The Thousand Brains Theory (TBT) currently explains how an intelligent system learns the static structure of the world.  Here, we describe how to extend the TBT to learn the dynamic structure of the world. In the TBT, static objects are learned as a set of features at poses (location and orientation) in a reference frame. There is an assumption that the features are not changing or moving, therefore, the existing theory and implementation work well for representing static structure.
 
-
 # Learning Object Behaviors is an Extension of the Current Theory
 
 To learn and represent object behaviors, we use the same mechanism as we use for learning static structure. The main difference is what the input features represent. In the static models, the features are also static, such as the edge of a mug. In the dynamic models, the features represent changes, such as the moving edge of a stapler top as it opens. Static features are stored at locations in static/morphology models, and changing features are similarly stored at locations in behavior models. Another difference is that behaviors occur over time. As a stapler opens, the locations where moving edges occur change over time. Therefore, behavior models are sequences of changes at locations.
 
 Static models and dynamic models are learned in separate reference frames, but they share sensor patches and how the sensor patch is moving. Therefore, when we observe a stapler, we can simultaneously learn both the morphology of the stapler and how that morphology changes over time. But because the behavioral model has its own reference frame, it exists independently of the stapler. Now imagine we see a new object that doesn’t look like a stapler. If this new object starts to open like a stapler, then the stapler’s behavior model will be recognized and we will predict the new object behaves like a stapler. This method is very general and applies to every type of behavior we observe in the world.
-
 
 ![Behavior models (right) use an analogous mechanism to morphology models (left). The difference is that their input represents features that are changing instead of features that are static. Behavior models are also sequences (not illustrated here).](../../figures/theory/simplified_behavior_model.png#width=600px)
 
@@ -34,7 +32,7 @@ The figure below illustrates how state and time relate to the two types of model
 
 ![Both behavior (left) and morphology models can be state-conditioned. This means that depending on the state, different features/changes are expected at different locations. State might be traversed through passing time or by applying actions.](../../figures/theory/state_conditioning.png#width=600px)
  
- As we have previously demonstrated [2, 7, 10], cortical columns can vote to quickly reach a consensus of the static object being observed. The same mechanism applies to behaviors. Multiple columns can vote to quickly infer behaviors.  
+As we have previously demonstrated [2, 7, 10], cortical columns can vote to quickly reach a consensus of the static object being observed. The same mechanism applies to behaviors. Multiple columns can vote to quickly infer behaviors.  
 
 Analogous to object models, behavior models can be recognized in any location, orientation, and scale by transforming the physical movement vector into the behavior's reference frame [11]. This allows for recognizing a behavior at different locations on an object in varying orientations and scales, and therefore represents a flexible way to apply and recognize behaviors in novel situations. Notably, the behavior can be recognized independently of the object on which it was learned.
 
@@ -63,8 +61,6 @@ Matrix cells in the thalamus could encode the time passed since the last event a
 ![In addition to the local sensory and movement input, the column receives a more global time input to L1. This signal represents the amount of time passed since the last event. It is sent widely/globally and therefore synchronizes learning between many columns. A detected event in one learning module can reset the interval timer for all of them.] (../../figures/theory/timing_input.png#width=600px)
 
 During inference, the model can be used to speed up of slow down the global time signal. If input features arrive earlier than expected, the interval timer is sped up. If they arrive later than expected, the interval timer is slowed down. This allows for recognizing the same behavior at different speeds.
-
-
 
 # Implementation in Monty
 
