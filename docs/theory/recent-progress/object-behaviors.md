@@ -98,16 +98,19 @@ We can start with 1 and 2 for the first prototype. 3 should fall out of that sol
 
 The following items focus on concrete steps to get capabilities 1-3 into Monty.
 
-* New type of SM for change detection.
-* Add state conditioning to models learned in LMs.
-* Extend hypothesis representation and updates to incorporate model state.
-* Extend the CMP output to incorporate model state.
-* Update the voting algorithm to take model state into account.
-* Add a global interval timer and provide its input to LMs.
-* Add the ability to detect significant events to SMs and use them to reset the global interval timer.
-* Add the ability for LMs to adjust the speed of the global interval timer.
-* Set up a basic Monty configuration with one change-detecting SM and one static feature SM, and connect it to two LMs.
-* Set up a basic test environment to learn and infer behaviors under various conditions.
+* [New type of SM for change detection.](../../future-work/sensor-module-improvements/change-detecting-sm.md)
+* Add 'state' to Monty's model representation.
+  * [Add state conditioning to models learned in LMs.](../../future-work/learning-module-improvements/include-state-in-models.md)
+  * [Extend hypothesis representation and updates to incorporate model state.](../../future-work/learning-module-improvements/include-state-in-hypotheses.md)
+  * [Extend the CMP output to incorporate model state.](../../future-work/cmp-hierarchy-improvements/include-state-in-CMP.md)
+  * [Update the voting algorithm to take model state into account.](../../future-work/voting-improvements/vote-on-state.md)
+* Add time interval representation to Monty
+  * [Add a global interval timer and provide its input to LMs.](../../future-work/cmp-hierarchy-improvements/global-interval-timer.md)
+  * [Add the ability to detect significant events to LMs and use them to reset the global interval timer.](../../future-work/learning-module-improvements/event-detection-to-reset-timer.md)
+  * [Add the ability for LMs to adjust the speed of the global interval timer.](../../future-work/learning-module-improvements/speed-detection-to-adjust-timer.md)
+* Object behavior testbed
+  * [Set up a basic test environment to learn and infer behaviors under various conditions.](../../future-work/environment-improvements/object-behavior-test-bed.md)
+  * Set up a basic Monty configuration with one change-detecting SM and one static feature SM, and connect it to two LMs. Evaluate Monty's performance on the object behavior test bed.
 
 See [this video](https://www.youtube.com/watch?v=3TwG6qyvEs4) for a walkthrough of the above capabilities and action items.
 
