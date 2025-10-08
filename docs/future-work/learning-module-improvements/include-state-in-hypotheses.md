@@ -14,5 +14,5 @@ Analogous to testing possible locations and possible poses, we would test possib
 We can use our existing nearest neighbor search algorithm to retrieve neighbors in 3D space to predict which feature should be sensed next in the current state, at the current location. 
 
 Given the input interval stored during learning, the model can also predict with which global clock input the next input feature should coincide.
-The timing within an interval/state is provided by the global clock and does not need to be inferred. It can however be used to correct the speed of the timer to recognize sequences at different speeds. For more details see the page on [speed detectection to adjust timer](speed-detection-to-adjust-timer.md).
+The timing within an interval/state is provided by the global clock and does not need to be inferred. It can however be used to correct the speed of the timer to recognize sequences at different speeds. For more details see the page on [speed detection to adjust timer](speed-detection-to-adjust-timer.md).
 

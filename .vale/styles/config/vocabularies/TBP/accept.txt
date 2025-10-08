@@ -204,3 +204,4 @@
 \b[Dd]iscretizing\b
 \b[Mm]agnocellular\b
 \b[Pp]arvocellular\b
+\bKraus\b
