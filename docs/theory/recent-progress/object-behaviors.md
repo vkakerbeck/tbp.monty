@@ -12,7 +12,7 @@ The Thousand Brains Theory (TBT) currently explains how an intelligent system le
 
 # Learning Object Behaviors is an Extension of the Current Theory
 
-![Behavior models (right) use an analogous mechanism to morphology models (left). The difference is that their input represents features that are changing instead of features that are static. Behavior models are also sequences (not illustrated here).](../../figures/theory/simplified_behavior_model.png#width=600px)
+![Behavior models (right) use an analogous mechanism to morphology models (left). The difference is that their input represents features that are changing instead of features that are static. Behavior models are also sequences (not illustrated here).](../../figures/theory/simplified_behavior_model.png)
 
 To learn and represent object behaviors, we use the same mechanism as we use for learning static structure. The main difference is what the input features represent. In the static models, the features are also static, such as the edge of a mug. In the dynamic models, the features represent changes, such as the moving edge of a stapler top as it opens. Static features are stored at locations in static/morphology models, and changing features are similarly stored at locations in behavior models. Another difference is that behaviors occur over time. As a stapler opens, the locations where moving edges occur change over time. Therefore, behavior models are sequences of changes at locations.
 
@@ -30,7 +30,7 @@ Models of dynamic structure consist of sequences of behavioral elements over tim
 
 The figure below illustrates how state and time relate to the two types of models. The behavioral model on the left stores where changes occur over time. It does not represent the morphology of the object exhibiting the behavior. It represents behaviors independent of any particular object. The morphology model on the right stores where static features occur for a particular object. It may have learned several morphology models for the object, such as an open and closed stapler, but on its own, it doesn’t know how the stapler moves. The concept of state applies to both models. On the left, state represents where the model is in a sequence. On the right, state represents different learned morphologies for an object.
 
-![Both behavior (left) and morphology models can be state-conditioned. This means that depending on the state, different features/changes are expected at different locations. State might be traversed through passing time or by applying actions.](../../figures/theory/state_conditioning.png)
+![Both behavior (left) and morphology models can be state-conditioned. This means that depending on the state, different features/changes are expected at different locations. State might be traversed through passing time or by applying actions.](../../figures/theory/state_conditioning.png#width=600px)
  
 As we have previously demonstrated [2, 7, 10], cortical columns can vote to quickly reach a consensus of the static object being observed. The same mechanism applies to behaviors. Multiple columns can vote to quickly infer behaviors.  
 
@@ -58,7 +58,7 @@ Previous work at Numenta showed how any layer of neurons can learn high-order se
 
 Matrix cells in the thalamus could encode the time passed since the last event and broadcast this signal widely across the neocortex. Matrix cells project to L1, where they form synapses on the apical dendrites of L3 cells, allowing the behavioral model to encode the timing between behavioral states. The static model does not require time but could still learn state/context-conditioned models using the same mechanism.
 
-![In addition to the local sensory and movement input, the column receives a more global time input to L1. This signal represents the amount of time passed since the last event. It is sent widely/globally and therefore synchronizes learning between many columns. A detected event in one learning module can reset the interval timer for all of them.](../../figures/theory/timing_input.png#width=600px)
+![In addition to the local sensory and movement input, the column receives a more global time input to L1. This signal represents the amount of time passed since the last event. It is sent widely/globally and therefore synchronizes learning between many columns. A detected event in one learning module can reset the interval timer for all of them.](../../figures/theory/timing_input.png#width=500px)
 
 During inference, the model can be used to speed up of slow down the global time signal. If input features arrive earlier than expected, the interval timer is sped up. If they arrive later than expected, the interval timer is slowed down. This allows for recognizing the same behavior at different speeds.
 
@@ -76,7 +76,7 @@ Additionally, behavior models require a temporal input as well as conditioning t
 
 The inferred state of models is then communicated in the CMP output of learning modules, both for voting and for passing it as input to the higher-level LM.
 
-![The CMP message should contain information about the inferred state of objects in addition to the existing information on model location, orientation, and ID.](../../figures/theory/state_in_CMP.png#width=300px)
+![The CMP message should contain information about the inferred state of objects in addition to the existing information on model location, orientation, and ID.](../../figures/theory/state_in_CMP.png#width=400px)
 
 Recognizing a behavior model in practice will likely depend more strongly on voting between multiple learning modules (at least for more complex behaviors where one sensor patch may not be able to observe enough of the behavioral state on its own before it changes). The voting process for behavior models would work analogously to the voting process already implemented for object models.
 
