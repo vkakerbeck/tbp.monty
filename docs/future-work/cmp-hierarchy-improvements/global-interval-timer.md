@@ -19,7 +19,7 @@ There is a default speed at which the timer goes through the different active st
 
 The animation below shows an example of learning a melody. Here, each note is a significant event that resets the timer.
 
-[Example Behavion 1](https://res.cloudinary.com/dtnazefys/video/upload/Time_in_Behaviors_Expl1.mov)
+[Example Behavior 1](https://res.cloudinary.com/dtnazefys/video/upload/Time_in_Behaviors_Expl1.mov)
 
 Whatever an input feature (here, the note, although one could also use a background beat instead) comes into the column/LM, it gets associated with the L1 input that is received at the time, which represents the time passed since the last event.
 
