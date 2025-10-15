@@ -3,7 +3,7 @@ title: Change Detecting SM
 description: Add a new type of sensor module that detects local changes and output's those as CMP messages.
 ---
 
-This item relates to the broader goal of [modeling object behaviors in Monty](../../theory/recent-progress/object-behaviors.md#implementation-in-monty). It also build on [detecting local and global flow](detect-local-and-global-flow.md) in the SM.
+This item relates to the broader goal of [modeling object behaviors in Monty](../../theory/recent-progress/object-behaviors.md#implementation-in-monty). It also builds on [detecting local and global flow](detect-local-and-global-flow.md) in the SM.
 
 As outlined in the [theory section on modeling object behaviors](../../theory/recent-progress/object-behaviors.md), the idea is that we can use the same LM for modeling object behaviors as we do for modeling static objects. The only difference is what kind of input the LM receives. An LM that receives input from the change detecting SM outlined here would be learning behavior models.
 

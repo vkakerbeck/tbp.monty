@@ -29,4 +29,4 @@ We can test Monty's ability to model object behaviors with successively more dif
 - 1 sensor patch that gets processed by 2 SMs (one for static and one for moving features) and sent to 2 LMs.
 - Supervision during learning -> provide object ID, pose & state in sequence at each step.
 - Evaluate accuracy & speed of recognizing behavior & morphology ID, pose & state (+visualize).
-- Could start with 2D environment to make the state dimension easier to visualize (keep in mind potential difficulty to extract movement in 3D from depth image).
+- Could start with 2D environment to make the state dimension easier to visualize (keep in mind potential difficulty in extracting movement from a 3D depth image).

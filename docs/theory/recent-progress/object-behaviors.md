@@ -8,13 +8,13 @@ The world is both static and dynamic. Some features of the world have a fixed ar
 
 Learning the behaviors of objects is an essential component of any intelligent system. If an intelligent system is going to generate novel behaviors, it first needs to learn the behaviors of objects and then enact those behaviors in both familiar and novel situations.
 
-The Thousand Brains Theory (TBT) currently explains how an intelligent system learns the static structure of the world.  Here, we describe how to extend the TBT to learn the dynamic structure of the world. In the TBT, static objects are learned as a set of features at poses (location and orientation) in a reference frame. There is an assumption that the features are not changing or moving, therefore, the existing theory and implementation work well for representing static structure.
+In the TBT, static objects are learned as a set of features at poses (location and orientation) in a reference frame. There is an assumption that the features are not changing or moving, therefore, the existing theory and implementation work well for representing static structure. Here, we describe how to extend the TBT to learn the dynamic structure of the world.
 
 # Learning Object Behaviors is an Extension of the Current Theory
 
 ![Behavior models (right) use an analogous mechanism to morphology models (left). The difference is that their input represents features that are changing instead of features that are static. Behavior models are also sequences (not illustrated here).](../../figures/theory/simplified_behavior_model.png)
 
-To learn and represent object behaviors, we use the same mechanism as we use for learning static structure. The main difference is what the input features represent. In the static models, the features are also static, such as the edge of a mug. In the dynamic models, the features represent changes, such as the moving edge of a stapler top as it opens. Static features are stored at locations in static/morphology models, and changing features are similarly stored at locations in behavior models. Another difference is that behaviors occur over time. As a stapler opens, the locations where moving edges occur change over time. Therefore, behavior models are sequences of changes at locations.
+To learn and represent object behaviors, we use the same mechanism as we use for learning static structure. The main difference is what the input features represent. In the static models, the features are also static, such as the edge of a mug. In the dynamic models, the features represent changes, such as the moving edge of a stapler top as it opens. Static features are stored at locations in static/morphology models, and changing features are similarly stored at locations in behavior models. Additionally, behaviors occur over time. As a stapler opens, the locations where moving edges occur change over time. Therefore, behavior models are sequences of changes at locations.
 
 Static models and dynamic models are learned in separate reference frames, but they share sensor patches and how the sensor patch is moving. Therefore, when we observe a stapler, we can simultaneously learn both the morphology of the stapler and how that morphology changes over time. But because the behavioral model has its own reference frame, it exists independently of the stapler. Now imagine we see a new object that doesn’t look like a stapler. If this new object starts to open like a stapler, then the stapler’s behavior model will be recognized and we will predict the new object behaves like a stapler. This method is very general and applies to every type of behavior we observe in the world.
 
@@ -52,15 +52,18 @@ The above examples illustrate that the two modeling systems, morphology/static a
 
 ## Sequence Learning and Representation of Time
 
-In many ways, the two modeling systems are similar. As mentioned, a major difference is that behavioral models require a temporal dimension. Behaviors are high-order sequences, and the time between sequence elements is often important.
+In many ways, the two modeling systems are similar. As mentioned, a major difference is that behavioral models require a temporal dimension, whereas our morphology models could do without it so far, although also those may make use of time and represent different states for the same object. Behaviors are high-order sequences, and the time between sequence elements is often important.
  
 Previous work at Numenta showed how any layer of neurons can learn high-order sequences [1]. This mechanism will work well for learning behavioral sequences. In addition, there is a need for learning the time between sequence elements.
 
-Matrix cells in the thalamus could encode the time passed since the last event and broadcast this signal widely across the neocortex. Matrix cells project to L1, where they form synapses on the apical dendrites of L3 cells, allowing the behavioral model to encode the timing between behavioral states. The static model does not require time but could still learn state/context-conditioned models using the same mechanism.
+Matrix cells in the thalamus could encode the time passed since the last event and broadcast this signal widely across the neocortex. Matrix cells project to L1, where they form synapses on the apical dendrites of L3 and L5 cells, allowing the behavioral model to encode the timing between behavioral states. The static model does not require time but could still learn state/context-conditioned models using the same mechanism.
 
 ![In addition to the local sensory and movement input, the column receives a more global time input to L1. This signal represents the amount of time passed since the last event. It is sent widely/globally and therefore synchronizes learning between many columns. A detected event in one learning module can reset the interval timer for all of them.](../../figures/theory/timing_input.png#width=500px)
 
-During inference, the model can be used to speed up of slow down the global time signal. If input features arrive earlier than expected, the interval timer is sped up. If they arrive later than expected, the interval timer is slowed down. This allows for recognizing the same behavior at different speeds.
+During inference, the model can be used to speed up or slow down the global time signal. If input features arrive earlier than expected, the interval timer is sped up. If they arrive later than expected, the interval timer is slowed down. This allows for recognizing the same behavior at different speeds.
+
+> [!NOTE] For a more detailed description of the time mechanism see our future work page on the [interval timer](../../future-work/cmp-hierarchy-improvements/global-interval-timer.md).
+
 
 # Implementation in Monty
 
@@ -72,7 +75,7 @@ For a concrete implementation in tbp.monty, we need to add a capability to senso
 
 ![As the modeling mechanism of behaviors is analogous to that of static morphology, the main update to Monty would be to introduce a new change-detecting sensor module (SM). The LM that receives input from this new SM will learn behavior models.](../../figures/theory/monty_implementation_change_SM.png)
 
-Additionally, behavior models require a temporal input as well as conditioning the state of the model based on this input. This could be implemented as multiple graphs or sets of points in the same reference frame that are traversed as time passes. There are many possible ways to achieve this in code. The important thing is that the state in the temporal sequence can condition the changes to expect at a location.  
+Additionally, models require a temporal input as well as conditioning the state of the model based on this input. This could be implemented as multiple graphs or sets of points in the same reference frame that are traversed as time passes. There are many possible ways to achieve this in code. The important thing is that the state in the temporal sequence can condition the changes to expect at a location.  
 
 The inferred state of models is then communicated in the CMP output of learning modules, both for voting and for passing it as input to the higher-level LM.
 
@@ -88,7 +91,7 @@ Recognizing a behavior model in practice will likely depend more strongly on vot
 4. Compensate for object movement to make accurate predictions in the morphology model (using behavior model and/or model-free signals) 
 5. Use behavior models to inform actions (+ learn how actions influence state)
 
-We can start with 1 and 2 for the first prototype. 3 should fall out of that solution (+ work on modeling compositional objects in general). 4 and 5 still have many unresolved questions and can be added in a second step. 
+We can start with 1 and 2 for the first prototype. 3 should fall out of that solution (+ work on modeling compositional objects in general). 4 and 5 still have many unresolved questions and can be added in a second phase. 
 
 ### Action Items
 

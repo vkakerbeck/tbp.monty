@@ -9,11 +9,11 @@ We want to have an interval timer that exists separately from the current Monty 
 
 The interval timer is a bit like a stop watch that counts up time from a previous event and broadcasts this elapsed time widely. The time can be reset by significant events that are detected in LMs (or SMs).
 
-In the brain, this elapsed time might be encoded with time cells (e.g. see Kraus, 2013) or a similar mechanism, where different cells fire at different temporal delays from the start of an interval. Together they tile the temporal space (up to a certain max duration and with higher resolution for shorter durations). This means, than the LM receives different neural input from the timer, depending on how much time has passed since the start of this state.
+In the brain, this elapsed time might be encoded with time cells (e.g. see Kraus, 2013) or a similar mechanism, where different cells fire at different temporal delays from the start of an interval. Together they tile the temporal space (up to a certain max duration and with higher resolution for shorter durations). This means that the LM receives different neural input from the timer, depending on how much time has passed since the start of this state.
 
 In the conceptual figure below, this mechanism is illustrated as the circle with little purple dots on it. Each significant event resets the circle to have the top neuron (darkest purple) active. Then, as time passes, the neurons on the circle become active in a clockwise direction. The ID of the active time neuron is the input to L1 of the cortical column.
 
-There is a default speed at which the timer goes through the different active states. This is the timing information stored during learning. During inference, however, the column can tell the interval timer to spin faster or slower, which means that it will receive the same neural input to L1 at different absolute times from the last event.
+There is a default speed at which the timer goes through the different active states. This is the timing information stored during learning. During inference, however, the column can tell the interval timer to spin faster or slower, which means that it will receive the same neural input to L1 at different absolute times from the last event. Note that there is no continuous "time-since" signal but instead there are discrete representations for different elapsed intervals and hence, these representations can change faster or slower and be associated with features in the models.
 
 ## Example 1: A Melody (no location representation needed)
 
@@ -35,7 +35,7 @@ The clock is reset and starts ticking through the different neural activations a
 
 TODO: include video
 
-One other change here is that we are sensing in 2D (or 3D) space, so in addition to our position in the sequence, we have a location on the object (L6a, shown as grid here). This location is updated using sensor movement (our existing mechanism). In the example here, the sensor doesn’t move so we just store sequence information at that location but if we explore a behavior over and over again at different locations, this would become a richer representation of the entire object behavior.
+One other change here is that we are sensing in 3D space (2D in the example diagram), so in addition to our position in the sequence, we have a location on the object (L6a, shown as grid here). This location is updated using sensor movement (our existing mechanism). In the example here, the sensor doesn’t move so we just store sequence information at that location but if we explore a behavior over and over again at different locations, this would become a richer representation of the entire object behavior.
 
 The learned model would then look as shown below. We have discrete states in a sequence (movement through the sequence is determined by resets of the global clock). Each state can store features at different locations at different intervals after the last event (colored arrows).
 

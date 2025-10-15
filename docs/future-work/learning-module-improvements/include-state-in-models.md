@@ -9,7 +9,7 @@ Any model in an LM can be state conditioned. For instance a stapler might be ope
 
 ![Both behavior (left) and morphology models can be state-conditioned. This means that depending on the state, different features/changes are expected at different locations. State might be traversed through passing time or by applying actions.](../../figures/theory/state_conditioning.png#width=600px)
 
-In Monty, state can be interpreted as a sub-object ID. Depending on the state of an object Monty will look at the model stored for this state. (also see [include state in hypotheses](include-state-in-hypotheses.md)). 
+In Monty, state can be interpreted as a sub-object ID. Depending on the state of an object Monty will look at the model stored for this state (also see [include state in hypotheses](include-state-in-hypotheses.md)). 
 
 One alternative is to represent state as a 4th dimension in the models such that every location on the object is represented as (x, y, z, s). However, it seems like interpolation along the state/time dimension is likely limited. Furthermore, measuring distance along the state dimension is likely quite different from along the three spatial dimensions. Neither of these points would be reflected well if using a continuous 4D model. 
 
