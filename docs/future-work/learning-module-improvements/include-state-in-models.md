@@ -15,4 +15,4 @@ One alternative is to represent state as a 4th dimension in the models such that
 
 States are learned as an ordered sequence. The model of an object can include an ordered sequence of states as well as the temporal duration between states in the sequence. The interval length between two states is provided by the timer input to the LM and can be stores in the models. States might also be traversed by applying actions, however we don't have a concrete proposal for this yet.
 
-Both behavior & morphology models can have different states and sequences and both can be driven by time or other factors (there is no difference between the LMs besides their input).
+Both behavior & morphology models can have different states and sequences and both can be driven by time or other factors. In other words, there is no difference between the LMs besides their input.
