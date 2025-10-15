@@ -11,7 +11,7 @@ Any model in an LM can be state conditioned. For instance a stapler might be ope
 
 In Monty, state can be interpreted as a sub-object ID. Depending on the state of an object Monty will look at the model stored for this state. (also see [include state in hypotheses](include-state-in-hypotheses.md)). 
 
-One alternative is to represent state as a 4th dimension in the models such that every location on the object is represented as (x, y, z, s). However, it seems like interpolation along the state/time dimension is likely limited, which may be hard to represent this way.
+One alternative is to represent state as a 4th dimension in the models such that every location on the object is represented as (x, y, z, s). However, it seems like interpolation along the state/time dimension is likely limited. Furthermore, measuring distance along the state dimension is likely quite different from along the three spatial dimensions. Neither of these points would be reflected well if using a continuous 4D model. 
 
 States are learned as an ordered sequence. The model of an object can include an ordered sequence of states as well as the temporal duration between states in the sequence. The interval length between two states is provided by the timer input to the LM and can be stores in the models. States might also be traversed by applying actions, however we don't have a concrete proposal for this yet.
 
