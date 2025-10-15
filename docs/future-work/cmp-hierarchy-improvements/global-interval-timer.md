@@ -19,7 +19,7 @@ There is a default speed at which the timer goes through the different active st
 
 The animation below shows an example of learning a melody. Here, each note is a significant event that resets the timer.
 
-[Example Behavior 1](https://res.cloudinary.com/dtnazefys/video/upload/Time_in_Behaviors_Expl1.mov)
+[Example Behavior 1](https://res.cloudinary.com/dtnazefys/video/upload/Time_in_Behaviors_Expl1.mp4)
 
 Whatever an input feature (here, the note, although one could also use a background beat instead) comes into the column/LM, it gets associated with the L1 input that is received at the time, which represents the time passed since the last event.
 
@@ -33,7 +33,7 @@ Next, let's look at an example of an object behavior. Here we have both discrete
 
 The clock is reset and starts ticking through the different neural activations as before. However, as we activate different time cells, we receive different inputs in L4 and associate these different inputs with the different time cells. This allows us to represent feature inputs at different offsets after the last significant event. When a significant event occurs (i.e. stapler reaches the bottom position and tacks some paper), the clock is reset and we move one forward in the element in the sequence (L5b)
 
-[Example Behavior 2](https://res.cloudinary.com/dtnazefys/video/upload/Time_in_Behaviors_expl2.mov)
+[Example Behavior 2](https://res.cloudinary.com/dtnazefys/video/upload/Time_in_Behaviors_expl2.mp4)
 
 One other change here is that we are sensing in 3D space (2D in the example diagram), so in addition to our position in the sequence, we have a location on the object (L6a, shown as grid here). This location is updated using sensor movement (our existing mechanism). In the example here, the sensor doesn’t move so we just store sequence information at that location but if we explore a behavior over and over again at different locations, this would become a richer representation of the entire object behavior.
 
