@@ -38,7 +38,7 @@ Analogous to object models, behavior models can be recognized in any location, o
 
 ## Associating Morphology and Behavior Models
 
-Any particular object may exhibit multiple independent behaviors. For example, the top of a stapler can be raised or lowered and, independently, the stapler deflection plate can be rotated. A coffee maker may have a power switch, a lid to add water, and a grinds basket that swings out. Each of these parts exhibits its own behaviors.
+Any particular object may exhibit multiple independent behaviors. For example, the top of a stapler can be raised or lowered and, independently, the stapler deflection plate can be rotated. A coffee maker may have a power switch, a lid to add water, and a filter basket that swings out. Each of these parts exhibits its own behaviors.
 
 In general, any morphological model can exhibit multiple behaviors, and any behavioral model can apply to different morphological models. This is analogous to compositional structure. The theory and mechanism we proposed for how the cortex learns compositional structure were derived for compositions of physical objects, such as a logo on a mug.
 
