@@ -52,7 +52,7 @@ The above examples illustrate that the two modeling systems, morphology/static a
 
 ## Sequence Learning and Representation of Time
 
-In many ways, the two modeling systems are similar. As mentioned, a major difference is that behavioral models require a temporal dimension, whereas our morphology models could do without it so far, although also those may make use of time and represent different states for the same object. Behaviors are high-order sequences, and the time between sequence elements is often important.
+In many ways, the two modeling systems are similar. As mentioned, a major difference is that behavioral models require a temporal dimension, whereas our morphology models could do without it so far, although they may also make use of time and represent different states for the same object. Behaviors are high-order sequences, and the time between sequence elements is often important.
  
 Previous work at Numenta showed how any layer of neurons can learn high-order sequences [1]. This mechanism will work well for learning behavioral sequences. In addition, there is a need for learning the time between sequence elements.
 
