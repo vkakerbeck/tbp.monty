@@ -56,7 +56,7 @@ In many ways, the two modeling systems are similar. As mentioned, a major differ
  
 Previous work at Numenta showed how any layer of neurons can learn high-order sequences [1]. This mechanism will work well for learning behavioral sequences. In addition, there is a need for learning the time between sequence elements.
 
-Matrix cells in the thalamus could encode the time passed since the last event and broadcast this signal widely across the neocortex. Matrix cells project to L1, where they form synapses on the apical dendrites of L3 and L5 cells, allowing the behavioral model to encode the timing between behavioral states. The static model does not require time but could still learn state/context-conditioned models using the same mechanism.
+Matrix cells in the thalamus could encode the time passed since the last event and broadcast this signal widely across the neocortex. Matrix cells project to L1, where they form synapses on the apical dendrites of L3 and L5 cells, allowing the behavioral model to encode the timing between behavioral states. The static model does not require time but could still learn state/context-conditioned models using the same mechanism. For instance, the stapler's morphology is different depending on whether it is in the opened or closed state.
 
 ![In addition to the local sensory and movement input, the column receives a more global time input to L1. This signal represents the amount of time passed since the last event. It is sent widely/globally and therefore synchronizes learning between many columns. A detected event in one learning module can reset the interval timer for all of them.](../../figures/theory/timing_input.png#width=500px)
 
