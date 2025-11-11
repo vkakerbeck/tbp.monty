@@ -619,13 +619,12 @@ def get_graph_lm_episode_stats(lm):
                     )
                 else:
                     detected_rotation = lm.buffer.stats["detected_rotation_quat"]
-                rotation_error = np.round(
-                    compute_pose_error(
-                        Rotation.from_quat(detected_rotation),
-                        Rotation.from_quat(lm.primary_target_rotation_quat),
-                    ),
-                    4,
+                rotation_error = compute_pose_error(
+                    Rotation.from_quat(detected_rotation),
+                    Rotation.from_quat(lm.primary_target_rotation_quat),
                 )
+                # convert rotation error from radians to degrees
+                rotation_error = np.round(rotation_error * 180 / np.pi, 4)
             else:
                 primary_performance = "confused"
 
