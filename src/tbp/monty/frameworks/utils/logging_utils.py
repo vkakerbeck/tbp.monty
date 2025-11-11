@@ -428,7 +428,9 @@ def compute_pose_errors(
 
 
 def compute_pose_error(
-    predicted_rotation: Rotation, target_rotation: Rotation
+    predicted_rotation: Rotation,
+    target_rotation: Rotation,
+    return_degrees: bool = False,
 ) -> float:
     """Computes the minimum angular pose error between predicted and target rotations.
 
@@ -438,11 +440,15 @@ def compute_pose_error(
         predicted_rotation: Predicted rotation(s). Can be a single or list of
             rotation.
         target_rotation: Target rotation. Must represent a single rotation.
-
+        return_degrees: Whether to return the error in degrees. If False, returns the
+            error in radians. Defaults to False.
     Returns:
         The minimum angular error in radians.
     """
-    return np.min(compute_pose_errors(predicted_rotation, target_rotation))
+    rotation_error = np.min(compute_pose_errors(predicted_rotation, target_rotation))
+    if return_degrees:
+        return rotation_error * 180 / np.pi
+    return rotation_error
 
 
 def print_overall_stats(stats):
@@ -594,12 +600,14 @@ def get_graph_lm_episode_stats(lm):
                     )
                 else:
                     detected_rotation = lm.buffer.stats["detected_rotation_quat"]
-                rotation_error = compute_pose_error(
-                    Rotation.from_quat(detected_rotation),
-                    Rotation.from_quat(lm.primary_target_rotation_quat),
+                rotation_error = np.round(
+                    compute_pose_error(
+                        Rotation.from_quat(detected_rotation),
+                        Rotation.from_quat(lm.primary_target_rotation_quat),
+                        return_degrees=True,
+                    ),
+                    4,
                 )
-                # convert rotation error from radians to degrees
-                rotation_error = np.round(rotation_error * 180 / np.pi, 4)
             else:
                 primary_performance = "confused"
 
@@ -634,12 +642,13 @@ def get_graph_lm_episode_stats(lm):
                         )
                     else:
                         detected_rotation_ts = lm.buffer.stats["individual_ts_rot"]
-                    individual_ts_rotation_error = compute_pose_error(
-                        Rotation.from_quat(detected_rotation_ts),
-                        Rotation.from_quat(lm.primary_target_rotation_quat),
-                    )
                     individual_ts_rotation_error = np.round(
-                        individual_ts_rotation_error * 180 / np.pi, 4
+                        compute_pose_error(
+                            Rotation.from_quat(detected_rotation_ts),
+                            Rotation.from_quat(lm.primary_target_rotation_quat),
+                            return_degrees=True,
+                        ),
+                        4,
                     )
                 else:
                     individual_ts_perf = "confused"
@@ -778,11 +787,14 @@ def add_evidence_lm_episode_stats(lm, stats, consistent_child_objects):
         stats, "stepwise_performance", lm, lm.stepwise_target_object
     )
     if stats["primary_performance"] == "correct_mlh":
-        stats["rotation_error"] = compute_pose_error(
-            last_mlh["rotation"].inv(),
-            Rotation.from_quat(lm.primary_target_rotation_quat),
+        stats["rotation_error"] = np.round(
+            compute_pose_error(
+                last_mlh["rotation"].inv(),
+                Rotation.from_quat(lm.primary_target_rotation_quat),
+                return_degrees=True,
+            ),
+            4,
         )
-        stats["rotation_error"] = np.round(stats["rotation_error"] * 180 / np.pi, 4)
     # Check if the most likely object is a consistent child object
     # Don't do this if the episode timed out, we had no match, or the detected object
     # was already an exact match with the label.
