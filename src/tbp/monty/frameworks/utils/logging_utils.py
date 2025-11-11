@@ -445,31 +445,6 @@ def compute_pose_error(
     return np.min(compute_pose_errors(predicted_rotation, target_rotation))
 
 
-def get_overall_pose_error(stats, lm_id="LM_0"):
-    """Get mean pose error over all episodes.
-
-    Note:
-        This can now be obtained easier from the .csv stats.
-
-    Args:
-        stats: detailed stats
-        lm_id: id of learning module
-
-    Returns:
-        mean pose error
-    """
-    errors = []
-    for episode in stats.keys():
-        detected = stats[episode][lm_id]["detected_rotation_quat"]
-        if detected is not None:  # only checking accuracy on detected objects
-            target = stats[episode][lm_id]["target"]["quat_rotation"]
-            err = compute_pose_error(
-                Rotation.from_quat(detected), Rotation.from_quat(target)
-            )
-            errors.append(err)
-    return np.round(np.mean(errors), 4)
-
-
 def print_overall_stats(stats):
     acc = (
         (
