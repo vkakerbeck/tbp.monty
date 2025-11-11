@@ -442,8 +442,9 @@ def compute_pose_error(
         target_rotation: Target rotation. Must represent a single rotation.
         return_degrees: Whether to return the error in degrees. If False, returns the
             error in radians. Defaults to False.
+
     Returns:
-        The minimum angular error in radians.
+        The minimum angular error in radians (or degrees if `return_degrees` is True).
     """
     rotation_error = np.min(compute_pose_errors(predicted_rotation, target_rotation))
     if return_degrees:
