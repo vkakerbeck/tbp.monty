@@ -1,5 +1,13 @@
 ---
 title: Extract Better Features
+description: Add more sophisticated feature extraction to sensor modules.
+rfc: optional
+estimated-scope: medium
+improved-metric: noise, accuracy, numsteps
+output-type: monty-feature, PR
+skills: python, research, computer-vision
+contributor: 
+status: scoped
 ---
 
 Currently non-morphological features are very simple, such as extracting the RGB or hue value at the center of the sensor patch.
