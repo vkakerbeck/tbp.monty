@@ -97,7 +97,6 @@
   - [implement-and-test-rapid-evidence-decay-as-form-of-unsupervised-memory-resetting](future-work/learning-module-improvements/implement-and-test-rapid-evidence-decay-as-form-of-unsupervised-memory-resetting.md)
   - [improve-bounded-evidence-performance](future-work/learning-module-improvements/improve-bounded-evidence-performance.md)
   - [use-models-with-fewer-points](future-work/learning-module-improvements/use-models-with-fewer-points.md)
-  - [make-it-possible-to-store-multiple-feature-maps-on-one-graph](future-work/learning-module-improvements/make-it-possible-to-store-multiple-feature-maps-on-one-graph.md)
   - [test-particle-filter-like-resampling-of-hypothesis-space](future-work/learning-module-improvements/test-particle-filter-like-resampling-of-hypothesis-space.md)
   - [re-anchor-hypotheses](future-work/learning-module-improvements/re-anchor-hypotheses.md)
   - [less-dependency-on-first-observation](future-work/learning-module-improvements/less-dependency-on-first-observation.md)
