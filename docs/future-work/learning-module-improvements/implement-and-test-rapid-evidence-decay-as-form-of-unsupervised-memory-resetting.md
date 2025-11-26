@@ -1,5 +1,12 @@
 ---
 title: Implement and Test Rapid Evidence Decay as Form of Unsupervised Memory Resetting
+rfc: 
+estimated-scope: medium
+improved-metric: multiobj
+output-type: experiments, analysis
+skills: python, research, monty
+contributor: 
+status: 
 ---
 
 In a natural, unsupervised setting, the object that a Monty system is observing will change from time to time. Currently, Monty's internal representations of objects is only explicitly reset by the experimenter, for example at the start of an episode of training.

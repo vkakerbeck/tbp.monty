@@ -1,5 +1,13 @@
 ---
 title: Improve Handling of Symmetry
+description:
+rfc: 
+estimated-scope: unknown
+improved-metric: pose, numsteps
+output-type: prototype, analysis, PR
+skills: python, research, monty
+contributor: 
+status: unstarted
 ---
 
 LMs currently recognize symmetry by making multiple observations in a row that are all consistent with a set of multiple poses. I.e. if new observations of an object do not eliminate any of a set of poses, then it is likely that these poses are equivalent/symmetric.
