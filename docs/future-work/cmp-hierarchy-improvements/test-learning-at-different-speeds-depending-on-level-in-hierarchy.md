@@ -1,5 +1,13 @@
 ---
 title: Test Learning at Different Speeds Depending on Level in Hierarchy
+description: Modufy constrained object models to learn at different speed and test the effect slower learning at lower levels in the hierarchy.
+rfc: optional
+estimated-scope: medium
+improved-metric: compositional, generalization
+output-type: prototype, experiments, analysis, publication
+skills: research, python, monty
+contributor: 
+status: unstarted
 ---
 
 Our general view is that episodic memory and working memory in the brain leverage similar representations to those in learning modules, i.e. structured reference frames of discrete objects.

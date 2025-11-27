@@ -4,7 +4,7 @@ description: Use saliency in a larger RF to determine where to look next. Coordi
 rfc: https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0012_extended_goal_state_functionality.md
 estimated-scope: large
 improved-metric: numsteps, accuracy, learning, goal-policy, multi-object
-output-type: RFC, prototype, monty-feature, PR, experiments, analysis
+output-type: RFC, prototype, monty-feature, PR, experiments, analysis, publication
 skills: research, literature-review, python, monty, refactoring, computer-vision
 contributor: scottcanoe
 status: in-progress
