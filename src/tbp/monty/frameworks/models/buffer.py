@@ -364,7 +364,7 @@ class FeatureAtLocationBuffer:
                     f"shape {np.array(self.features[input_channel][feature]).shape}"
                 )
                 # Get feature at each time step where the global on_object flag was
-                # True (at least one input was on object, not necessarily this
+                # True (at least one input was on object, not nescessarily this
                 # features input channel).
                 channel_features_on_object[feature] = np.array(
                     self.features[input_channel][feature]
