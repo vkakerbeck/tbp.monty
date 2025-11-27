@@ -1,6 +1,15 @@
 ---
 title: Model-Based Exploration Policy
+description: Use LM models during exploration to move to most uncertain areas in model and learn more about those.
+rfc: optional
+estimated-scope: unknown
+improved-metric: learning
+output-type: prototype, monty-feature, PR
+skills: python, monty, spatial-transformations, research
+contributor: 
+status: unstarted
 ---
+
 During exploration/learning-focused movement, we do not make use of any model-based, top-down policies driven by LMs. Two approaches we would like to implement are:
 - A model-based policy that moves the sensors to areas that potentially represent the explored limits of an object. For example, if we've explored the surface of an object but not the entirety of it, then there will be points on the edge of the learned model with few neighboring points. Exploring in these regions is likely to efficiently uncover novel observations. Note that a "false-positive" for this heuristic is that thin objects like a wire or piece of paper will have such regions naturally at their edges, so it should only represent a bias in exploration, not a hard rule.
 - A model-based policy that spends more time exploring regions associated with high-frequency feature changes, or discriminative object-parts. For example, the spoon and fork in YCB are easy to confuse if the models of their heads are not sufficiently detailed. Two heuristics to support greater exploration in this area could include:

@@ -1,5 +1,13 @@
 ---
 title: Policy to quickly move to a new object
+description: Once an object is recognized, use it's learned model to move off the object.
+rfc: required
+estimated-scope: unknown
+improved-metric: multi-object, compositional, numsteps, goal-policy
+output-type: prototype, PR, monty-feature, analysis
+skills: python, monty, research
+contributor: 
+status: unstarted
 ---
 
 When exploring an environment with multiple objects (including components of a compositional object), it is beneficial to quickly move to a new object when the current one has been recognized, so as to rapidly build up a model of the outside world. 
