@@ -1,1 +1,1 @@
-`css` `html` `javascript` `s3` `content marketing` `github-actions` `github-readme-sync-tool` `interviewing` `podcasting` `python` `research` `thousand-brains-theory` `video-editing` `writing` `content-creation`
+`css` `html` `javascript` `s3` `github-actions` `github-readme-sync-tool` `interviewing` `python` `writing` `markdown` `yaml` `event-planning` `web-frameworks` `video-production` `networking` `data-analysis` `bash` `css-frameworks` `audio-editing`
