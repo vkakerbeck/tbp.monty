@@ -84,7 +84,7 @@ Is the work completed, or is it in progress? [Edit future-work-status.md](https:
 !snippet[../../snippets/future-work-status.md]
 
 > [!NOTE] Notes on some of the fields
-> scoped: means an rfc or similar details document has been written for the planned approach.
+> scoped: means an RFC or similar details document has been written for the planned approach.
 
 # Tags
 
