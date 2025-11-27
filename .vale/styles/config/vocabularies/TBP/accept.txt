@@ -208,4 +208,3 @@
 \b[Pp]arvocellular\b
 \bKraus\b
 \b[Mm]onty\b
-\bKD\b
