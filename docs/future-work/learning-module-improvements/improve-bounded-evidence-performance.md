@@ -6,6 +6,6 @@ estimated-scope: medium
 improved-metric: multi-object
 output-type: prototype, experiments, analysis
 skills: python, research, monty
-contributor: ramyamounir
+contributor: ramyamounir, scottcanoe
 status: paused
 ---
