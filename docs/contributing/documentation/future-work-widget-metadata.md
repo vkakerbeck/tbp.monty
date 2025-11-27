@@ -18,6 +18,19 @@ contributor: codeallthethingz
 status: in-progress
 ---
 ```
+```template
+---
+title: 
+description:
+rfc: 
+estimated-scope: 
+improved-metric: 
+output-type: 
+skills: 
+contributor: 
+status: 
+---
+```
 
 The following fields are validated against allow lists defined in snippet files to ensure consistency and quality.
 
