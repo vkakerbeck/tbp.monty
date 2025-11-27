@@ -16,4 +16,4 @@ To make this more efficient and robust, we might store symmetric poses in long-t
 - Whenever symmetry is detected, the poses associated with the state could be stored for that object.
 - Over-time, we can reduce or expand this list of symmetric poses, enabling the LM to establish with reasonable confidence that an object is in a symmetric pose as soon as the hypothesized poses fall within the list.
 
-By developing an established list of symmetric poses, we might also improve voting on such symmetric poses - see [Using Pose for Voting](../voting-improvements/use-pose-for-voting.md).
+By developing an established list of symmetric poses, we might also improve voting on such symmetric poses - see [clean up and simplify voting](../voting-improvements/clean-up-and-simplify-voting.md).

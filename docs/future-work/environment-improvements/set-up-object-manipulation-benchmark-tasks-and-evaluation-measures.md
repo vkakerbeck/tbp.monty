@@ -9,4 +9,4 @@ contributor:
 status: unstarted
 ---
 
-Follow-up task to "[Set up Environment that allows for object manipulation](environment-improvements/set-up-environment-that-allows-for-object-manipulation.md)" that implements ways to run Monty experiments and assess performance in the environment.
+Follow-up task to "[Set up Environment that allows for object manipulation](../environment-improvements/set-up-object-manipulation-benchmark-tasks-and-evaluation-measures.md)" that implements ways to run Monty experiments and assess performance in the environment.
