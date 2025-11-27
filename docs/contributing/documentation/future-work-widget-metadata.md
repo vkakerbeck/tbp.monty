@@ -60,7 +60,7 @@ What type of output will this work produce? [Edit future-work-output-type.md](ht
 !snippet[../../snippets/future-work-output-type.md]
 
 > [!NOTE] Notes on some of the fields
-> publication: Doesn't nescessarily refer to publication in a peer-reviewed journal but could also be a general writeup or presentation of the results.
+> publication: Doesn't necessarily refer to publication in a peer-reviewed journal but could also be a general writeup or presentation of the results.
 
 # Skills
 
@@ -69,7 +69,7 @@ Skills is a comma separated list of skills that will be needed to complete this.
 !snippet[../../snippets/future-work-skills.md]
 
 > [!NOTE] Notes on some of the fields
-> research: means the ability to run controlled experiments, interprete results, investigate unexpected behavior, come up with novel solutions, draw from existing literature, and communicate the results
+> research: means the ability to run controlled experiments, interpret results, investigate unexpected behavior, come up with novel solutions, draw from existing literature, and communicate the results
 
 # Contributor
 
