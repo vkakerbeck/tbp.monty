@@ -6,9 +6,10 @@ The future work documents have special Frontmatter metadata that is used to powe
 
 Here is an example of what the Frontmatter fields look like:
 
-```markdown
+```example
 ---
 title: Future Work Widget
+description: Implement an interactive table view of the future work pages.
 rfc: https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0015_future_work.md
 estimated-scope: medium
 improved-metric: community-engagement
