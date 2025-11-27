@@ -4,7 +4,7 @@ description: A naive scan policy equivalent for the surface agent.
 rfc: optional
 estimated-scope: medium
 improved-metric: learning, accuracy
-output-type: monty-features, PR
+output-type: monty-feature, PR
 skills: python, monty, spatial-transformations
 contributor: 
 status: unstarted

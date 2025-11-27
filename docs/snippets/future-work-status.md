@@ -1,1 +1,1 @@
-`unstarted` `scoped` `completed` `in-progress` `paused` `evergreen`
+`unstarted` `scoping` `scoped` `completed` `in-progress` `paused` `evergreen`

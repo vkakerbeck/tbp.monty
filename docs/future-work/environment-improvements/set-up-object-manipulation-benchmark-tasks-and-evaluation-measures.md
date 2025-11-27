@@ -3,7 +3,7 @@ title: Set Up Object Manipulation Benchmark Tasks and Evaluation Measures
 rfc: required
 estimated-scope: large
 improved-metric: goal-policy, dynamic
-output-type: experiment, testbed
+output-type: experiments, testbed
 skills: python, monty, research
 contributor: 
 status: unstarted
