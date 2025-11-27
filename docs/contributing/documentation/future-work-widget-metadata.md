@@ -43,7 +43,7 @@ Does this work item required an RFC? (These values are processed in the `validat
 
 # Estimated Scope
 
-Very roughly, how big of a chunk of work is this? [Edit future-work-estimated-scope.md](https://github.com/thousandbrainsproject/tbp.monty/edit/main/docs/snippets/future-work-estimated-scope.md).
+Very roughly, how big of a chunk of work is this? [Edit future-work-estimated-scope.md](https://github.com/thousandbrainsproject/tbp.monty/edit/main/docs/snippets/future-work-estimated-scope.md). The estimated scope can be updated throughout working on a task as the scope becomes more clear.
 
 !snippet[../../snippets/future-work-estimated-scope.md]
 
@@ -59,11 +59,17 @@ What type of output will this work produce? [Edit future-work-output-type.md](ht
 
 !snippet[../../snippets/future-work-output-type.md]
 
+> [!NOTE] Notes on some of the fields
+> publication: Doesn't nescessarily refer to publication in a peer-reviewed journal but could also be a general writeup or presentation of the results.
+
 # Skills
 
 Skills is a comma separated list of skills that will be needed to complete this. [Edit future-work-skills.md](https://github.com/thousandbrainsproject/tbp.monty/edit/main/docs/snippets/future-work-skills.md).
 
 !snippet[../../snippets/future-work-skills.md]
+
+> [!NOTE] Notes on some of the fields
+> research: means the ability to run controlled experiments, interprete results, investigate unexpected behavior, come up with novel solutions, draw from existing literature, and communicate the results
 
 # Contributor
 
@@ -76,6 +82,9 @@ The contributor field should be GitHub usernames, as these are converted to thei
 Is the work completed, or is it in progress? [Edit future-work-status.md](https://github.com/thousandbrainsproject/tbp.monty/edit/main/docs/snippets/future-work-status.md).
 
 !snippet[../../snippets/future-work-status.md]
+
+> [!NOTE] Notes on some of the fields
+> scoped: means an rfc or similar details document has been written for the planned approach.
 
 # Tags
 
