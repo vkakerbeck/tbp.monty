@@ -1,5 +1,13 @@
 ---
 title: Can we change the CMP to use displacements instead of locations?
+description: Investigate using movement vectors instead of locations in the CMP and the implications it would have for Monty.
+rfc: required
+estimated-scope: medium
+improved-metric: biological-realism
+output-type: RFC
+skills: monty
+contributor: 
+status: unstarted
 ---
 
 Movement is core to how LMs process and model the world. Currently, an LM receives an observation encoded with a body-centric location, and then infers a displacement in object-centric coordinates. Similarly, goal-states are specified as a target location in body-centric coordinates, which are then acted upon.

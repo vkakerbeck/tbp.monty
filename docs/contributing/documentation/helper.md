@@ -15,7 +15,7 @@ status:
 
 **improved-metric**: infrastructure, platform, simulator, environment, 
 community-engagement, learning-experience, 
-accuracy, pose, numsteps, speed, noise, learning, multi-object, generalization, compositional, deformations, features-and-morphology, scale, real-world, dynamic, goal-policy, abstract, adversarial, transfer
+accuracy, pose, numsteps, speed, noise, learning, multi-object, generalization, compositional, deformations, features-and-morphology, scale, real-world, dynamic, goal-policy, abstract, adversarial, transfer, biological-realism
 
 **output-type**: documentation, website, tutorial, automation, video, community-event, audio, podcast, 
 publication, prototype, monty-feature, PR, RFC, experiments, analysis, theory

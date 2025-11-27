@@ -1,6 +1,18 @@
 ---
 title: Generalize Voting to Associative Connections
+description: Learn associations between object representations in different LMs instead of requiring them to use the same representation for object ID.
+rfc: required
+estimated-scope: large
+improved-metric: learning, biological-realism
+output-type: RFC, prototype, PR, monty-feature
+skills: research, python, monty
+contributor: OgnjenX
+status: scoping
 ---
+
+> [!NOTE]
+> There is currently an open RFC on this topic: https://github.com/thousandbrainsproject/tbp.monty/pull/359
+
 Currently, voting relies on all learning modules sharing the same object ID for any given object, as a form of supervised learning signal. Thanks to this, they can vote on this particular ID when communicating with one-another.
 
 However, in the setting of unsupervised learning, the object ID that is associated with any given model is unique to the parent LM. As such, we need to organically learn the mapping between the object IDs that occur together across different LMs, such that voting can function without any supervised learning signal. This is the same issue faced by the brain, where a neural encoding in one cortical column (e.g. an SDR), needs to be associated with the different SDRs found in other cortical columns.
