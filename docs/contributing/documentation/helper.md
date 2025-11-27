@@ -21,7 +21,7 @@ accuracy, pose, numsteps, speed, noise, learning, multi-object, generalization, 
 publication, prototype, monty-feature, PR, RFC, experiments, analysis, theory, testbed, mesh-models
 
 **skills**: css, html, javascript, s3, github-actions, github-readme-sync-tool, interviewing, podcasting, video-editing, writing, content-creation, markdown, yaml, event-planning, web-frameworks, video-production, networking, data-analysis, bash, community-organizing, css-frameworks, audio-editing, 
-mujoco, refactoring, simulator
+mujoco, refactoring, simulator, telemetry, wandb, CUDA
 python, research, monty, literature-review, computer-vision, spatial-transformations, reinforcement-learning, neuroscience, 3d-modeling
 *research means the ability to run controlled experiments, interprete results, investigate unexpected behavior, come up with novel solutions, draw from existing literature, and communicate the results*
 

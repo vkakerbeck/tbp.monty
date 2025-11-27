@@ -1,5 +1,13 @@
 ---
 title: Add Infrastructure for Multiple Agents that Move Independently
+description: Currently, Monty only supports one Agent. Update Monty's setup and motor system to support multiple agents.
+rfc: required
+estimated-scope: large
+improved-metric: infrastructure, real-world, numsteps, goal-policy
+output-type: RFC, PR, monty-feature
+skills: python, monty
+contributor: 
+status: unstarted
 ---
 
 Currently, Monty's infrastructure only supports a single agent that moves around the scene, where that agent can be associated with a plurality of sensors and LMs. We would like to add support for multiple agents that move independently.
