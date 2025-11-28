@@ -1,5 +1,5 @@
 ---
-title: Add More Wandb Logging for Learning Unsupervised
+title: Add More Wandb Logging for Unsupervised Learning
 description: Improve logged information in unsupervised experiments (to wandb).
 rfc: optional
 estimated-scope: unknown

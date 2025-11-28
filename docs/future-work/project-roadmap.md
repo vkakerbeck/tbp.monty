@@ -28,7 +28,7 @@ These are tasks where we have a rough idea of how we want to achieve them but we
 
 Tasks can be categorized in multiple ways:
 
-- **Which part of Monty does it touch?** This is represented `section headers` in the table, and is organized into Sensor Module, Learning Module, Motor System, Voting, Hierarchy, Environment, Framework, and Open-Source/Communication.
+- **Which part of Monty does it touch?** This is represented by the `section headers` in the table, and is organized into Sensor Module, Learning Module, Motor System, Voting, Hierarchy, Environment, Framework, and Open-Source/Communication.
 - **Which capabilitie(s) does it improve?** This is represented by the `improved-metric` column. We keep track of the progress on the capabilities. Each task should improve at least one capability but can contribute to multiple.
 - **What skills does it require?** This is represented in the `skills` column. Often, it is not a hard requirement to be an expert in all the skills listed but they give you a rough idea of which tasks may be a good fit given your background.
 - **What type of output is expected?** This can be found in the `output-type` column. This column should give you a rough idea of the type of work this task involves. Note that you can also contribute partially to a task (e.g. develop a prototype but don't integrate it as a new monty feature).

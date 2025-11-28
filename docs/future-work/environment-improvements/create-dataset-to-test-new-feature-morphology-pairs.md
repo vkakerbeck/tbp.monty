@@ -4,7 +4,7 @@ description: Create a mesh dataset where we can test learning specific object-te
 rfc: optional
 estimated-scope: small
 improved-metric: generalization, transfer, features-and-morphology
-output-type: mesh-models
+output-type: experiments, mesh-models
 skills: 3d-modeling
 contributor: 
 status: unstarted

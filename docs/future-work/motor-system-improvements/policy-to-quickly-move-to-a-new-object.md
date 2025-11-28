@@ -1,6 +1,6 @@
 ---
 title: Policy to quickly move to a new object
-description: Once an object is recognized, use it's learned model to move off the object.
+description: Once an object is recognized, use its learned model to move off the object.
 rfc: required
 estimated-scope: unknown
 improved-metric: multi-object, compositional, numsteps, goal-policy

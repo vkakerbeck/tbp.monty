@@ -1,6 +1,6 @@
 ---
 title: Add GPU Support for Monty
-description: Utilize GPU acceleration for some of Montys computations.
+description: Utilize GPU acceleration for some of Monty's computations.
 rfc: optional
 estimated-scope: large
 improved-metric: speed

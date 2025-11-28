@@ -1,6 +1,6 @@
 ---
 title: Interpret Goal States in Motor System & Switch Policies
-description: Enable the motor system to switch between different ways to execute goals.
+description: Enable the motor system to switch between different ways to achieve goals.
 rfc: optional
 estimated-scope: unknown
 improved-metric: numsteps, goal-policy

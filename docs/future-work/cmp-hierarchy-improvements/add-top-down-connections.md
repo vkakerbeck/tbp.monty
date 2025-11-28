@@ -1,6 +1,6 @@
 ---
 title: Add Top-Down Connections
-description: Add top-down connectivity option between LMs that can inform the receiving LM of the sensed object ID and location.
+description: Add top-down connectivity option between LMs that can inform the receiving LM of the object ID and location it should likely be sensing.
 rfc: required
 estimated-scope: large
 improved-metric: numsteps, compositional

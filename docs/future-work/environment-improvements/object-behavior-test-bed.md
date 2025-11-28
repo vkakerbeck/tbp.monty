@@ -1,6 +1,6 @@
 ---
 title: Object Behavior Test Bed
-description: Set up and environment to test modeling and inferring object behavior under various conditions. 
+description: Set up an environment to test modeling and inferring object behavior under various conditions. 
 rfc: optional
 estimated-scope: medium
 improved-metric: dynamic

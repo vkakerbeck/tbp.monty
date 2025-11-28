@@ -1,6 +1,6 @@
 ---
 title: Less Dependency on First Observation
-description: Currently we only initialize hypotheses on the first step of an episode which make us dependent on it being good.
+description: Currently we only initialize hypotheses on the first step of an episode which make us dependent on the first observation having low noise .
 rfc: 
 estimated-scope: large
 improved-metric: noise, multi-object

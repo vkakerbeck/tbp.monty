@@ -1,6 +1,6 @@
 ---
 title: Figure out Performance Measures and Supervision in Heterarchy
-description: Set up way to supervised LMs when learning compositional objects, as well as metrics to measure their performance.
+description: Set up way to supervise LMs when learning compositional objects, as well as metrics to measure their performance.
 rfc: optional
 estimated-scope: medium
 improved-metric: compositional

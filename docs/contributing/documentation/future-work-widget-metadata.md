@@ -37,7 +37,7 @@ The following fields are validated against allow lists defined in snippet files 
 
 # RFC
 
-Does this work item required an RFC? (These values are processed in the `validator.py` code) and can be of the form:
+Does this work item require an RFC? (These values are processed in the `validator.py` code) and can be of the form:
 
 `https://github\.com/thousandbrainsproject/tbp\.monty/.*` `required` `optional` `not-required`
 
@@ -48,9 +48,9 @@ Very roughly, how big of a chunk of work is this? [Edit future-work-estimated-sc
 !snippet[../../snippets/future-work-estimated-scope.md]
 
 > [!NOTE] Notes on some of the fields
-> **small** tasks in the future work table are usually still multi-day efforts. We only put reasonable large chunks of work into our future work documentation so even those marked as small need to be large enough to justify the effort of writing up a detailed future work page. For smaller items, check out our [GitHub issues](https://github.com/thousandbrainsproject/tbp.monty/issues) and other [ways to contribute](../../contributing/why-contribute.md). You can also have a look at the TODO comments throughout the Monty codebase or help up remove one of the many currently ignored ruff lint rules (listed in [pyproject.toml](../../../pyproject.toml)).
+> **small** tasks in the future work table are usually still multi-day efforts. We only put reasonably large chunks of work into our future work documentation as even those marked as small need to be large enough to justify the effort of writing up a detailed future work page. For smaller items, check out our [GitHub issues](https://github.com/thousandbrainsproject/tbp.monty/issues) and other [ways to contribute](../../contributing/why-contribute.md). You can also have a look at the TODO comments throughout the Monty codebase or help up remove one of the many currently ignored ruff lint rules (listed in [pyproject.toml](../../../pyproject.toml)).
 > **medium** tasks are usually multi-week efforts that require several pieces of output (e.g. several PRs, data analysis, write ups, iterative testing, ...)
-> **large** tasks are usually multi-month efforts. For research items you could think of these tasks as the scope of a bachelor or master thesis, often large enough to result in a publication. These items are often uncertain in the exact scope as it depends on the path someone chooses to take and intermediate results. They often require gaining a deeper understanding of Monty first and innovating upon what is currently there.
+> **large** tasks are usually multi-month efforts. For research items you could think of these tasks as the scope of a bachelor or master's thesis, and large enough to result in a potential publication. These items are often uncertain in the exact scope as it depends on the path someone chooses to take and intermediate results. They often require gaining a deeper understanding of Monty first and innovating upon what is currently there.
 > **unknown** is a label we often assign to unstarted tasks that we have not scoped yet. We might realize the need for a specific feature but haven't thought through potential solutions deeply yet and hence can't give an estimate on the scope. Once the task is scoped, this can be updated.
 
 # Improved Metric

@@ -1,6 +1,6 @@
 ---
 title: Test Particle-Filter-Like Resampling of Hypothesis Space
-description: Resample new hypotheses dynamically throughtout an experiment.
+description: Resample new hypotheses dynamically throughout an experiment.
 rfc: https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0009_hypotheses_resampling.md
 estimated-scope: large
 improved-metric: accuracy, speed, multi-object

@@ -1,6 +1,6 @@
 ---
 title: Test Learning at Different Speeds Depending on Level in Hierarchy
-description: Modufy constrained object models to learn at different speed and test the effect slower learning at lower levels in the hierarchy.
+description: Modify constrained object models to learn at different speeds and test the effect of slower learning at lower levels in the hierarchy.
 rfc: optional
 estimated-scope: medium
 improved-metric: compositional, generalization

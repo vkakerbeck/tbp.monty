@@ -1,6 +1,6 @@
 ---
 title: Deal with Moving Objects
-description: Use sensed local flow or predicted obejct movement to compensate hypothesized location on object.
+description: Use sensed local flow or predicted object movement to compensate the hypothesized location on object.
 rfc: required
 estimated-scope: large
 improved-metric: dynamic, real-world
