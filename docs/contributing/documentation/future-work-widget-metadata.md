@@ -47,6 +47,12 @@ Very roughly, how big of a chunk of work is this? [Edit future-work-estimated-sc
 
 !snippet[../../snippets/future-work-estimated-scope.md]
 
+> [!NOTE] Notes on some of the fields
+> **small** tasks in the future work table are usually still multi-day efforts. We only put reasonable large chunks of work into our future work documentation so even those marked as small need to be large enough to justify the effort of writing up a detailed future work page. For smaller items, check out our [github issues](https://github.com/thousandbrainsproject/tbp.monty/issues) and other [ways to contribute](../../contributing/why-contribute.md). You can also have a look at the TODO comments throughout the Monty codebase or help up remove one of the many currently ignored ruff lint rules (listed in [pyproject.toml](../../../pyproject.toml)).
+> **medium** tasks are usually multi-week efforts that require several pieces of output (e.g. several PRs, data analysis, write ups, iterative testing, ...)
+> **large** tasks are usually multi-month efforts. For research items you could think of these tasks as the scope of a bachelor or master thesis, often large enough to result in a publication. These items are often uncertain in the exact scope as it depends on the path someone chooses to take and intermediate results. They often require gaining a deeper understanding of Monty first and innovating upon what is currently there.
+> **unknown** is a lable we often assign to unstarted tasks that we have not scoped yet. We might realize the need for a specific feature but haven't thought through potential solutions deeply yet and hence can't give an estimate on the scope. Once the task is scoped, this can be updated.
+
 # Improved Metric
 
 What type of improvement does this work provide? [Edit future-work-improved-metric.md](https://github.com/thousandbrainsproject/tbp.monty/edit/main/docs/snippets/future-work-improved-metric.md).
@@ -60,7 +66,7 @@ What type of output will this work produce? [Edit future-work-output-type.md](ht
 !snippet[../../snippets/future-work-output-type.md]
 
 > [!NOTE] Notes on some of the fields
-> publication: Doesn't necessarily refer to publication in a peer-reviewed journal but could also be a general writeup or presentation of the results.
+> **publication** doesn't necessarily refer to publication in a peer-reviewed journal but could also be a general writeup or presentation of the results.
 
 # Skills
 
@@ -69,7 +75,8 @@ Skills is a comma separated list of skills that will be needed to complete this.
 !snippet[../../snippets/future-work-skills.md]
 
 > [!NOTE] Notes on some of the fields
-> research: means the ability to run controlled experiments, interpret results, investigate unexpected behavior, come up with novel solutions, draw from existing literature, and communicate the results
+> **research** means the ability to run controlled experiments, interpret results, investigate unexpected behavior, come up with novel solutions, draw from existing literature, and communicate the results
+> **monty** refers to knowledge of how Monty works, how it is structured, and usually more detailed knowledge of the part of its algorithm that the specific future work item touches. This is usually required for tasks that involve innovative changes to the existing Monty algorithm or larger structural changes to the code base.
 
 # Contributor
 
@@ -84,7 +91,13 @@ Is the work completed, or is it in progress? [Edit future-work-status.md](https:
 !snippet[../../snippets/future-work-status.md]
 
 > [!NOTE] Notes on some of the fields
-> scoped: means an RFC or similar details document has been written for the planned approach.
+> **unstarted** are tasks that we recognize the need for but noone has started working on them.
+> **scoping** means that someone is currently in the process of writing or having an RFC reviewed or our team is actively discussing the approach in our research meetings.
+> **scoped** means an RFC or similar details document has been written for the planned approach.
+> **in-progress** are tasks that someone is currently working on. Note that this usually doesn't mean that no one else should work on them. Many tasks benefit from a second pair of eyes and external input so don't be deterred if an interesting task is already marked as in-progress.
+> **paused** means that someone has started work on this item but is currently not working on it. For example, an initial approach may have been tested but turned out not to work. New ideas and approaches are welcome.
+> **evergreen** refers to tasks that benefit from continual work and input. For example, updates to our documentation or designing new testbeds or demos for Monty. Most evergreen tasks are not listed in the future work table as they aren't large, self-contained chunks of work (see our [ways to contribute](../../contributing/why-contribute.md) page for more ways to contribute). However, some are significant projects of their own so we want to recognize people who are working on those and provide guidance in the task descriptions.
+> **completed** marks tasks that are done. We keep those in our docs for future referece and to acknowledge those that have contributed to it.
 
 # Tags
 
