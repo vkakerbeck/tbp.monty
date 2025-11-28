@@ -91,7 +91,7 @@ Is the work completed, or is it in progress? [Edit future-work-status.md](https:
 !snippet[../../snippets/future-work-status.md]
 
 > [!NOTE] Notes on some of the fields
-> **unstarted** are tasks that we recognize the need for but noone has started working on them.
+> **unstarted** are tasks that we recognize the need for but no one has started working on them.
 > **scoping** means that someone is currently in the process of writing or having an RFC reviewed or our team is actively discussing the approach in our research meetings.
 > **scoped** means an RFC or similar details document has been written for the planned approach.
 > **in-progress** are tasks that someone is currently working on. Note that this usually doesn't mean that no one else should work on them. Many tasks benefit from a second pair of eyes and external input so don't be deterred if an interesting task is already marked as in-progress.
