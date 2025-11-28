@@ -12,6 +12,7 @@ These are the things we would like to implement:
 - [Use models with fewer points](learning-module-improvements/use-models-with-fewer-points.md)
 - [Test particle-filter-like resampling of hypothesis space](learning-module-improvements/test-particle-filter-like-resampling-of-hypothesis-space.md)
 - [Dynamic adjustment of hypothesis space size](learning-module-improvements/dynamic-adjustment-of-hypothesis-space-size.md)
+- [Sample offspring hypotheses](learning-module-improvements/sample-offspring-hypotheses.md)
 - [Re-anchor hypotheses for robustness to noise and distortions](learning-module-improvements/re-anchor-hypotheses.md) 
 - [Less dependency on first observation](learning-module-improvements/less-dependency-on-first-observation.md) 
 - [Deal with incomplete models](learning-module-improvements/deal-with-incomplete-models.md)

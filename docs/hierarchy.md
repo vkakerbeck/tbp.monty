@@ -99,6 +99,7 @@
   - [use-models-with-fewer-points](future-work/learning-module-improvements/use-models-with-fewer-points.md)
   - [test-particle-filter-like-resampling-of-hypothesis-space](future-work/learning-module-improvements/test-particle-filter-like-resampling-of-hypothesis-space.md)
   - [dynamic-adjustment-of-hypothesis-space-size](future-work/learning-module-improvements/dynamic-adjustment-of-hypothesis-space-size.md)
+  - [sample-offspring-hypotheses](future-work/learning-module-improvements/sample-offspring-hypotheses.md)
   - [re-anchor-hypotheses](future-work/learning-module-improvements/re-anchor-hypotheses.md)
   - [less-dependency-on-first-observation](future-work/learning-module-improvements/less-dependency-on-first-observation.md)
   - [deal-with-incomplete-models](future-work/learning-module-improvements/deal-with-incomplete-models.md)
