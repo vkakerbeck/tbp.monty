@@ -101,6 +101,7 @@
   - [re-anchor-hypotheses](future-work/learning-module-improvements/re-anchor-hypotheses.md)
   - [less-dependency-on-first-observation](future-work/learning-module-improvements/less-dependency-on-first-observation.md)
   - [deal-with-incomplete-models](future-work/learning-module-improvements/deal-with-incomplete-models.md)
+  - [test-grid-object-models-for-unsupervised-learning](future-work/learning-module-improvements/test-grid-object-models-for-unsupervised-learning.md)
   - [deal-with-moving-objects](future-work/learning-module-improvements/deal-with-moving-objects.md)
   - [support-scale-invariance](future-work/learning-module-improvements/support-scale-invariance.md)
   - [improve-handling-of-symmetry](future-work/learning-module-improvements/improve-handling-of-symmetry.md)
