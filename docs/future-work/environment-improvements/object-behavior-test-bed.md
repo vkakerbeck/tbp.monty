@@ -39,5 +39,5 @@ We can test Monty's ability to model object behaviors with successively more dif
 - Could start with 2D environment to make the state dimension easier to visualize (keep in mind potential difficulty in extracting movement from a 3D depth image).
 
 ## Existing Test Environment
-An early version of a simple object behavior environment can be found [here](https://github.com/thousandbrainsproject/monty_lab/tree/main/object_behaviors). It can be used to simulate physical joints and springs and retrieve locations and orientations in CMP format. See a simple example of a stapler below.
+An early version of a simple object behavior environment can be found [here](https://github.com/thousandbrainsproject/monty_lab/tree/main/object_behaviors). It can be used to simulate physical joints and springs and retrieve locations and orientations in CMP format. See a simple example of a "stapler"/hinge-object below.
 ![Simplified simulated stapler](../../figures/future-work/stapler.gif)
