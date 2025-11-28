@@ -128,7 +128,7 @@
 - [cmp-hierarchy-improvements](future-work/cmp-hierarchy-improvements.md)
   - [figure-out-performance-measure-and-supervision-in-heterarchy](future-work/cmp-hierarchy-improvements/figure-out-performance-measure-and-supervision-in-heterarchy.md)
   - [add-top-down-connections](future-work/cmp-hierarchy-improvements/add-top-down-connections.md)
-  - [run-analyze-experiments-with-2lms-in-heterarchy-testbed](future-work/cmp-hierarchy-improvements/run-analyze-experiments-with-2lms-in-heterarchy-testbed.md)
+  - [run-analyze-experiments-with-more-lms-in-heterarchy-testbed](future-work/cmp-hierarchy-improvements/run-analyze-experiments-with-more-lms-in-heterarchy-testbed.md)
   - [evaluate-on-omniglot-dataset](future-work/cmp-hierarchy-improvements/evaluate-on-omniglot-dataset.md)
   - [test-learning-at-different-speeds-depending-on-level-in-hierarchy](future-work/cmp-hierarchy-improvements/test-learning-at-different-speeds-depending-on-level-in-hierarchy.md)
   - [send-similarity-encoding-object-id-to-next-level-test](future-work/cmp-hierarchy-improvements/send-similarity-encoding-object-id-to-next-level-test.md)
