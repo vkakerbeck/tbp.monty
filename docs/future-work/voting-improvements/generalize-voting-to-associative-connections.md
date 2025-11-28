@@ -3,7 +3,7 @@ title: Generalize Voting to Associative Connections
 description: Learn associations between object representations in different LMs instead of requiring them to use the same representation for object ID.
 rfc: required
 estimated-scope: large
-improved-metric: learning, biological-realism
+improved-metric: learning
 output-type: RFC, prototype, PR, monty-feature
 skills: research, python, monty
 contributor: OgnjenX
