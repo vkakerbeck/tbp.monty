@@ -6,7 +6,7 @@ These are the things we would like to implement:
 
 - [Add infrastructure for multiple agents that move independently](framework-improvements/add-infrastructure-for-multiple-agents-that-move-independently.md)
 - [Automate benchmark experiments & analysis](framework-improvements/automate-benchmark-experiments-analysis.md)
-- [Add more wandb logging for learning from unsupervised](framework-improvements/add-more-wandb-logging-for-learning-unsupervised.md)
+- [Add more wandb logging for unsupervised learning](framework-improvements/add-more-wandb-logging-for-unsupervised-learning.md)
 - [Add GPU support for Monty](framework-improvements/add-gpu-support-for-monty.md)
 - [Use State class inside of LMs](framework-improvements/use-state-class-inside-of-lms.md)
 - [Make configs easier to use](framework-improvements/make-configs-easier-to-use.md)
