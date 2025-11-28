@@ -18,6 +18,7 @@ These are the things we would like to implement:
 - [Support scale invariance](learning-module-improvements/support-scale-invariance.md)
 - [Improve handling of symmetry](learning-module-improvements/improve-handling-of-symmetry.md)
 - [Use Better Priors for Hypothesis Initialization](learning-module-improvements/use-better-priors-for-hypothesis-initialization.md)
+- [Learn hot spots on objects](learning-module-improvements/learn-hot-spots-on-objects.md)
 - [Include State in Models](learning-module-improvements/include-state-in-models.md)
 - [Include State in Hypotheses](learning-module-improvements/include-state-in-hypotheses.md)
 - [Event Detection to Reset Timer](learning-module-improvements/event-detection-to-reset-timer.md)

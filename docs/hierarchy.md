@@ -105,6 +105,7 @@
   - [support-scale-invariance](future-work/learning-module-improvements/support-scale-invariance.md)
   - [improve-handling-of-symmetry](future-work/learning-module-improvements/improve-handling-of-symmetry.md)
   - [use-better-priors-for-hypothesis-initialization](future-work/learning-module-improvements/use-better-priors-for-hypothesis-initialization.md)
+  - [learn-hot-spots-on-objects](future-work/learning-module-improvements/learn-hot-spots-on-objects.md)
   - [include-state-in-models](future-work/learning-module-improvements/include-state-in-models.md)
   - [include-state-in-hypotheses](future-work/learning-module-improvements/include-state-in-hypotheses.md)
   - [event-detection-to-reset-timer](future-work/learning-module-improvements/event-detection-to-reset-timer.md)
