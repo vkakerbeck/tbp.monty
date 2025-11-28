@@ -14,7 +14,6 @@ These are the things we would like to implement:
 - [Re-anchor hypotheses for robustness to noise and distortions](learning-module-improvements/re-anchor-hypotheses.md) 
 - [Less dependency on first observation](learning-module-improvements/less-dependency-on-first-observation.md) 
 - [Deal with incomplete models](learning-module-improvements/deal-with-incomplete-models.md)
-- [Implement & test GNNs to model object behaviors & states](learning-module-improvements/implement-test-gnns-to-model-object-behaviors-states.md)
 - [Deal with moving objects](learning-module-improvements/deal-with-moving-objects.md)
 - [Support scale invariance](learning-module-improvements/support-scale-invariance.md)
 - [Improve handling of symmetry](learning-module-improvements/improve-handling-of-symmetry.md)

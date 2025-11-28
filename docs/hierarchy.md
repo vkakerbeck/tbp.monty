@@ -101,7 +101,6 @@
   - [re-anchor-hypotheses](future-work/learning-module-improvements/re-anchor-hypotheses.md)
   - [less-dependency-on-first-observation](future-work/learning-module-improvements/less-dependency-on-first-observation.md)
   - [deal-with-incomplete-models](future-work/learning-module-improvements/deal-with-incomplete-models.md)
-  - [implement-test-gnns-to-model-object-behaviors-states](future-work/learning-module-improvements/implement-test-gnns-to-model-object-behaviors-states.md)
   - [deal-with-moving-objects](future-work/learning-module-improvements/deal-with-moving-objects.md)
   - [support-scale-invariance](future-work/learning-module-improvements/support-scale-invariance.md)
   - [improve-handling-of-symmetry](future-work/learning-module-improvements/improve-handling-of-symmetry.md)
