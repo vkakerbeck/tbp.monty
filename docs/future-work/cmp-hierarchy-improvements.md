@@ -6,7 +6,7 @@ These are the things we would like to implement:
 
 - [Figure out performance measures and supervision in heterarchy](cmp-hierarchy-improvements/figure-out-performance-measure-and-supervision-in-heterarchy.md)
 - [Add top-down connections](cmp-hierarchy-improvements/add-top-down-connections.md)
-- [Run & Analyze experiments with more LMs in heterarchy testbed](cmp-hierarchy-improvements/run-analyze-experiments-with-2lms-in-heterarchy-testbed.md)
+- [Run & Analyze experiments with more LMs in heterarchy testbed](cmp-hierarchy-improvements/run-analyze-experiments-with-more-lms-in-heterarchy-testbed.md)
 - [Test learning at different speeds depending on level in hierarchy](cmp-hierarchy-improvements/test-learning-at-different-speeds-depending-on-level-in-hierarchy.md)
 - [Send similarity encoding object ID to next level & test](cmp-hierarchy-improvements/send-similarity-encoding-object-id-to-next-level-test.md)
 - [Global Interval Timer](cmp-hierarchy-improvements/global-interval-timer.md)
