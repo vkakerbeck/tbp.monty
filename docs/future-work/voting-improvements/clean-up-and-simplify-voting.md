@@ -7,7 +7,7 @@ improved-metric: speed, learning-experience
 output-type: PR, documentation
 skills: python, monty, refactoring
 contributor: 
-status: unstarted
+status: open
 ---
 
 The way we do voting is a bit nested and overly complex in the code. We could simplify it and add some clarifying documentation around it.

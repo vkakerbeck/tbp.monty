@@ -7,7 +7,7 @@ improved-metric: biological-realism
 output-type: RFC
 skills: monty
 contributor: 
-status: unstarted
+status: open
 ---
 
 Movement is core to how LMs process and model the world. Currently, an LM receives an observation encoded with a body-centric location, and then infers a displacement in object-centric coordinates. Similarly, goal-states are specified as a target location in body-centric coordinates, which are then acted upon.

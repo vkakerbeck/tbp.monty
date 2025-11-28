@@ -7,7 +7,7 @@ improved-metric: dynamic
 output-type: monty-feature, PR
 skills: python, monty, refactoring
 contributor: 
-status: unstarted
+status: open
 ---
 
 This item relates to the broader goal of [modeling object behaviors in Monty](../../theory/recent-progress/object-behaviors.md#implementation-in-monty).

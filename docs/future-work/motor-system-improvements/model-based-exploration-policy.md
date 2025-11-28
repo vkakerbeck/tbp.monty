@@ -7,7 +7,7 @@ improved-metric: learning
 output-type: prototype, monty-feature, PR
 skills: python, monty, spatial-transformations, research
 contributor: 
-status: unstarted
+status: open
 ---
 
 During exploration/learning-focused movement, we do not make use of any model-based, top-down policies driven by LMs. Two approaches we would like to implement are:

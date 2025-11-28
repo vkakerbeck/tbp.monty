@@ -6,7 +6,7 @@ improved-metric: generalization, transfer
 output-type: testbed, experiments, mesh-models
 skills: 3d-modeling, python, monty, research
 contributor: 
-status: unstarted
+status: open
 ---
 
 Datasets do not typically capture the flexibility of object labels based on whether an object belongs to a broad class (e.g. cans), vs. a specific instance of a class (e.g. a can of tomato soup).

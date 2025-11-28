@@ -7,7 +7,7 @@ improved-metric: dynamic, real-world
 output-type: prototype, monty-feature, PR
 skills: python, research, monty
 contributor: 
-status: unstarted
+status: open
 ---
 > [!NOTE]
 > This work relates to first being able to [Detect Local and Global Flow](../../future-work/sensor-module-improvements/detect-local-and-global-flow.md). For an improved version it would also depend on [Modeling Object Behaviors](../../theory/recent-progress/object-behaviors.md). It also involves [setting up an environment with moving objects](../environment-improvements/object-behavior-test-bed.md).

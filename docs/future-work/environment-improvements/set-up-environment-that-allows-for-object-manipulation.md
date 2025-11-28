@@ -7,7 +7,7 @@ improved-metric: dynamic, goal-policy
 output-type: testbed
 skills: python, simulator
 contributor: 
-status: unstarted
+status: open
 ---
 
 See the page on [theory for decomposing goals into subgoals](../motor-system-improvements/theory-for-decomposing-goals-into-subgoals.md) for a discussion of the kind of tasks we are considering for early object-manipulation experiments. An even simpler task that we have recently considered is pressing a switch to turn a lamp on or off. We will provide further details on what these tasks might look like soon.

@@ -7,7 +7,7 @@ improved-metric: dynamic, real-world
 output-type: monty-feature, PR
 skills: python, research, computer-vision
 contributor: 
-status: unstarted
+status: open
 ---
 
 Our general view is that there are two sources of flow processed by cortical columns. These should correspond to:

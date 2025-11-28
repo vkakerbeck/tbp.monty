@@ -7,7 +7,7 @@ improved-metric: dynamic
 output-type: analysis, monty-feature, PR
 skills: python, research, monty
 contributor: 
-status: unstarted
+status: open
 ---
 
 This item relates to the broader goal of [modeling object behaviors in Monty](../../theory/recent-progress/object-behaviors.md#implementation-in-monty). For a broader overview of the (semi)-global interval timer, see [this future work page](../cmp-hierarchy-improvements/global-interval-timer.md).
