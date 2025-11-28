@@ -1,7 +1,7 @@
 ---
 title: Improve Handling of Symmetry
-description:
-rfc: 
+description: Remember symmetric poses to recognize symmetry faster on subsequent exposures.
+rfc: optional
 estimated-scope: unknown
 improved-metric: pose, numsteps
 output-type: prototype, analysis, PR
