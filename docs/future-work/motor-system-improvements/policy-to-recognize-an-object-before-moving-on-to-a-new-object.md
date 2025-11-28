@@ -1,6 +1,6 @@
 ---
 title: Policy to Recognize an Object Before Moving onto a New Object
-description: Use the LM goal generator to 
+description: Use the SM and/or LM goal generator to remain on an object until it is recognized (e.g. using basic image segmentation)
 rfc: required
 estimated-scope: large
 improved-metric: multi-object, compositional, goal-policy
