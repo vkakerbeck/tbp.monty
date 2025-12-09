@@ -89,7 +89,7 @@
 - [sensor-module-improvements](future-work/sensor-module-improvements.md)
   - [extract-better-features](future-work/sensor-module-improvements/extract-better-features.md)
   - [surface-sm](future-work/sensor-module-improvements/surface-sm.md)
-  - [paralax-for-depth-perception](future-work/sensor-module-improvements/paralax-for-depth-perception.md)
+  - [parallax-for-depth-perception](future-work/sensor-module-improvements/parallax-for-depth-perception.md)
   - [detect-local-and-global-flow](future-work/sensor-module-improvements/detect-local-and-global-flow.md)
   - [change-detecting-sm](uture-work/sensor-module-improvements/change-detecting-sm.md)
 - [learning-module-improvements](future-work/learning-module-improvements.md)
