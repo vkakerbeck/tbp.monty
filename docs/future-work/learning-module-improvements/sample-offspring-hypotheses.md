@@ -10,4 +10,14 @@ contributor:
 status: open
 ---
 
-Similar to some SLAM approaches, sample new hypotheses based on the current top contenders. At the moment, new hypotheses are sampled based on the current observed features and points stored in the model. They do not take into account the current top hypotheses. Offspring hypotheses would be slight variations on the current top hypotheses, to refine the hypothesized location and orientation of the object.
+Monty currently samples new hypotheses using only the observed features from the sensor data and the points stored in the model.
+This produces hypothesis spaces that do not benefit from Monty’s own evolving beliefs.
+As a result, Monty cannot refine promising hypotheses through targeted exploration of nearby poses.
+A useful extension is to introduce offspring hypotheses.
+Offspring hypotheses are sampled around the current highest scoring hypotheses.
+This approach resembles refinement strategies used in particle filters, and in SLAM systems that rely on particle filtering, where the most promising pose estimates generate additional candidate samples.
+By sampling around these top contenders, Monty can progressively refine its estimate of the object’s pose and sensor position as more evidence accumulates.
+
+This mechanism is particularly effective when the object is stable or stationary, because the refinement process can converge toward a true stationary pose with increasing precision.
+However, offspring sampling alone is not enough for general adaptability.
+Monty must also be able to sample hypotheses informed directly by the latest observation, so that it can detect abrupt changes in object ID and avoid over committing to a single hypotheses cluster.
