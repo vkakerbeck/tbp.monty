@@ -19,5 +19,6 @@ This approach resembles refinement strategies used in particle filters, and in S
 By sampling around these top contenders, Monty can progressively refine its estimate of the object’s pose and sensor position as more evidence accumulates.
 
 This mechanism is particularly effective when the object is stable or stationary, because the refinement process can converge toward a true stationary pose with increasing precision.
+One can imagine this sampling being controlled in a goal-directed manner by a learning module, such that offspring hypotheses are leveraged when it is particularly important to have a highly accurate hypothesis.
 However, offspring sampling alone is not enough for general adaptability.
 Monty must also be able to sample hypotheses informed directly by the latest observation, so that it can detect abrupt changes in object ID and avoid over committing to a single hypotheses cluster.
