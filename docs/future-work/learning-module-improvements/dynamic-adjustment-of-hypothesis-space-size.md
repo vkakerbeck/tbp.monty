@@ -17,7 +17,7 @@ Most importantly, it ties inference to episode boundaries and prevents Monty fro
 There are several important limitations in the current `DefaultHypothesesUpdater` design:
 
 - **Fixed hypothesis space for the full episode.**
-A fixed hypothesis space implies a supervised notion of episode start and end.
+A fixed hypothesis space implies a supervised notion of an episode's start and end.
 Monty initializes hypotheses at the beginning and deletes them at the end, which prevents true continuous inference.
 Ideally, Monty should operate without the concept of episodes, able to explore, move across objects, switch contexts, and update its hypotheses in an online unsupervised manner.
 
@@ -37,4 +37,4 @@ The system should be able to identify and delete hypotheses that fail to accumul
 This would enable a shift toward continuous, episode-free inference where the system can navigate and understand its environment in a more natural way.
 
 > [!NOTE]
-> See the [feat.dynamic_resizing](https://github.com/thousandbrainsproject/feat.dynamic_resizing) feature branch to see the current prototype. This prototype validated that dynamically deleting and sampling hypotheses based on their evidence slope helps with accuracy (both object and pose detection) which speeding up inference as most steps have a very small hypothesis space. This feature is planned to be integrated into Monty. However, further ideas for heuristics to delete or resample new hypotheses are appreciated.
+> See the [feat.dynamic_resizing](https://github.com/thousandbrainsproject/feat.dynamic_resizing) feature branch to see the current prototype. This prototype validated that dynamically deleting and sampling hypotheses based on their evidence slope helps with accuracy (both object and pose detection) while speeding up inference as most steps have a very small hypothesis space. This feature is planned to be integrated into Monty. However, further ideas for heuristics to delete or resample new hypotheses are appreciated.
