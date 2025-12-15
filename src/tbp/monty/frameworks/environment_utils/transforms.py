@@ -437,6 +437,9 @@ class DepthTo3DLocations:
                     semantic_patch,
                     default_on_surface_th,
                 )
+                # set 1's to large number that wouldn't be in semantic_id_to_label to
+                # signal that this doesn't represent a specific label ID
+                surface_patch[surface_patch == 1] = 10000
 
             # Approximate true world coordinates
             x, y = np.meshgrid(
