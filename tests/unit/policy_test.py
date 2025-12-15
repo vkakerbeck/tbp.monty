@@ -295,7 +295,7 @@ class PolicyTest(unittest.TestCase):
                 f"vs target of {target_perc_on_target_obj}"
             )
 
-            points_on_target_obj = semantic == 1
+            points_on_target_obj = semantic >= 1
             closest_point_on_target_obj = np.min(view["depth"][points_on_target_obj])
 
             target_closest_point = config["monty_config"]["motor_system_config"][
