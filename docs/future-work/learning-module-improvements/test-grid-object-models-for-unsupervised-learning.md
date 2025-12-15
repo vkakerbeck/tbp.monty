@@ -16,6 +16,8 @@ To test this, one could use our existing environments (e.g. YCB objects in Habit
 
 As a next step, shortcomings and issue can be identified and potential solutions tested (ideally starting with just tweaking the existing parameters).
 
-Additionally, one could test on different datasets, such as showing a collection of different types of mugs and trying to learn their commonalities in a model.
+The existing datasets aren't ideal for testing the learning of categories of objects and generalizing. One would at the least have to update the way performance is measured to quantify improvements in those abilities. One could also [develop different datasets aimed more an testing categories](../environment-improvements/create-dataset-and-metrics-to-evaluate-categories-and-generalization.md), such as showing a collection of different types of mugs and trying to learn their commonalities in a model.
+
+One may also explore the GridObjectModel in combination with a hierarchical Monty setup and test whether object parts naturally emerge (e.g. mug handle learned at lower level and full mug at higher level without explicit supervision). Testing this would likely deserve it's own future work item.
 
 It would also be good to test how useful the `GridObjectModel` is for "forgetting" statistical irregularities. For instance, how fast a noisy observation will be forgotten (or never even added) or how different sets of model parameters lead to learning "that specific mug with a chip in it" or "any mug in my cabinet".
