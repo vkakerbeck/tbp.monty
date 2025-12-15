@@ -44,12 +44,12 @@ regex_image_path = re.compile(
 )
 regex_markdown_path = re.compile(r"\(([\./]*)([\w\-/]+)\.md(#.*?)?\)")
 regex_cloudinary_video = re.compile(
-    r"\[(.*?)\]\((https://res\.cloudinary\.com/([^/]+)/video/upload/v(\d+)/([^/]+\.mp4))\)",
-    re.IGNORECASE,
+    r"^\s*\[(.*?)\]\((https://res\.cloudinary\.com/([^/]+)/video/upload/v(\d+)/([^/]+\.mp4))\)\s*$",
+    re.IGNORECASE | re.MULTILINE,
 )
 regex_youtube_link = re.compile(
-    r"\[(.*?)\]\((?:https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})(?:[&?][^\)]*)?)\)",
-    re.IGNORECASE,
+    r"^\s*\[(.*?)\]\((?:https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})(?:[&?][^\)]*)?)\)\s*$",
+    re.IGNORECASE | re.MULTILINE,
 )
 regex_markdown_snippet = re.compile(r"!snippet\[(.*?)\]")
 
@@ -214,10 +214,10 @@ class ReadMe:
 
             # Get absolute path of CSV relative to current document
             csv_path = Path(file_path) / csv_path
-            csv_path = os.path.normpath(csv_path)
+            csv_path = csv_path.resolve()
 
             try:
-                with open(csv_path) as f:
+                with csv_path.open() as f:
                     reader = csv.reader(f)
                     headers = next(reader)
                     rows = list(reader)
@@ -547,10 +547,10 @@ class ReadMe:
 
         def replace_match(match):
             snippet_path = Path(file_path) / match.group(1)
-            snippet_path = os.path.normpath(snippet_path)
+            snippet_path = snippet_path.resolve()
 
             try:
-                with open(snippet_path) as f:
+                with snippet_path.open() as f:
                     unsafe_content = f.read()
                     return self.sanitize_html(unsafe_content)
 
