@@ -23,7 +23,7 @@ Here is a list of concrete output you may get out of working on this project.
 - Have your paper listed on our [TBP based papers page](../community/tbp-based-papers.md).
 - Become a code contributor.
 - Work directly with people on the TBP team.
-- Lastly, for those out there who love achievements, note that when an RFC you have made is merged and active, you can add your github handle to the associated future work item, which will then show up in our [interactive future work table](../future-work/project-roadmap.md). Maybe we'll see you there soon? 🎯
+- Lastly, for those out there who love achievements, note that when an RFC you have made is merged and active, you can add your GitHub handle to the associated future work item metadata, which will then show up in our [interactive future work table](../future-work/project-roadmap.md). Maybe we'll see you there soon? 🎯
 - A legendary TBP mug for completing one of the [items on our roadmap](../future-work/project-roadmap.md) or other significant contributions.
 
 As we are putting this code under an [MIT license](../../LICENSE) and Numenta has put its related patents under a [non-assert pledge](https://www.numenta.com/thousand-brains-project/patents/), people can also build commercial applications on this framework. However, the current code is very much research code and not an out-of-the-box solution so it will require significant engineering effort to tailor it to your application.
