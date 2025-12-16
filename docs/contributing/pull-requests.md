@@ -32,13 +32,14 @@ Before submitting a Pull Request, you should set up your development environment
    ```shell
    pytest
    ```
-6. Push your changes to your branch on your fork:
+6. Run `ruff check` to make sure your code adheres to our linting rules.
+7. Push your changes to your branch on your fork:
    ```shell
    git push
    ```
-7. [Create a new GitHub Pull Request from your fork to the official Monty repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
-8. Respond to and address any comments on your Pull Request. See [Pull Request Flow](pull-requests/pull-request-flow.md) for what to expect.
-9. Once your Pull Request is approved, it will be merged by one of the Maintainers. Thank you for contributing! 🥳🎉🎊
+8. [Create a new GitHub Pull Request from your fork to the official Monty repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+9. Respond to and address any comments on your Pull Request. See [Pull Request Flow](pull-requests/pull-request-flow.md) for what to expect.
+10. Once your Pull Request is approved, it will be merged by one of the Maintainers. Thank you for contributing! 🥳🎉🎊
 
 ## Additional Recommendations for Code Changes
 
@@ -55,3 +56,14 @@ Before submitting a Pull Request, you should set up your development environment
   This rng is then passed to the various classes, and can be accessed in the sensor
   modules, learning modules, and motor system with self.rng. Thus to use a random
   numpy method, call it with e.g. `self.rng.uniform()` rather than `np.random.uniform()`
+
+## Additional Recommendations for Documentation Changes
+
+- run `vale .` to check spelling
+  - Install instructions are [here](./documentation.md#1-install-vale)
+- run `python -m tools.github_readme_sync.cli check docs` to check links.
+  - To install the tool, run `pip install -e '.[dev,github_readme_sync_tool]'`
+- run `python tools/future_work_widget/run_local.py` to render the future work table locally.
+  - To install run `pip install -e '.[github_readme_sync_tool,future_work_widget_tool]'`
+
+You can find more info in our [page on editing the documentation](documentation.md).
