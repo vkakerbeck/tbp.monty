@@ -84,6 +84,11 @@
 - [tbp-based-papers](community/tbp-based-papers.md)
 - [project-showcase](community/project-showcase.md)
 
+# theory: Neuroscience Theory
+- [theory-overview](theory/theory-overview.md)
+- [compositional-models](theory/compositional-models.md)
+- [object-behaviors](theory/object-behaviors.md)
+
 # future-work: Future Work
 - [project-roadmap](future-work/project-roadmap.md)
 - [sensor-module-improvements](future-work/sensor-module-improvements.md)
@@ -168,8 +173,4 @@
   - [organize-local-meetup](future-work/oss-communication-improvements/organize-local-meetup.md)
   - [organize-start-podcast-series](future-work/oss-communication-improvements/organize-start-podcast-series.md)
   - [robust-docs-preview-cleanup](future-work/oss-communication-improvements/robust-docs-preview-cleanup.md)
-# theory: Neuroscience Theory
-- [theory-overview](theory/theory-overview.md)
-- [recent-progress](theory/recent-progress.md)
-  - [object-behaviors](theory/recent-progress/object-behaviors.md)
 <!-- vale on -->
