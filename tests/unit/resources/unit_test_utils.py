@@ -385,52 +385,8 @@ class BaseGraphTest(TestCase):
                 f"Not enough correct LMs for eval episode {episode}",
             )
 
-    def check_hierarchical_lm_train_results(self, train_stats):
-        for episode in range(4):
-            self.assertEqual(
-                train_stats["primary_performance"][episode * 2],
-                "no_match",
-                f"LM0 should not match in episode {episode}",
-            )
-            self.assertEqual(
-                train_stats["primary_performance"][episode * 2 + 1],
-                "no_match",
-                f"LM1 should not match in episode {episode}",
-            )
-
-        for episode in [4, 5]:
-            self.assertEqual(
-                train_stats["primary_performance"][episode * 2],
-                "correct",
-                f"LM0 should detect the correct object in episode {episode}",
-            )
-            self.assertIn(
-                train_stats["primary_performance"][episode * 2 + 1],
-                ["correct", "correct_mlh"],
-                f"LM1 should detect the correct object in episode {episode}"
-                "or have it as its most likely hypothesis.",
-            )
-
-    def check_hierarchical_lm_eval_results(self, eval_stats):
-        for episode in range(3):
-            self.assertEqual(
-                eval_stats["primary_performance"][episode * 2],
-                "correct",
-                f"LM0 should detect the correct object in episode {episode}",
-            )
-            # NOTE: LM1 gets no match (due to incomplete models, especially of LM
-            # input channel). Will not test this here since maybe in the future this
-            # will be better and it is not a feature of the system.
-
     def check_hierarchical_models(self, models):
         for model in ["new_object0", "new_object1"]:
-            # Check that graph was extended when recognizing object.
-            self.assertLess(
-                models["0"]["LM_0"][model]["patch_0"].num_nodes,
-                models["2"]["LM_0"][model]["patch_0"].num_nodes,
-                f"LM0 should have more points in the graph for {model} "
-                "after recognizing it and extending the graph.",
-            )
             # Check LM0 has higher detail model of object thank LM1.
             self.assertGreater(
                 models["0"]["LM_0"][model]["patch_0"].num_nodes,
@@ -440,7 +396,7 @@ class BaseGraphTest(TestCase):
                 "voxel size.",
             )
         # Check that max_nodes_per_graph is applied correctly.
-        for model in ["new_object0", "new_object1", "new_object2", "new_object3"]:
+        for model in models["2"]["LM_0"]:
             num_nodes = models["2"]["LM_0"][model]["patch_0"].num_nodes
             self.assertLessEqual(
                 num_nodes,

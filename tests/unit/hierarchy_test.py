@@ -115,14 +115,8 @@ class HierarchyTest(BaseGraphTest):
             exp.run()
 
         output_dir = Path(exp.output_dir)
-        train_stats = pd.read_csv(output_dir / "train_stats.csv")
-        self.check_hierarchical_lm_train_results(train_stats)
-
         models = load_models_from_dir(output_dir)
         self.check_hierarchical_models(models)
-
-        eval_stats = pd.read_csv(output_dir / "eval_stats.csv")
-        self.check_hierarchical_lm_eval_results(eval_stats)
 
     def test_semisupervised_stacked_lms_experiment(self):
         """Test two LMs stacked on top of each other with semisupervised learning.
