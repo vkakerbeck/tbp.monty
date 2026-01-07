@@ -70,6 +70,13 @@ class HierarchyTest(unittest.TestCase):
 
     def check_hierarchical_models(self, models):
         for model in ["new_object0", "new_object1"]:
+            # Check that graph was extended when recognizing object.
+            self.assertLessEqual(
+                models["0"]["LM_0"][model]["patch_0"].num_nodes,
+                models["2"]["LM_0"][model]["patch_0"].num_nodes,
+                f"LM0 should have more points in the graph for {model} "
+                "after recognizing it and extending the graph.",
+            )
             # Check LM0 has higher detail model of object thank LM1.
             self.assertGreater(
                 models["0"]["LM_0"][model]["patch_0"].num_nodes,
