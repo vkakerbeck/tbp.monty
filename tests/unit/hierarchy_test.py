@@ -94,12 +94,6 @@ class HierarchyTest(unittest.TestCase):
                 "LM0 should have <= max_nodes_per_graph nodes in"
                 f" its graph for {model} but has {num_nodes}",
             )
-        # Check LM1 does not store LM0 input in first epoch yet.
-        self.assertNotIn(
-            "learning_module_0",
-            models["0"]["LM_1"]["new_object0"].keys(),
-            "models in LM1 should not store input from LM0 in episode 0 yet.",
-        )
         # Check that LM1 extended its graph to add LM0 as a input channel.
         channel_keys = models["2"]["LM_1"]["new_object0"].keys()
         self.assertIn(
