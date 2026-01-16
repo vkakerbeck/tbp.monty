@@ -66,7 +66,6 @@ class HierarchyTest(unittest.TestCase):
             )
 
     def tearDown(self):
-        """Code that gets executed after every test."""
         shutil.rmtree(self.output_dir)
 
     def check_hierarchical_lm_train_results(self, train_stats):
