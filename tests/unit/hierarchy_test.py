@@ -68,10 +68,47 @@ class HierarchyTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.output_dir)
 
+    def check_hierarchical_lm_train_results(self, train_stats):
+        for episode in range(4):
+            self.assertEqual(
+                train_stats["primary_performance"][episode * 2],
+                "no_match",
+                f"LM0 should not match in episode {episode}",
+            )
+            self.assertEqual(
+                train_stats["primary_performance"][episode * 2 + 1],
+                "no_match",
+                f"LM1 should not match in episode {episode}",
+            )
+
+        for episode in [4, 5]:
+            self.assertEqual(
+                train_stats["primary_performance"][episode * 2],
+                "correct",
+                f"LM0 should detect the correct object in episode {episode}",
+            )
+            self.assertIn(
+                train_stats["primary_performance"][episode * 2 + 1],
+                ["correct", "correct_mlh"],
+                f"LM1 should detect the correct object in episode {episode}"
+                "or have it as its most likely hypothesis.",
+            )
+
+    def check_hierarchical_lm_eval_results(self, eval_stats):
+        for episode in range(3):
+            self.assertEqual(
+                eval_stats["primary_performance"][episode * 2],
+                "correct",
+                f"LM0 should detect the correct object in episode {episode}",
+            )
+            # NOTE: LM1 gets no match (due to incomplete models, especially of LM
+            # input channel). Will not test this here since maybe in the future this
+            # will be better and it is not a feature of the system.
+
     def check_hierarchical_models(self, models):
         for model in ["new_object0", "new_object1"]:
             # Check that graph was extended when recognizing object.
-            self.assertLessEqual(
+            self.assertLess(
                 models["0"]["LM_0"][model]["patch_0"].num_nodes,
                 models["2"]["LM_0"][model]["patch_0"].num_nodes,
                 f"LM0 should have more points in the graph for {model} "
@@ -145,8 +182,14 @@ class HierarchyTest(unittest.TestCase):
             exp.run()
 
         output_dir = Path(exp.output_dir)
+        train_stats = pd.read_csv(output_dir / "train_stats.csv")
+        self.check_hierarchical_lm_train_results(train_stats)
+
         models = load_models_from_dir(output_dir)
         self.check_hierarchical_models(models)
+
+        eval_stats = pd.read_csv(output_dir / "eval_stats.csv")
+        self.check_hierarchical_lm_eval_results(eval_stats)
 
     def test_semisupervised_stacked_lms_experiment(self):
         """Test two LMs stacked on top of each other with semisupervised learning.
