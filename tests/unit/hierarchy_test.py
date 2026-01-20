@@ -276,7 +276,7 @@ class HierarchyTest(unittest.TestCase):
                     self.assertIn(
                         eval_stats["primary_performance"][episode * 2 + lm_id],
                         ["correct", "correct_mlh"],
-                        f"LM {lm_id} did not recognize the object on first episode.",
+                        f"LM {lm_id} did not recognize the object.",
                     )
             # check that prediction errors are logged
             self.assertIn(
