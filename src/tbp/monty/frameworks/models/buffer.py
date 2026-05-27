@@ -1,4 +1,4 @@
-# Copyright 2025 Thousand Brains Project
+# Copyright 2025-2026 Thousand Brains Project
 # Copyright 2022-2024 Numenta Inc.
 #
 # Copyright may exist in Contributors' modifications
@@ -10,18 +10,25 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
 import logging
 import time
-from typing import Any, Callable, ClassVar
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Literal
 
 import numpy as np
-import quaternion
+import numpy.typing as npt
+import quaternion as qt
 import torch
 from omegaconf import DictConfig, ListConfig, OmegaConf
-from scipy.spatial.transform import Rotation
+from scipy.spatial.transform import Rotation as ScipyRotation
 
 from tbp.monty.frameworks.actions.actions import Action, ActionJSONEncoder
+from tbp.monty.frameworks.utils.dataclass_utils import is_dataclass_instance
+from tbp.monty.geometry import Rotation
+
+if TYPE_CHECKING:
+    from tbp.monty.cmp import Message
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +45,9 @@ class FeatureAtLocationBuffer:
         self.locations = {}
         self.features = {}
         self.on_object = []
-        self.input_states = []
+        self.input_percepts = []
 
+        self.last_location = None
         self.displacements = {}
 
         self.channel_sender_types = {}
@@ -80,10 +88,10 @@ class FeatureAtLocationBuffer:
             The features observed at time step idx.
         """
         features_at_idx = {}
-        for input_channel in self.features.keys():
+        for input_channel in self.features:
             features_at_idx[input_channel] = {
                 attribute: self.features[input_channel][attribute][idx]
-                for attribute in self.features[input_channel].keys()
+                for attribute in self.features[input_channel]
             }
         return features_at_idx
 
@@ -93,51 +101,50 @@ class FeatureAtLocationBuffer:
 
     def get_buffer_len_by_channel(self, input_channel):
         """Return the number of observations stored for that input channel."""
-        if input_channel not in self.locations.keys():
+        if input_channel not in self.locations:
             return 0
         return np.count_nonzero(~np.isnan(self.locations[input_channel][:, 0]))
 
-    def append(self, list_of_data):
-        """Add an observation to the buffer. Must be features at locations.
+    def append(self, percepts: list[Message]) -> None:
+        """Add a list of percepts to the buffer. Must be features at locations.
 
-        TODO S: Store state objects instead of list of data?
-        A provisional version of this is implemented below, as the GSG uses State
-        objects for computations.
+        TODO S: Store messages instead of list of percepts?
+        A provisional version of this is implemented below, as the GSG uses
+        messages for computations.
         """
         any_obs_on_obj = False
-        for state in list_of_data:
-            input_channel = state.sender_id
+        for msg in percepts:
+            input_channel = msg.sender_id
 
-            self.channel_sender_types[input_channel] = state.sender_type
+            self.channel_sender_types[input_channel] = msg.sender_type
 
-            self._add_loc_to_location_buffer(input_channel, state.location)
-            if input_channel not in self.features.keys():
+            self._add_loc_to_location_buffer(input_channel, msg.location)
+            if input_channel not in self.features:
                 self.features[input_channel] = {}
-            for attr in state.morphological_features.keys():
-                attr_val = state.morphological_features[attr]
+            for attr in msg.morphological_features:
+                attr_val = msg.morphological_features[attr]
                 self._add_attr_to_feature_buffer(input_channel, attr, attr_val)
             # TODO S: separate non-morphological features from morphological features?
             # May cause problems with graph.x array representation. Could be added when
             # using separate models for features and morphology
-            for attr in state.non_morphological_features.keys():
-                attr_val = state.non_morphological_features[attr]
+            for attr in msg.non_morphological_features:
+                attr_val = msg.non_morphological_features[attr]
                 self._add_attr_to_feature_buffer(input_channel, attr, attr_val)
-            for attr in state.displacement.keys():
-                attr_val = state.displacement[attr]
-                self._add_disp_to_displacement_buffer(input_channel, attr, attr_val)
-            on_obj = state.get_on_object()
+            on_obj = msg.get_on_object()
             self._add_attr_to_feature_buffer(input_channel, "on_object", on_obj)
             if on_obj:
                 any_obs_on_obj = True
+        self._store_displacement_and_location(percepts)
+
         self.on_object.append(any_obs_on_obj)  # TODO S: remove?
 
-    def append_input_states(self, input_state):
-        self.input_states.append(input_state)
+    def append_input_percepts(self, input_percept: Message) -> None:
+        self.input_percepts.append(input_percept)
 
     def update_stats(self, stats, update_time=True, append=True, init_list=True):
         """Update statistics for this step in the episode."""
-        for stat in stats.keys():
-            if stat in self.stats.keys() and append:
+        for stat in stats:
+            if stat in self.stats and append:
                 self.stats[stat].append(copy.deepcopy(stats[stat]))
             elif init_list:
                 self.stats[stat] = [copy.deepcopy(stats[stat])]
@@ -152,8 +159,8 @@ class FeatureAtLocationBuffer:
 
     def update_last_stats_entry(self, stats):
         """Use this to overwrite last entry (for example after voting)."""
-        for stat in stats.keys():
-            if stat in self.stats.keys():
+        for stat in stats:
+            if stat in self.stats:
                 self.stats[stat][-1] = copy.deepcopy(stats[stat])
 
     def reset(self):
@@ -184,7 +191,7 @@ class FeatureAtLocationBuffer:
             The current features.
         """
         current_features = {}
-        for input_channel in self.features.keys():
+        for input_channel in self.features:
             current_features[input_channel] = {}
             for key in keys:
                 current_features[input_channel][key] = self.features[input_channel][
@@ -239,72 +246,67 @@ class FeatureAtLocationBuffer:
             All observed locations that were on the object.
         """
         if input_channel is None:
-            return self.locations
+            # Pad each channel's locations to the full buffer length.
+            # Also filter locations by global on_object.
+            global_on_object_ids = self._global_on_object_ids()
+            result = {}
+            for channel in self.locations:
+                channel_locs = self._pad_to_target_length(self.locations[channel])
+                result[channel] = channel_locs[global_on_object_ids]
+            return result
         if input_channel == "first":
             input_channel = self.get_first_sensory_input_channel()
         on_object_ids = np.where(self.features[input_channel]["on_object"])[0]
         return np.array(self.locations[input_channel])[on_object_ids]
 
-    def get_all_input_states(self):
-        """Get all the input states that the buffer's parent LM has observed.
+    def get_all_input_percepts(self) -> list[Message]:
+        """Get all the percept inputs that the buffer's parent LM has observed.
 
         Returns:
-            All the input states that the buffer's parent LM has observed.
+            All the percept inputs that the buffer's parent LM has observed.
         """
-        return self.input_states
+        return self.input_percepts
 
-    def get_previous_input_states(self):
-        """Get previous State inputs received by the buffer's parent LM.
+    def get_previous_input_percepts(self):
+        """Get previous percept inputs received by the buffer's parent LM.
 
         i.e. in the last time step.
 
         Returns:
-            The previous input states.
+            The previous percept inputs.
         """
-        if len(self.input_states) > 1:
-            return self.input_states[-2]
+        if len(self.input_percepts) > 1:
+            return self.input_percepts[-2]
         return None
 
-    def get_nth_displacement(self, n, input_channel):
+    def nth_displacement(self, n: int) -> npt.NDArray[np.float64]:
         """Get the nth displacement.
+
+        Args:
+            n: Index of the displacement to retrieve.
 
         Returns:
             The nth displacement.
         """
-        if input_channel == "first":
-            input_channel = self.get_first_sensory_input_channel()
-        return self.displacements[input_channel]["displacement"][n]
+        return self.displacements["displacement"][n]
 
-    def get_current_displacement(self, input_channel):
+    def current_displacement(self) -> npt.NDArray[np.float64]:
         """Get the current displacement.
 
         Returns:
             The current displacement.
         """
-        return self.get_nth_displacement(-1, input_channel)
+        return self.nth_displacement(-1)
 
-    def get_all_current_displacements(self):
-        """Get all current displacements.
-
-        Returns:
-            A dictionary mapping channels to all current displacements.
-        """
-        return {
-            channel: self.get_current_displacement(channel)
-            for channel in self.displacements.keys()
-        }
-
-    def get_current_ppf(self, input_channel):
+    def current_ppf(self) -> npt.NDArray[np.float64]:
         """Get the current ppf.
 
         Returns:
             The current ppf.
         """
-        if input_channel == "first":
-            input_channel = self.get_first_sensory_input_channel()
-        return copy.deepcopy(self.displacements[input_channel]["ppf"][-1])
+        return copy.deepcopy(self.displacements["ppf"][-1])
 
-    def get_first_displacement_len(self, input_channel):
+    def first_displacement_len(self) -> float:
         """Get length of first observed displacement.
 
         Use for scale in DisplacementLM.
@@ -312,11 +314,9 @@ class FeatureAtLocationBuffer:
         Returns:
             The length of the first observed displacement.
         """
-        if input_channel == "first":
-            input_channel = self.get_first_sensory_input_channel()
-        if "ppf" in self.displacements[input_channel].keys():
-            return self.displacements[input_channel]["ppf"][1][0]
-        return np.linalg.norm(self.displacements[input_channel]["displacement"][1])
+        if "ppf" in self.displacements:
+            return self.displacements["ppf"][1][0]
+        return np.linalg.norm(self.displacements["displacement"][1])
 
     def get_all_features_on_object(self):
         """Get all observed features that were on the object.
@@ -337,13 +337,13 @@ class FeatureAtLocationBuffer:
         """
         all_features_on_object = {}
         # Number of steps where at least one input was on the object
-        global_on_object_ids = np.where(self.on_object)[0]
+        global_on_object_ids = self._global_on_object_ids()
         logger.debug(
             f"Observed {np.array(self.locations).shape} locations, "
             f"{len(global_on_object_ids)} global on object"
         )
-        for input_channel in self.features.keys():
-            # Here we want to make sure the input specific obs was on the object
+        for input_channel in self.features:
+            # Here we want to make sure the input-specific observation was on the object
             channel_off_object_ids = np.where(
                 self.features[input_channel]["on_object"] is False
             )[0]
@@ -354,27 +354,22 @@ class FeatureAtLocationBuffer:
             )
 
             channel_features_on_object = {}
-            for feature in self.features[input_channel].keys():
-                # Pad end of array with 0s if last steps of episode were off object
+            for feature in self.features[input_channel]:
+                # Pad end of array with nans if last steps of episode were off object
                 # for this channel
-                if self.features[input_channel][feature].shape[0] < len(self):
-                    self.features[input_channel][feature].resize(
-                        (
-                            len(self),
-                            self.features[input_channel][feature].shape[1],
-                        ),
-                        refcheck=False,
-                    )
+                padded_feature = self._pad_to_target_length(
+                    self.features[input_channel][feature]
+                )
                 logger.debug(
                     f"{input_channel} observations for feature {feature} have "
-                    f"shape {np.array(self.features[input_channel][feature]).shape}"
+                    f"shape {padded_feature.shape}"
                 )
                 # Get feature at each time step where the global on_object flag was
-                # True (at least one input was on object, not nescessarily this
+                # True (at least one input was on object, not necessarily this
                 # features input channel).
-                channel_features_on_object[feature] = np.array(
-                    self.features[input_channel][feature]
-                )[global_on_object_ids]
+                channel_features_on_object[feature] = padded_feature[
+                    global_on_object_ids
+                ]
 
             all_features_on_object[input_channel] = channel_features_on_object
         return all_features_on_object
@@ -396,28 +391,28 @@ class FeatureAtLocationBuffer:
         # TODO: rename, this is including exploration steps
         return np.sum(self.stats["lm_processed_steps"])
 
-    def get_num_goal_states_generated(self):
-        """Return number of goal states generated by the LM's GSG since episode start.
+    def get_num_goals_generated(self):
+        """Return number of goals generated by the LM's GSG since episode start.
 
-        Note use of length not sum.
+        Note: use the length, not the sum.
         """
         return len(self.stats["goal_state_achieved"])
 
     def get_matching_step_when_output_goal_set(self):
-        """Return matching step when last goal-state was generated.
+        """Return matching step when last goal was generated.
 
-        Return the LM matching step associated with the last time a goal-state was
+        Return the LM matching step associated with the last time a goal was
         generated.
         """
         return self.stats["matching_step_when_output_goal_set"][-1]
 
     def get_num_steps_post_output_goal_generated(self):
-        """Return number of steps since last output goal-state.
+        """Return number of steps since last output goal.
 
         Return the number of Monty-matching steps that have elapsed since the last
-        time an output goal-state was generated.
+        time an output goal was generated.
         """
-        if self.get_num_goal_states_generated() == 0:
+        if self.get_num_goals_generated() == 0:
             # No previous jumps attempted, so this is just the number
             # of Monty matching steps that have taken place in the episode
             return self.get_num_matching_steps()
@@ -428,7 +423,7 @@ class FeatureAtLocationBuffer:
         )
 
     def get_infos_for_graph_update(self):
-        """Return all stored infos require to update a graph in memory."""
+        """Return all stored infos required to update a graph in memory."""
         return dict(
             locations=self.get_all_locations_on_object(),
             features=self.get_all_features_on_object(),
@@ -455,7 +450,7 @@ class FeatureAtLocationBuffer:
 
         # If we reach here, no sensory channels were found but channels exist
         # This means we have channels but none are SMs that output CMP-compliant
-        # State observations (e.g., only view_finder, LM)
+        # Message observations (e.g., only view_finder, LM)
         raise ValueError(
             f"No sensory input channels found in buffer. "
             f"Available channels: {all_channels}. "
@@ -472,6 +467,14 @@ class FeatureAtLocationBuffer:
             self.stats["individual_ts_rot"] = self.stats["detected_rotation_quat"]
             # If no symmetry was detected, this will be None.
             self.stats["symmetric_rotations_ts"] = self.stats["symmetric_rotations"]
+
+    def _global_on_object_ids(self) -> npt.NDArray[np.bool_]:
+        """Get indices of steps where at least one input was on the object.
+
+        Returns:
+            Array of indices where self.on_object is True.
+        """
+        return np.where(self.on_object)[0]
 
     def _add_attr_to_feature_buffer(self, input_channel, attr_name, attr_value):
         """Add attribute to feature buffer.
@@ -490,7 +493,7 @@ class FeatureAtLocationBuffer:
                 attr_value = attr_value.flatten()
             attr_shape = len(attr_value)
 
-        if attr_name not in self.features[input_channel].keys():
+        if attr_name not in self.features[input_channel]:
             # If the feature is not stored in buffer yet (i.e. when
             # an LM sends an object ID to a higher level LM for the first
             # time) we fill the array for this feature with nans up to
@@ -501,8 +504,9 @@ class FeatureAtLocationBuffer:
                 (len(self) + 1, attr_shape), np.nan
             )
         else:
-            padded_feat = self._fill_old_values_with_nans(
+            padded_feat = self._pad_to_target_length(
                 existing_vals=self.features[input_channel][attr_name],
+                target_length=len(self) + 1,
                 new_val_len=attr_shape,
             )
             self.features[input_channel][attr_name] = padded_feat
@@ -515,67 +519,144 @@ class FeatureAtLocationBuffer:
             input_channel: Input channel from which the location was received.
             location: Location to add to buffer.
         """
-        if input_channel not in self.locations.keys():
+        if input_channel not in self.locations:
             self.locations[input_channel] = np.empty((0, 0))
 
-        padded_locs = self._fill_old_values_with_nans(
+        padded_locs = self._pad_to_target_length(
             existing_vals=self.locations[input_channel],
+            target_length=len(self) + 1,
             new_val_len=location.shape[0],
         )
         self.locations[input_channel] = padded_locs
         self.locations[input_channel][-1] = location
 
-    def _add_disp_to_displacement_buffer(self, input_channel, disp_name, disp_val):
-        """Add displacement to displacement buffer.
+    def _store_displacement_and_location(self, percepts: list[Message]) -> None:
+        """Store the global displacement and location from the current step.
+
+        Computes the average location across SM input channels (to be used for
+        calculating the next displacement) and stores any displacement present on
+        the first SM percept.
 
         Args:
-            input_channel: Input channel from which the displacement was received.
-            disp_name: Name of the displacement. Currently in ["displacement", "ppf"]
-            disp_val: Value of the displacement.
+            percepts: List of Message objects from the current step.
         """
-        if input_channel not in self.displacements.keys():
-            self.displacements[input_channel] = {}
-        if disp_name not in self.displacements[input_channel].keys():
-            self.displacements[input_channel][disp_name] = np.full(
-                (len(self.locations), len(disp_val)), np.nan
-            )
+        sm_percepts = [p for p in percepts if p.sender_type == "SM"]
+        current_location = np.mean([p.location for p in sm_percepts], axis=0)
 
-        padded_vals = self._fill_old_values_with_nans(
-            existing_vals=self.displacements[input_channel][disp_name],
-            new_val_len=disp_val.shape[0],
-        )
-        self.displacements[input_channel][disp_name] = padded_vals
-        self.displacements[input_channel][disp_name][-1] = disp_val
+        first_percept = sm_percepts[0]
+        if getattr(first_percept, "displacement", None):
+            for name in sm_percepts[0].displacement:
+                self._add_displacement(name, sm_percepts[0].displacement[name])
 
-    def _fill_old_values_with_nans(self, existing_vals, new_val_len):
-        """Pad existing values with nans to make sure indices align.
+        self.last_location = current_location.copy()
 
-        If len(existing_vals)== len(buffer) this operation has no effect (besides adding
-        a nan at the end which will be filled with the feature value in the next line
-        making it equivalent to calling append).
-
-        TODO O investigate whether pre-allocating large arrays (rather than
-        repeatedly creating new ones) might be faster, despite a cost in memory
+    def _add_displacement(
+        self,
+        name: Literal["displacement", "ppf"],
+        val: npt.NDArray[np.float64],
+    ) -> None:
+        """Add a displacement value to the global displacement buffer.
 
         Args:
-            existing_vals: Values already stored in buffer.
-            new_val_len: Shape (along first dim) of new values to be added.
+            name: Name of the displacement (e.g. "displacement", "ppf").
+            val: Value of the displacement.
+        """
+        if name not in self.displacements:
+            self.displacements[name] = np.full((len(self.locations), len(val)), np.nan)
+
+        padded_vals = self._pad_to_target_length(
+            existing_vals=self.displacements[name],
+            target_length=len(self) + 1,
+            new_val_len=val.shape[0],
+        )
+        self.displacements[name] = padded_vals
+        self.displacements[name][-1] = val
+
+    def _pad_to_target_length(
+        self,
+        existing_vals: np.ndarray,
+        target_length: int | None = None,
+        new_val_len: int | None = None,
+    ) -> np.ndarray:
+        """Pad array to target length with nans for consistent index alignment.
+
+        This function ensures that array data has consistent row counts across
+        channels, padding with nans for missing entries. This function is called in
+        two places:
+
+        1. During append operations (adding new data): `target_length = len(self) + 1`
+           Pads the existing array and makes room for the new observation being added.
+           The caller will fill the last row with the new value after this function
+           returns.
+
+        2. During memory update (retrieving all locations and features):
+           `target_length = len(self)`. Ensures all channels have the same
+           number of rows as the buffer.
+
+        The function handles cases where existing_vals might be empty (0-row arrays)
+        by allowing explicit specification of the desired width by passing new_val_len.
+
+        Args:
+            existing_vals: Array to pad, with shape (n_rows, n_cols) where n_cols can be
+                0 for newly initialized empty arrays.
+            target_length: Number of rows the output array should have. If None,
+                defaults to len(self).
+            new_val_len: Width (number of columns) for the output array. If None,
+                inferred from existing_vals.shape[1]. Must be provided if existing_vals
+                is empty (shape[1] == 0), which occurs during first append of a new
+                feature, locations, or displacement.
 
         Returns:
-            The padded values.
+            Array with shape (target_length, new_val_len) where:
+            - Existing data from existing_vals is preserved at the beginning
+            - New rows are filled with np.nan
+            - If existing_vals already has target_length (or more) rows, returns it
+                unchanged
+
+        Raises:
+            ValueError: If new_val_len cannot be determined (existing_vals is empty
+                and new_val_len not provided), or if new_val_len is provided but
+                conflicts with the existing array's column dimension.
+
+        TODO O investigate whether pre-allocating large arrays (rather than
+        repeatedly creating new ones) might be faster, despite a cost in memory.
         """
-        # create new np array filled with nans of size (current_step, new_val_len)
-        new_vals = np.full((len(self) + 1, new_val_len), np.nan)
-        # Replace nans with stored values for this feature.
-        # existing_feat has shape (last_stored_step, attr_shape)
-        new_vals[: existing_vals.shape[0], : existing_vals.shape[1]] = existing_vals
-        return new_vals
+        if target_length is None:
+            target_length = len(self)
+
+        # Check for column dimension mismatch
+        if (
+            new_val_len is not None
+            and existing_vals.size > 0
+            and new_val_len != existing_vals.shape[1]
+        ):
+            raise ValueError(
+                f"Column dimension mismatch: existing array has "
+                f"{existing_vals.shape[1]} columns but new_val_len={new_val_len} "
+                f"was provided. Padding along column dimension is not allowed."
+            )
+
+        # Infer width from existing array if not provided
+        if new_val_len is None:
+            if existing_vals.size == 0:
+                raise ValueError(
+                    "Cannot infer width from empty array; must provide new_val_len"
+                )
+            new_val_len = existing_vals.shape[1]
+
+        # Early return if array is already long enough
+        if existing_vals.shape[0] >= target_length:
+            return existing_vals
+
+        padded = np.full((target_length, new_val_len), np.nan)
+        padded[: existing_vals.shape[0], : existing_vals.shape[1]] = existing_vals
+        return padded
 
 
 class BufferEncoder(json.JSONEncoder):
     """Encoder to turn the buffer into a JSON compliant format."""
 
-    _encoders: ClassVar[dict[type, Callable | json.JSONEncoder]] = {}
+    _encoders: ClassVar[dict[type, Callable]] = {}
 
     @classmethod
     def register(
@@ -659,16 +740,17 @@ class BufferEncoder(json.JSONEncoder):
         encoder = self._find(obj)
         if encoder is not None:
             return encoder(obj)
-        return json.JSONEncoder.default(self, obj)
+        if is_dataclass_instance(obj):
+            return {f.name: getattr(obj, f.name) for f in dataclasses.fields(obj)}
+        return super().default(obj)
 
 
 BufferEncoder.register(np.generic, lambda obj: obj.item())
 BufferEncoder.register(np.ndarray, lambda obj: obj.tolist())
-BufferEncoder.register(Rotation, lambda obj: obj.as_euler("xyz", degrees=True))
+BufferEncoder.register(ScipyRotation, lambda obj: obj.as_euler("xyz", degrees=True))
 BufferEncoder.register(torch.Tensor, lambda obj: obj.cpu().numpy())
-BufferEncoder.register(
-    quaternion.quaternion, lambda obj: quaternion.as_float_array(obj)
-)
+BufferEncoder.register(qt.quaternion, lambda obj: qt.as_float_array(obj))
 BufferEncoder.register(Action, ActionJSONEncoder)
 BufferEncoder.register(DictConfig, lambda obj: OmegaConf.to_object(obj))
 BufferEncoder.register(ListConfig, lambda obj: OmegaConf.to_object(obj))
+BufferEncoder.register(Rotation, lambda obj: obj.as_euler("xyz", degrees=True))

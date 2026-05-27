@@ -1,4 +1,4 @@
-# Copyright 2025 Thousand Brains Project
+# Copyright 2025-2026 Thousand Brains Project
 #
 # Copyright may exist in Contributors' modifications
 # and/or contributions to the work.
@@ -13,17 +13,32 @@ from typing import Any
 from unittest.mock import MagicMock, patch, sentinel
 
 import numpy as np
-import numpy.testing as npt
+import numpy.typing as npt
 import pytest
+import quaternion as qt
 from parameterized import parameterized_class
 
+from tbp.monty.cmp import Goal
+from tbp.monty.context import RuntimeContext
+from tbp.monty.frameworks.models.motor_system_state import AgentState, SensorState
 from tbp.monty.frameworks.models.salience.on_object_observation import (
     OnObjectObservation,
 )
 from tbp.monty.frameworks.models.salience.sensor_module import (
-    HabitatSalienceSM,
+    SalienceSM,
 )
-from tbp.monty.frameworks.models.states import GoalState
+from tbp.monty.frameworks.sensors import SensorID
+
+
+class ArrayEqual:
+    def __init__(self, arr: npt.ArrayLike):
+        self.arr = arr
+
+    def __eq__(self, other: npt.ArrayLike):
+        return np.array_equal(self.arr, other)
+
+    def __hash__(self):
+        return hash(np.asarray(self.arr).tobytes())
 
 
 @pytest.fixture
@@ -44,19 +59,26 @@ def mocked_object_observation():
     ],
 )
 @pytest.mark.usefixtures("mocked_object_observation")
-class HabitatSalienceSMTest(unittest.TestCase):
+class SalienceSMTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.sensor_module = HabitatSalienceSM(
-            rng=np.random.RandomState(42),
+        self.sensor_module = SalienceSM(
             sensor_module_id="test",
-            salience_strategy_class=MagicMock,
-            return_inhibitor_class=MagicMock,
-            snapshot_telemetry_class=MagicMock,
+            salience_strategy=MagicMock(),
+            return_inhibitor=MagicMock(),
+            snapshot_telemetry=MagicMock(),
         )
-        self.state = {
-            "rotation": "i'm a rotation",
-            "location": "i'm a position",
-        }
+        self.default_sensor_state = SensorState(
+            position=(0, 0, 0),
+            rotation=qt.quaternion(1, 0, 0, 0),
+        )
+        self.state = AgentState(
+            sensors={
+                SensorID(self.sensor_module.sensor_module_id): self.default_sensor_state
+            },
+            position=self.default_sensor_state.position,
+            rotation=self.default_sensor_state.rotation,
+        )
+        self.ctx = RuntimeContext(rng=np.random.RandomState())
 
     def test_step_snapshots_raw_observation_as_needed(self) -> None:
         self.sensor_module._save_raw_obs = self.save_raw_obs  # type: ignore[attr-defined]
@@ -64,17 +86,17 @@ class HabitatSalienceSMTest(unittest.TestCase):
         data: dict[str, Any] = MagicMock()
 
         self.sensor_module.update_state(self.state)
-        self.sensor_module.step(data)
+        self.sensor_module.step(self.ctx, data)
 
         if self.should_snapshot:  # type: ignore[attr-defined]
             self.sensor_module._snapshot_telemetry.raw_observation.assert_called_once_with(  # type: ignore[attr-defined]
-                data, self.state["rotation"], self.state["location"]
+                data, self.state.rotation, ArrayEqual(self.state.position)
             )
         else:
             self.sensor_module._snapshot_telemetry.raw_observation.assert_not_called()  # type: ignore[attr-defined]
 
     def test_step_returns_no_percept(self) -> None:
-        self.assertIsNone(self.sensor_module.step(MagicMock()))
+        self.assertIsNone(self.sensor_module.step(self.ctx, MagicMock()))
 
     @patch("tbp.monty.frameworks.models.salience.sensor_module.on_object_observation")
     def test_step_proposes_goals_properly(
@@ -95,8 +117,8 @@ class HabitatSalienceSMTest(unittest.TestCase):
             "depth": np.zeros((64, 64)),
         }
 
-        self.sensor_module.step(data)
-        goals = self.sensor_module.propose_goal_states()
+        self.sensor_module.step(self.ctx, data)
+        goals = self.sensor_module.propose_goals()
 
         self.sensor_module._salience_strategy.assert_called_once_with(  # type: ignore[attr-defined]
             rgba=data["rgba"], depth=data["depth"]
@@ -106,12 +128,12 @@ class HabitatSalienceSMTest(unittest.TestCase):
             sentinel.center_location, locations
         )
         self.sensor_module._weight_salience.assert_called_once_with(
-            sentinel.salience_map, sentinel.ior_weights
+            self.ctx, sentinel.salience_map, sentinel.ior_weights
         )
 
         self.assertEqual(len(goals), locations.shape[0])
         for i, g in enumerate(goals):
-            expected_goal = GoalState(
+            expected_goal = Goal(
                 location=locations[i],
                 confidence=salience[i],
                 use_state=True,
@@ -122,7 +144,7 @@ class HabitatSalienceSMTest(unittest.TestCase):
                 sender_type="SM",
             )
             # TODO: implement __eq__ for GoalState
-            npt.assert_array_equal(g.location, expected_goal.location)
+            np.testing.assert_array_equal(g.location, expected_goal.location)
             self.assertEqual(g.confidence, expected_goal.confidence)
             self.assertEqual(g.use_state, expected_goal.use_state)
             self.assertEqual(
@@ -136,27 +158,27 @@ class HabitatSalienceSMTest(unittest.TestCase):
             self.assertEqual(g.sender_type, expected_goal.sender_type)
 
 
-class HabitatSalienceSMPrivateTest(unittest.TestCase):
+class SalienceSMPrivateTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.sensor_module = HabitatSalienceSM(
-            rng=np.random.RandomState(42),
+        self.sensor_module = SalienceSM(
             sensor_module_id="test",
-            salience_strategy_class=MagicMock,
-            return_inhibitor_class=MagicMock,
-            snapshot_telemetry_class=MagicMock,
+            salience_strategy=MagicMock(),
+            return_inhibitor=MagicMock(),
+            snapshot_telemetry=MagicMock(),
         )
+        self.ctx = RuntimeContext(rng=np.random.RandomState())
 
     def test_normalize_salience_does_clips_uniform_salience_between_0_and_1(
         self,
     ) -> None:
         salience = 2 * np.ones(10)
         normalized = self.sensor_module._normalize_salience(salience)
-        npt.assert_array_equal(normalized, np.ones(10))
+        np.testing.assert_array_equal(normalized, np.ones(10))
 
     def test_normalize_salience_normalizes_empty_salience(self) -> None:
         salience = np.array([])
         normalized = self.sensor_module._normalize_salience(salience)
-        npt.assert_array_equal(normalized, np.array([]))
+        np.testing.assert_array_equal(normalized, np.array([]))
 
     def test_weight_salience_decays_randomizes_and_normalizes_salience_in_that_order(
         self,
@@ -171,12 +193,14 @@ class HabitatSalienceSMPrivateTest(unittest.TestCase):
             return_value=sentinel.normalized
         )
 
-        weighted = self.sensor_module._weight_salience(salience, ior_weights)
+        weighted = self.sensor_module._weight_salience(self.ctx, salience, ior_weights)
 
         self.sensor_module._decay_salience.assert_called_once_with(
             salience, ior_weights
         )
-        self.sensor_module._randomize_salience.assert_called_once_with(sentinel.decayed)
+        self.sensor_module._randomize_salience.assert_called_once_with(
+            self.ctx, sentinel.decayed
+        )
         self.sensor_module._normalize_salience.assert_called_once_with(
             sentinel.randomized
         )

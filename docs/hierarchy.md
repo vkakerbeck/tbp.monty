@@ -44,6 +44,7 @@
 - [experiment](how-monty-works/experiment.md)
 - [environment-agent](how-monty-works/environment-agent.md)
 - [monty](how-monty-works/monty.md)
+  - [conventions](how-monty-works/monty/conventions.md)
   - [reference-frame-transformations](how-monty-works/monty/reference-frame-transformations.md)
 - [observations-transforms-sensor-modules](how-monty-works/observations-transforms-sensor-modules.md)
 - [learning-module](how-monty-works/learning-module.md)
@@ -52,8 +53,6 @@
   - [evidence-based-learning-module](how-monty-works/learning-module/evidence-based-learning-module.md)
 - [connecting-lms-into-a-heterarchy](how-monty-works/connecting-lms-into-a-heterarchy.md)
 - [policy](how-monty-works/policy.md)
-- [research-features](how-monty-works/research-features.md)
-  - [evidence-as-a-similarity-measure](how-monty-works/research-features/evidence-as-a-similarity-measure.md)
 - [faq-monty](how-monty-works/faq-monty.md)
 - [open-questions](how-monty-works/open-questions.md)
 
@@ -76,6 +75,7 @@
   - [typing-guide](contributing/style-guide/typing-guide.md)
 - [guides-for-maintainers](contributing/guides-for-maintainers.md)
   - [triage](contributing/guides-for-maintainers/triage.md)
+- [large-language-model-use](contributing/large-language-model-use.md)
 
 # community: Community
 - [code-of-conduct](community/code-of-conduct.md)
@@ -174,4 +174,8 @@
   - [organize-local-meetup](future-work/oss-communication-improvements/organize-local-meetup.md)
   - [organize-start-podcast-series](future-work/oss-communication-improvements/organize-start-podcast-series.md)
   - [robust-docs-preview-cleanup](future-work/oss-communication-improvements/robust-docs-preview-cleanup.md)
+- [monty-tooling](future-work/monty-tooling.md)
+  - [improve-tbp-plot-visualizations-during-learning-and-inference](future-work/monty-tooling/improve-tbp-plot-visualizations-during-learning-and-inference.md)
+- [monty-demos](future-work/monty-demos.md)
+  - [improve-montys-performance-on-ultrasound](future-work/monty-demos/improve-montys-performance-on-ultrasound.md)
 <!-- vale on -->
