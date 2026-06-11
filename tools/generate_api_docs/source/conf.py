@@ -124,7 +124,7 @@ html_theme_options = {
         },
         {
             "name": "Docs",
-            "url": "https://thousandbrainsproject.readme.io/",
+            "url": "https://docs.thousandbrains.org/",
             "icon": "fa-brands fa-readme",
         },
     ],
