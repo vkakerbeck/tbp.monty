@@ -133,7 +133,7 @@ This approach is shown diagrammatically below:
 ### Before Starting Any Code Work
 
 We're very excited to have contributions from the community to `tbp.monty`. Before you begin any significant work on code that is of a research nature, we suggest that you start things off with the below steps:
-1. Contact us (for example, by creating a post [on the Discourse forums](https://forum.thousandbrains/)) if you have identified one of our existing [Future Work](https://thousandbrainsproject.readme.io/docs/project-roadmap) items that you would like to work on. Reaching out to us directly is a great way to begin the discussion about possible approaches you are considering. This can also help save time in case a Future Work item is no longer relevant, or has changed in nature since the Readme.com documentation was last updated.
+1. Contact us (for example, by creating a post [on the Discourse forums](https://thousandbrains.discourse.group/)) if you have identified one of our existing [Future Work](https://thousandbrainsproject.readme.io/docs/project-roadmap) items that you would like to work on. Reaching out to us directly is a great way to begin the discussion about possible approaches you are considering. This can also help save time in case a Future Work item is no longer relevant, or has changed in nature since the Readme.com documentation was last updated.
 2. Propose your idea in the form of [the RFC process](https://thousandbrainsproject.readme.io/docs/request-for-comments-rfc).
 
 Following the above guidance will help prevent a situation where you spend a significant amount of time on code that is never utilized.

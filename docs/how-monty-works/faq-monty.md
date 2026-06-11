@@ -3,7 +3,7 @@ title: FAQ - Monty
 description: Frequently asked questions about the Thousand Brains Theory, Monty, thousand-brains systems, and the underlying algorithms.
 ---
 
-Below are responses to some of the frequently asked questions we have encountered. However, this is not an exhaustive list, so if you have a question, please reach out to us and the rest of the community at our [Discourse page](https://forum.thousandbrains/). We will also update this page with new questions as they come up.
+Below are responses to some of the frequently asked questions we have encountered. However, this is not an exhaustive list, so if you have a question, please reach out to us and the rest of the community at our [Discourse page](https://thousandbrains.discourse.group/). We will also update this page with new questions as they come up.
 
 # General
 
