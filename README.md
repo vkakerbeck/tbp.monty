@@ -48,9 +48,9 @@ We also publish our meeting recordings on **YouTube** on the [Thousand Brains Pr
 
 [![](docs/figures/overview/youtube_screenshot.png)](https://www.youtube.com/@thousandbrainsproject)
 
-If you want to use this code, contribute to it, ask questions or propose ideas, please consider joining [our discourse channel](https://thousandbrains.discourse.group/).
+If you want to use this code, contribute to it, ask questions or propose ideas, please consider joining [our discourse channel](https://forum.thousandbrains.org/).
 
-[![](docs/figures/overview/discourse_screenshot.png)](https://thousandbrains.discourse.group/)
+[![](docs/figures/overview/discourse_screenshot.png)](https://forum.thousandbrains.org/)
 
 If you would like to receive updates, follow us on [Bluesky](https://bsky.app/profile/thousandbrains.org) or [Twitter](https://x.com/1000brainsproj) or [LinkedIn](https://www.linkedin.com/company/thousand-brains-project/).
 

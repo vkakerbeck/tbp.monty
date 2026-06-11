@@ -119,7 +119,7 @@ html_theme_options = {
         },
         {
             "name": "Discourse",
-            "url": "https://thousandbrains.discourse.group/",
+            "url": "https://forum.thousandbrains.org/",
             "icon": "fa-brands fa-discourse",
         },
         {
