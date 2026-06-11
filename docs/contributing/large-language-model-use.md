@@ -61,7 +61,7 @@ Below we provide further guidance on some edge cases.
 
 ## Contributing on the Forums
 
-- [The TBP Discourse forums](https://thousandbrains.discourse.group/) are an excellent setting to discuss nascent ideas.
+- [The TBP Discourse forums](https://forum.thousandbrains/) are an excellent setting to discuss nascent ideas.
 - In these discussions, we would love to engage with you and your ideas. As such, we ask that you not post the outputs of LLMs as if these were your own ideas.
 - If you would like to quote or refer to a conversation you have had with an LLM, please just indicate this clearly.
 - See the advice under [Writing RFCs](#writing-rfcs) for suggestions about when LLMs can be useful "tutors" when exploring a topic.
