@@ -3,7 +3,7 @@ title: Open Questions
 description: Below is a simple outline of some of the open questions that we are currently exploring.
 ---
 
-For more details, we also encourage checking out our [Future Work Roadmap](../future-work/project-roadmap.md) and related sections, where we go into some possible approaches to these questions. For a more detailed overview of open questions and our thoughts around them, see [this Excalidraw board](https://link.excalidraw.com/l/gO8aypxgkZ/12X01LgJjdn).
+For more details, we also encourage checking out our [Future Work Roadmap](../future-work/project-roadmap.md) and related sections, where we go into some possible approaches to these questions. For a more detailed overview of open questions and our thoughts around them, see [this Excalidraw board](https://link.excalidraw.com/readonly/9iANwzrO9EdPxJpCE5LS).
 
 For in depth discussions of many of these questions, see the brainstorming videos on [our YouTube channel](https://www.youtube.com/@thousandbrainsproject).
 
