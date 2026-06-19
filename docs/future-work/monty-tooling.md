@@ -2,7 +2,7 @@
 title: Monty Tooling
 description: These are efforts to develop tools that make Monty easier to use and build with.
 ---
-Tasks into Monty tooling section relates to tools that can make Monty easier to use and build with. You can find some of the tools we currently use in the [tools folder](../../tools/) of this repository and as separate repositories on our [GitHub Org](https://github.com/thousandbrainsproject).
+Tasks in the Monty tooling section relate to tools that can make Monty easier to use and build with. You can find some of the tools we currently use in the [tools folder](../../tools/) of this repository and as separate repositories on our [GitHub Org](https://github.com/thousandbrainsproject).
 
 For instance, some tools our researchers and/or engineers use are:
 - [tbp.plot](https://github.com/thousandbrainsproject/tbp.plot) for interactive visualizations of what is going on inside of Monty's brain.
