@@ -2,7 +2,7 @@
 title: CMP & Hierarchy Improvements
 description: Improvements we would like to add to the CMP or hierarchical information processing.
 ---
-
+Items that relate to changing the [message passing](../how-monty-works/monty/messages-in-monty.md) between Monty components (either the routing or the format of the messages), go into this section. Also items related to passing information up and down the hierarchy (between LMs) are listed here. Items related to messages passed laterally between LMs (voting) are listed under [voting improvements](voting-improvements.md).
 
 > 📘 Heterarchy vs. Hierarchy
 > 
