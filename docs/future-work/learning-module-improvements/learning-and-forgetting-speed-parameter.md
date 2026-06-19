@@ -2,7 +2,7 @@
 title: Learning and Forgetting Speed Parameter
 description: Add a learning speed parameter to object models in LMs such that some LMs learn more temporary models and others more stable ones.
 rfc: required
-estimated-scope: large
+estimated-scope: unknown
 improved-metric: learning, compositional
 output-type: RFC, prototype, monty-feature, PR
 skills: python, research, monty
