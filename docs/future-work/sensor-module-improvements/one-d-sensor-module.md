@@ -7,7 +7,7 @@ improved-metric: features-and-morphology, transfer, deformations, generalization
 output-type: prototype, monty-feature, PR
 skills: python, research, monty, computer-vision
 contributor: 
-status: unstarted
+status: open
 ---
 
 As Monty's models are fixed in a metric space, it can only tolerate slight distortions of objects. However, some objects such as T-Shirts or cables can distort a lot and are still recognizable to us. It is unreasonable to assume that we have learned separate models for all the possible ways a T-shirt could be crumpled or a cable could be tangled.
