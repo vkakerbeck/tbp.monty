@@ -122,6 +122,7 @@
   - [deal-with-moving-objects](future-work/learning-module-improvements/deal-with-moving-objects.md)
   - [support-scale-invariance](future-work/learning-module-improvements/support-scale-invariance.md)
   - [improve-handling-of-symmetry](future-work/learning-module-improvements/improve-handling-of-symmetry.md)
+  - [model-repeating-patterns](future-work/learning-module-improvements/model-repeating-patterns.md)
   - [use-better-priors-for-hypothesis-initialization](future-work/learning-module-improvements/use-better-priors-for-hypothesis-initialization.md)
   - [learn-hot-spots-on-objects](future-work/learning-module-improvements/learn-hot-spots-on-objects.md)
   - [include-state-in-models](future-work/learning-module-improvements/include-state-in-models.md)
