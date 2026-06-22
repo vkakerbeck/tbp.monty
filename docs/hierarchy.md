@@ -111,6 +111,7 @@
   - [improve-bounded-evidence-performance](future-work/learning-module-improvements/improve-bounded-evidence-performance.md)
   - [use-models-with-fewer-points](future-work/learning-module-improvements/use-models-with-fewer-points.md)
   - [better-model-surface-representation](future-work/learning-module-improvements/better-model-surface-representation.md)
+  - [hybrid-node-and-edge-matching](future-work/learning-module-improvements/hybrid-node-and-edge-matching.md)
   - [test-particle-filter-like-resampling-of-hypothesis-space](future-work/learning-module-improvements/test-particle-filter-like-resampling-of-hypothesis-space.md)
   - [dynamic-adjustment-of-hypothesis-space-size](future-work/learning-module-improvements/dynamic-adjustment-of-hypothesis-space-size.md)
   - [sample-offspring-hypotheses](future-work/learning-module-improvements/sample-offspring-hypotheses.md)
