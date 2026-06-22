@@ -1,0 +1,22 @@
+---
+title: Better Model Surface Representation
+description: Figure out and test a way to represent and objects surface better in our models or matching algorithm.
+rfc: optional
+estimated-scope: unknown
+improved-metric: speed, pose, accuracy, noise
+output-type: experiments, analysis, PR
+skills: python, research, monty
+contributor: 
+status: open
+---
+
+> [!NOTE]
+> This item relates to [using models with fewer points](use-models-with-fewer-points.md), which would be one of the ways to measure success here.
+
+The naive way of testing whether a sensor is still on the object if a given hypothesis is correct is to apply the movement in the object's RF and searching in the radius of the new location whether there are points stored nearby in the model. However, this disregards the concept of surface, where we would want to have very little tolerance when the movement is going off the surface (i.e. in the direction of the surface normal) but allow for more tolerance if the next point along the surface is a bit further away. If we don't allow this second tolerance, we add a requirement to learn dense models where even a plain, even surface is represented with many points in the model because otherwise we won't find near enough neighbors.
+
+![Example of problems with the naive approach of search. Sparsity in the model will lead to some search locations not having a nearby point stored in the model (red). If we increase the search radius, many points that should be off the object will be considered on object instead.](../../figures/future-work/search_naive.png)
+
+This problem is partially addressed by the custom distance metric we use in the EvidenceGraphLM, which takes into account the direction of the sensed surface normal when searching for nearest neighbors in the model (read more [here](../../how-monty-works/learning-module/evidence-based-learning-module.md#search-radius-and-distance-weighting)). However, it only works up to a certain degree of sparsity in the models. It also is only an approximation of surface representation (only during inference, using spherical radius without distinction between going into vs. out of the surface, basic heuristic to account for curvature). There might be small tweaks that could be made to it (account for curvature better, test parameters more) or a larger rethinking of representing surface in the models.
+
+![How we currently account for surface when searching the models. Depending on the amount of curvature sensed, the search radius will be narrowed more or less in the direction of the sensed surface normal.](../../figures/future-work/search_incl_surface_rep.png)
