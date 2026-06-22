@@ -3,7 +3,7 @@ title: Model Repeating Patterns
 description: Come up with, implement, and test a way to model and recognize repeating patterns efficiently.
 rfc: required
 estimated-scope: unknown
-improved-metric: learning, num-steps, features-and-morphology
+improved-metric: learning, numsteps, features-and-morphology
 output-type: RFC, experiments, analysis, PR
 skills: python, research, monty
 contributor: 
