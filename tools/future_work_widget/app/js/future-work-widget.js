@@ -110,11 +110,12 @@ const ColumnFormatters = {
   },
   formatStatusColumn(cell) {
     const rowData = cell.getRow().getData();
-    const status = cell.getValue() || '';
+    const status = (cell.getValue() || '').trim();
     const contributor = rowData.contributor || '';
 
+    const normalizedStatus = status.toLowerCase();
     const statusText = status
-      ? `<span class="${BADGE_STATUS_CLASS}">${escapeHtml(status)}</span>`
+      ? `<span class="badge ${BADGE_STATUS_CLASS} ${BADGE_STATUS_CLASS}-${escapeHtml(normalizedStatus)}" data-search-value="${escapeHtml(status)}" style="cursor: pointer;">${escapeHtml(status)}</span>`
       : '';
 
     if (!contributor) return statusText;
