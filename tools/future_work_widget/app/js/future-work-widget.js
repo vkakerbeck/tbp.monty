@@ -78,7 +78,7 @@ const ColumnFormatters = {
     const url = urlPrefix ? `${urlPrefix}${value}` : value;
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(url)}"><i class="${icon}"></i></a>`;
   },
-  formatTagsColumn: (cell) => ColumnFormatters.formatArrayOrStringColumn(cell.getValue(), BADGE_CLASS),
+  formatBadgeColumn: (cell) => ColumnFormatters.formatArrayOrStringColumn(cell.getValue(), BADGE_CLASS),
   formatSkillsColumn: (cell) => ColumnFormatters.formatArrayOrStringColumn(cell.getValue(), BADGE_SKILLS_CLASS),
   formatSizeColumn(cell) {
     const value = (cell.getValue() || '').trim().toLowerCase();
@@ -157,11 +157,10 @@ const TableConfig = {
     return [
       { title: 'Title', field: 'title', formatter: ColumnFormatters.formatTitleWithLinksColumn, width: 200, cssClass: 'wrap-text', variableHeight: true },
       { title: 'Scope', field: 'estimated-scope', formatter: ColumnFormatters.formatSizeColumn },
-      { title: 'Metric', field: 'improved-metric', formatter: ColumnFormatters.formatTagsColumn, maxWidth: 200, cssClass: 'wrap-text' },
-      { title: 'Output Type', field: 'output-type', formatter: ColumnFormatters.formatTagsColumn },
+      { title: 'Metric', field: 'improved-metric', formatter: ColumnFormatters.formatBadgeColumn, maxWidth: 200, cssClass: 'wrap-text' },
+      { title: 'Output Type', field: 'output-type', formatter: ColumnFormatters.formatBadgeColumn },
       { title: 'RFC', field: 'rfc', formatter: ColumnFormatters.formatRfcColumn },
       { title: 'Status', field: 'status', formatter: ColumnFormatters.formatStatusColumn },
-      { title: 'Tags', field: 'tags', formatter: ColumnFormatters.formatTagsColumn, widthGrow: 2, cssClass: 'wrap-text' },
       { title: 'Skills', field: 'skills', formatter: ColumnFormatters.formatSkillsColumn, widthGrow: 2, cssClass: 'wrap-text' }
     ];
   },
@@ -250,7 +249,7 @@ const FutureWorkWidget = {
         }
 
         const searchableText = [
-          data.title, data.tags, data.skills, data.status,
+          data.title, data.skills, data.status,
           data.contributor, data['estimated-scope'], data['improved-metric'],
           data['output-type'], data.rfc, data.link, data.path2
         ]
