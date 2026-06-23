@@ -92,12 +92,12 @@ body {
 }
 
 .badge.badge-status-evergreen {
-  background-color: #7c3aed;
+  background-color: #004085;
   color: #ffffff;
 }
 
 .badge.badge-status-evergreen:hover {
-  background-color: #6d28d9;
+  background-color: #003566;
 }
 
 .badge-size-small {
