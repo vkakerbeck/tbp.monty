@@ -255,8 +255,9 @@ body {
 
 .tabulator-cell.wrap-text .badge,
 .tabulator-cell.wrap-text .badge-skills {
-  display: inline-block;
-  margin: 2px;
+  display: block;
+  margin: 2px 0;
+  width: fit-content;
 }
 
 .tabulator-cell {

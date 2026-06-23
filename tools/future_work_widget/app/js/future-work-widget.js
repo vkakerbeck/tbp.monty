@@ -156,13 +156,13 @@ const TableConfig = {
 
   getAllColumns() {
     return [
-      { title: 'Title', field: 'title', formatter: ColumnFormatters.formatTitleWithLinksColumn, width: 200, cssClass: 'wrap-text', variableHeight: true },
-      { title: 'Scope', field: 'estimated-scope', formatter: ColumnFormatters.formatSizeColumn },
-      { title: 'Metric', field: 'improved-metric', formatter: ColumnFormatters.formatBadgeColumn, maxWidth: 200, cssClass: 'wrap-text' },
-      { title: 'Output Type', field: 'output-type', formatter: ColumnFormatters.formatBadgeColumn },
-      { title: 'RFC', field: 'rfc', formatter: ColumnFormatters.formatRfcColumn },
-      { title: 'Status', field: 'status', formatter: ColumnFormatters.formatStatusColumn },
-      { title: 'Skills', field: 'skills', formatter: ColumnFormatters.formatSkillsColumn, widthGrow: 2, cssClass: 'wrap-text' }
+      { title: 'Topic', field: 'title', formatter: ColumnFormatters.formatTitleWithLinksColumn, width: 200, cssClass: 'wrap-text', variableHeight: true },
+      { title: 'Scope', field: 'estimated-scope', formatter: ColumnFormatters.formatSizeColumn, maxWidth: 80 },
+      { title: 'Metric', field: 'improved-metric', formatter: ColumnFormatters.formatBadgeColumn, maxWidth: 100, cssClass: 'wrap-text', variableHeight: true },
+      { title: 'Output', field: 'output-type', formatter: ColumnFormatters.formatBadgeColumn, maxWidth: 100, cssClass: 'wrap-text', variableHeight: true },
+      { title: 'RFC', field: 'rfc', formatter: ColumnFormatters.formatRfcColumn, maxWidth: 80 },
+      { title: 'Status', field: 'status', formatter: ColumnFormatters.formatStatusColumn, maxWidth: 100, cssClass: 'wrap-text', variableHeight: true },
+      { title: 'Skills', field: 'skills', formatter: ColumnFormatters.formatSkillsColumn, maxWidth: 120, cssClass: 'wrap-text', variableHeight: true }
     ];
   },
 
@@ -218,7 +218,7 @@ const FutureWorkWidget = {
   createTable(data) {
     return new Tabulator('#table', {
       data: data,
-      layout: 'fitDataStretch',
+      layout: 'fitData',
       columns: TableConfig.getDisplayColumns(),
       groupBy: 'path2'
     });
