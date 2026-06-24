@@ -49,18 +49,44 @@ class TestFutureWorkMetadata(unittest.TestCase):
         self.assertIn("large", result)
         self.assertIn("Metric", result)
         self.assertIn("learning", result)
-        self.assertIn("Output Type", result)
+        self.assertIn("Output", result)
         self.assertIn("prototype", result)
         self.assertIn("Skills", result)
         self.assertIn("python", result)
         self.assertIn("Status", result)
         self.assertIn("open", result)
+        self.assertIn("#cce5ff", result)
         self.assertIn("RFC", result)
         self.assertIn("required", result)
         self.assertIn("vkakerbeck.png", result)
+        self.assertNotIn(">open</span><br><img", result)
+        self.assertIn("align-items:start", result)
+        self.assertIn("display:grid", result)
+        self.assertLess(result.index("Status"), result.index("Scope"))
+        self.assertLess(result.index("Scope"), result.index("Output"))
+        self.assertLess(result.index("Skills"), result.index("Metric"))
+        self.assertLess(result.index("Metric"), result.index("RFC"))
+        self.assertLess(result.index("Status"), result.index("Skills"))
+        self.assertLess(result.index("Scope"), result.index("Metric"))
+        self.assertLess(result.index("Output"), result.index("RFC"))
         self.assertIn(METADATA_DOC_URL, result)
         self.assertIn("[block:html]", result)
         self.assertIn("[/block]", result)
+
+    def test_render_future_work_metadata_wraps_multiple_badges_inline(self):
+        doc = {"output-type": "prototype, monty-feature, PR"}
+        result = render_future_work_metadata(doc)
+
+        self.assertIn(">prototype</span> <span", result)
+        self.assertIn(">monty-feature</span> <span", result)
+        self.assertNotIn(">prototype</span><br>", result)
+
+    def test_render_future_work_metadata_status_colors(self):
+        doc = {"status": "in-progress"}
+        result = render_future_work_metadata(doc)
+
+        self.assertIn("#2f2b5c", result)
+        self.assertIn("in-progress", result)
 
     def test_render_future_work_metadata_links_http_rfc(self):
         doc = {

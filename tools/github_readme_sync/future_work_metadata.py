@@ -38,18 +38,36 @@ BADGE_STYLE = (
     "display:inline-block;margin:2px 4px 2px 0;"
 )
 DEFAULT_BADGE_STYLE = f"{BADGE_STYLE}background-color:#e8e8f0;color:#2f2b5c;"
-STATUS_BADGE_STYLE = (
-    f"{BADGE_STYLE}background-color:#ffffff;color:#666;border:1px solid #999;"
-)
+SKILLS_BADGE_STYLE = DEFAULT_BADGE_STYLE
 SCOPE_STYLES = {
     "small": f"{BADGE_STYLE}background-color:#f0f0f0;color:#666;",
     "medium": f"{BADGE_STYLE}background-color:#00a0df;color:#ffffff;",
     "large": f"{BADGE_STYLE}background-color:#2f2b5c;color:#ffffff;",
     "unknown": DEFAULT_BADGE_STYLE,
 }
+STATUS_STYLES = {
+    "open": f"{BADGE_STYLE}background-color:#cce5ff;color:#004085;",
+    "scoping": f"{BADGE_STYLE}background-color:#9bd4f5;color:#004a70;",
+    "scoped": f"{BADGE_STYLE}background-color:#00a0df;color:#ffffff;",
+    "in-progress": f"{BADGE_STYLE}background-color:#2f2b5c;color:#ffffff;",
+    "paused": f"{BADGE_STYLE}background-color:#e8d5f5;color:#5a3d7a;",
+    "completed": f"{BADGE_STYLE}background-color:#d4edda;color:#155724;",
+    "evergreen": f"{BADGE_STYLE}background-color:#004085;color:#ffffff;",
+}
 METADATA_CONTAINER_STYLE = (
     "border:1px solid #ddd;border-radius:8px;padding:12px 16px;"
     "margin-bottom:16px;background-color:#fafafa;"
+)
+METADATA_GRID_STYLE = (
+    "display:grid;grid-template-columns:1fr 1fr;column-gap:32px;row-gap:8px;"
+    "align-items:start;"
+)
+METADATA_CELL_STYLE = ""
+
+ROW_PAIRS = (
+    ("status", "skills"),
+    ("estimated-scope", "improved-metric"),
+    ("output-type", "rfc"),
 )
 
 
@@ -89,18 +107,105 @@ def _scope_badge(scope: str) -> str:
     return _badge(scope, SCOPE_STYLES.get(scope_key, DEFAULT_BADGE_STYLE))
 
 
-def _label_row(label: str, content: str) -> str:
+def _status_badge(status: str) -> str:
+    status_key = status.strip().lower()
+    return _badge(status, STATUS_STYLES.get(status_key, DEFAULT_BADGE_STYLE))
+
+
+def _label_cell(label: str, content: str) -> str:
     if not content:
         return ""
     return (
-        f'<div style="margin-bottom:6px;">'
+        f'<div style="{METADATA_CELL_STYLE}">'
         f"<strong>{html.escape(label)}:</strong> {content}"
         f"</div>"
     )
 
 
+def _badges_html(values: list[str], style: str = DEFAULT_BADGE_STYLE) -> str:
+    return " ".join(_badge(value, style) for value in values)
+
+
+def _status_cell_content(fields: dict[str, Any]) -> str:
+    parts: list[str] = []
+    if "status" in fields:
+        parts.append(_status_badge(str(fields["status"])))
+
+    avatars: list[str] = []
+    if "contributor" in fields:
+        for username in _split_values(fields["contributor"]):
+            if GITHUB_USERNAME_PATTERN.match(username):
+                avatar_url = f"{GITHUB_AVATAR_URL}/{html.escape(username)}.png"
+                avatars.append(
+                    f'<img src="{avatar_url}" alt="{html.escape(username)}" '
+                    f'title="{html.escape(username)}" '
+                    f'style="width:24px;height:24px;border-radius:50%;'
+                    f'vertical-align:middle;margin-right:4px;" />'
+                )
+
+    if avatars:
+        parts.append(" ".join(avatars))
+
+    return " ".join(parts)
+
+
 def _wrap_readme_html_block(html_content: str) -> str:
     return f"[block:html]\n{json.dumps({'html': html_content}, indent=2)}\n[/block]"
+
+
+def _field_cell(key: str, fields: dict[str, Any]) -> str:
+    if key == "status":
+        content = _status_cell_content(fields)
+        if not content:
+            return ""
+        return _label_cell("Status", content)
+
+    if key not in fields:
+        return ""
+
+    if key == "estimated-scope":
+        return _label_cell("Scope", _scope_badge(str(fields[key])))
+
+    if key == "output-type":
+        return _label_cell("Output", _badges_html(_split_values(fields[key])))
+
+    if key == "skills":
+        return _label_cell(
+            "Skills",
+            _badges_html(_split_values(fields[key]), SKILLS_BADGE_STYLE),
+        )
+
+    if key == "improved-metric":
+        return _label_cell("Metric", _badges_html(_split_values(fields[key])))
+
+    if key == "rfc":
+        rfc = str(fields[key]).strip()
+        if rfc.lower().startswith(("http://", "https://")):
+            rfc_content = (
+                f'<a href="{html.escape(rfc)}" target="_blank" '
+                f'rel="noopener noreferrer">RFC</a>'
+            )
+        else:
+            rfc_content = html.escape(rfc)
+        return _label_cell("RFC", rfc_content)
+
+    return ""
+
+
+def _empty_cell() -> str:
+    return f'<div style="{METADATA_CELL_STYLE}"></div>'
+
+
+def _grid_cells(fields: dict[str, Any]) -> str:
+    cells: list[str] = []
+    for left_key, right_key in ROW_PAIRS:
+        left = _field_cell(left_key, fields)
+        right = _field_cell(right_key, fields)
+        if not left and not right:
+            continue
+        cells.append(left or _empty_cell())
+        cells.append(right or _empty_cell())
+    return "".join(cells)
 
 
 def render_future_work_metadata(doc: dict[str, Any]) -> str:
@@ -120,53 +225,21 @@ def render_future_work_metadata(doc: dict[str, Any]) -> str:
     if not fields:
         return ""
 
-    rows: list[str] = []
+    grid = _grid_cells(fields)
+    if not grid:
+        return ""
 
-    status_parts: list[str] = []
-    if "status" in fields:
-        status_parts.append(_badge(str(fields["status"]), STATUS_BADGE_STYLE))
-    if "contributor" in fields:
-        for username in _split_values(fields["contributor"]):
-            if GITHUB_USERNAME_PATTERN.match(username):
-                avatar_url = f"{GITHUB_AVATAR_URL}/{html.escape(username)}.png"
-                status_parts.append(
-                    f'<img src="{avatar_url}" alt="{html.escape(username)}" '
-                    f'title="{html.escape(username)}" '
-                    f'style="width:24px;height:24px;border-radius:50%;'
-                    f'vertical-align:middle;margin-right:4px;" />'
-                )
-    if status_parts:
-        rows.append(_label_row("Status", " ".join(status_parts)))
-
-    if "estimated-scope" in fields:
-        rows.append(_label_row("Scope", _scope_badge(str(fields["estimated-scope"]))))
-
-    for key, label in (
-        ("improved-metric", "Metric"),
-        ("output-type", "Output Type"),
-        ("skills", "Skills"),
-    ):
-        if key in fields:
-            badges = " ".join(_badge(value) for value in _split_values(fields[key]))
-            rows.append(_label_row(label, badges))
-
-    if "rfc" in fields:
-        rfc = str(fields["rfc"]).strip()
-        if rfc.lower().startswith(("http://", "https://")):
-            rfc_content = (
-                f'<a href="{html.escape(rfc)}" target="_blank" '
-                f'rel="noopener noreferrer">RFC</a>'
-            )
-        else:
-            rfc_content = html.escape(rfc)
-        rows.append(_label_row("RFC", rfc_content))
-
-    rows.append(
-        '<div style="margin-top:8px;font-size:0.9em;">'
+    footer = (
+        '<div style="width:100%;margin-top:8px;font-size:0.9em;">'
         "For details on what these values mean, see "
         f'<a href="{METADATA_DOC_URL}">here</a>.'
         "</div>"
     )
 
-    metadata_html = f'<div style="{METADATA_CONTAINER_STYLE}">{"".join(rows)}</div>'
+    metadata_html = (
+        f'<div style="{METADATA_CONTAINER_STYLE}">'
+        f'<div style="{METADATA_GRID_STYLE}">{grid}</div>'
+        f"{footer}"
+        f"</div>"
+    )
     return _wrap_readme_html_block(metadata_html)
