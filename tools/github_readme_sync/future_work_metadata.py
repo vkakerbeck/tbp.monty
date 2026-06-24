@@ -58,17 +58,12 @@ METADATA_CONTAINER_STYLE = (
     "border:1px solid #ddd;border-radius:8px;padding:12px 16px;"
     "margin-bottom:16px;background-color:#fafafa;"
 )
-METADATA_GRID_STYLE = (
-    "display:grid;grid-template-columns:1fr 1fr;column-gap:32px;row-gap:8px;"
-    "align-items:start;"
-)
-METADATA_CELL_STYLE = ""
+METADATA_COLUMNS_STYLE = "display:flex;gap:32px;"
+METADATA_COLUMN_STYLE = "flex:1;min-width:0;"
+METADATA_FIELD_STYLE = "margin-bottom:8px;"
 
-ROW_PAIRS = (
-    ("status", "skills"),
-    ("estimated-scope", "improved-metric"),
-    ("output-type", "rfc"),
-)
+LEFT_COLUMN_KEYS = ("status", "estimated-scope", "output-type")
+RIGHT_COLUMN_KEYS = ("skills", "improved-metric", "rfc")
 
 
 def is_future_work_doc_path(file_path: str) -> bool:
@@ -116,7 +111,7 @@ def _label_cell(label: str, content: str) -> str:
     if not content:
         return ""
     return (
-        f'<div style="{METADATA_CELL_STYLE}">'
+        f'<div style="{METADATA_FIELD_STYLE}">'
         f"<strong>{html.escape(label)}:</strong> {content}"
         f"</div>"
     )
@@ -192,20 +187,11 @@ def _field_cell(key: str, fields: dict[str, Any]) -> str:
     return ""
 
 
-def _empty_cell() -> str:
-    return f'<div style="{METADATA_CELL_STYLE}"></div>'
-
-
-def _grid_cells(fields: dict[str, Any]) -> str:
-    cells: list[str] = []
-    for left_key, right_key in ROW_PAIRS:
-        left = _field_cell(left_key, fields)
-        right = _field_cell(right_key, fields)
-        if not left and not right:
-            continue
-        cells.append(left or _empty_cell())
-        cells.append(right or _empty_cell())
-    return "".join(cells)
+def _column_html(keys: tuple[str, ...], fields: dict[str, Any]) -> str:
+    cells = "".join(_field_cell(key, fields) for key in keys)
+    if not cells:
+        return ""
+    return f'<div style="{METADATA_COLUMN_STYLE}">{cells}</div>'
 
 
 def render_future_work_metadata(doc: dict[str, Any]) -> str:
@@ -225,8 +211,9 @@ def render_future_work_metadata(doc: dict[str, Any]) -> str:
     if not fields:
         return ""
 
-    grid = _grid_cells(fields)
-    if not grid:
+    left_column = _column_html(LEFT_COLUMN_KEYS, fields)
+    right_column = _column_html(RIGHT_COLUMN_KEYS, fields)
+    if not left_column and not right_column:
         return ""
 
     footer = (
@@ -238,7 +225,7 @@ def render_future_work_metadata(doc: dict[str, Any]) -> str:
 
     metadata_html = (
         f'<div style="{METADATA_CONTAINER_STYLE}">'
-        f'<div style="{METADATA_GRID_STYLE}">{grid}</div>'
+        f'<div style="{METADATA_COLUMNS_STYLE}">{left_column}{right_column}</div>'
         f"{footer}"
         f"</div>"
     )
