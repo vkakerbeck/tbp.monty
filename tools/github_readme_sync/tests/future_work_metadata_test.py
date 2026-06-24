@@ -1,0 +1,85 @@
+# Copyright 2025-2026 Thousand Brains Project
+#
+# Copyright may exist in Contributors' modifications
+# and/or contributions to the work.
+#
+# Use of this source code is governed by the MIT
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+
+import unittest
+
+from tools.github_readme_sync.future_work_metadata import (
+    is_future_work_doc_path,
+    render_future_work_metadata,
+)
+
+
+class TestFutureWorkMetadata(unittest.TestCase):
+    def test_is_future_work_doc_path(self):
+        self.assertTrue(
+            is_future_work_doc_path("docs/future-work/learning-module-improvements")
+        )
+        self.assertTrue(is_future_work_doc_path("docs/future-work"))
+        self.assertFalse(is_future_work_doc_path("docs/contributing/documentation"))
+        self.assertFalse(is_future_work_doc_path("docs/glossary.md"))
+
+    def test_render_future_work_metadata_returns_empty_without_fields(self):
+        result = render_future_work_metadata(
+            {"title": "Example", "body": "Body text", "slug": "example"}
+        )
+        self.assertEqual(result, "")
+
+    def test_render_future_work_metadata_includes_all_fields(self):
+        doc = {
+            "slug": "deal-with-incomplete-models",
+            "estimated-scope": "large",
+            "improved-metric": "learning",
+            "output-type": "prototype, monty-feature, PR",
+            "skills": "python, research, monty",
+            "contributor": "vkakerbeck",
+            "status": "open",
+            "rfc": "required",
+        }
+
+        result = render_future_work_metadata(doc)
+
+        self.assertIn("Scope", result)
+        self.assertIn("large", result)
+        self.assertIn("Metric", result)
+        self.assertIn("learning", result)
+        self.assertIn("Output Type", result)
+        self.assertIn("prototype", result)
+        self.assertIn("Skills", result)
+        self.assertIn("python", result)
+        self.assertIn("Status", result)
+        self.assertIn("open", result)
+        self.assertIn("RFC", result)
+        self.assertIn("required", result)
+        self.assertIn("vkakerbeck.png", result)
+
+    def test_render_future_work_metadata_links_http_rfc(self):
+        doc = {
+            "slug": "example",
+            "rfc": "https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0015_future_work.md",
+        }
+
+        result = render_future_work_metadata(doc)
+
+        self.assertIn('href="https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0015_future_work.md"', result)
+        self.assertIn(">RFC</a>", result)
+
+    def test_render_future_work_metadata_escapes_html(self):
+        doc = {
+            "slug": "example",
+            "status": "<script>alert(1)</script>",
+        }
+
+        result = render_future_work_metadata(doc)
+
+        self.assertNotIn("<script>", result)
+        self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", result)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -16,6 +16,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from tools.github_readme_sync.future_work_metadata import render_future_work_metadata
 from tools.github_readme_sync.readme import GITHUB_RAW, ReadMe
 
 
@@ -356,6 +357,38 @@ This is a test document.""",
             mock_post.call_args[0][1]["excerpt"],
             "A collection of terms",
             "Excerpt field value is incorrect",
+        )
+
+    @patch("tools.github_readme_sync.readme.get")
+    @patch("tools.github_readme_sync.readme.post")
+    @patch.dict(os.environ, {"IMAGE_PATH": "user/repo"})
+    def test_create_or_update_doc_includes_future_work_metadata(
+        self, mock_post, mock_get
+    ):
+        mock_get.return_value = None
+        mock_post.return_value = json.dumps({"_id": "future-work-doc-id"})
+
+        doc = {
+            "title": "Example Doc",
+            "body": "Body content here.",
+            "slug": "example-doc",
+            "estimated-scope": "large",
+        }
+        expected_metadata = render_future_work_metadata(doc)
+
+        self.readme.create_or_update_doc(
+            order=1,
+            category_id="category-id",
+            doc=doc,
+            parent_id="parent-doc-id",
+            file_path="docs/future-work/learning-module-improvements",
+        )
+
+        actual_body = mock_post.call_args[0][1]["body"]
+        self.assertIn(expected_metadata, actual_body)
+        self.assertLess(
+            actual_body.index(expected_metadata),
+            actual_body.index("Body content here."),
         )
 
     @patch.dict(os.environ, {"IMAGE_PATH": "user/repo/refs/head/main/docs/figures"})
