@@ -64,9 +64,13 @@ class TestFutureWorkMetadata(unittest.TestCase):
             "rfc": "https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0015_future_work.md",
         }
 
+        rfc_url = (
+            "https://github.com/thousandbrainsproject/tbp.monty/blob/main/"
+            "rfcs/0015_future_work.md"
+        )
         result = render_future_work_metadata(doc)
 
-        self.assertIn('href="https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0015_future_work.md"', result)
+        self.assertIn(f'href="{rfc_url}"', result)
         self.assertIn(">RFC</a>", result)
 
     def test_render_future_work_metadata_escapes_html(self):

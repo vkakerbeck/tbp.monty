@@ -52,12 +52,15 @@ METADATA_CONTAINER_STYLE = (
 
 
 def is_future_work_doc_path(file_path: str) -> bool:
-    """Return whether a document path is within the future work docs section."""
+    """Check whether a document path is within the future work docs section.
+
+    Returns:
+        True when the path is under the future work section.
+    """
     return FUTURE_WORK_SECTION in Path(file_path).as_posix().split("/")
 
 
 def _has_metadata_value(value: Any) -> bool:
-    """Return whether a frontmatter value should be rendered."""
     if value is None:
         return False
     if isinstance(value, str):
@@ -68,7 +71,6 @@ def _has_metadata_value(value: Any) -> bool:
 
 
 def _split_values(value: Any) -> list[str]:
-    """Split comma-separated frontmatter values into a list of strings."""
     if isinstance(value, list):
         return [str(item).strip() for item in value if str(item).strip()]
     if not value:
@@ -77,18 +79,15 @@ def _split_values(value: Any) -> list[str]:
 
 
 def _badge(text: str, style: str = DEFAULT_BADGE_STYLE) -> str:
-    """Render a single metadata badge."""
     return f'<span style="{style}">{html.escape(text)}</span>'
 
 
 def _scope_badge(scope: str) -> str:
-    """Render an estimated-scope badge."""
     scope_key = scope.strip().lower()
     return _badge(scope, SCOPE_STYLES.get(scope_key, DEFAULT_BADGE_STYLE))
 
 
 def _label_row(label: str, content: str) -> str:
-    """Render a labeled metadata row."""
     if not content:
         return ""
     return (

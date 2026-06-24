@@ -360,10 +360,12 @@ class ReadMe:
             clean_content_tags={"script"},
         )
 
-    def insert_future_work_metadata(
-        self, body: str, doc: dict, file_path: str
-    ) -> str:
-        """Insert rendered future work metadata at the top of the document body."""
+    def insert_future_work_metadata(self, body: str, doc: dict, file_path: str) -> str:
+        """Insert rendered future work metadata at the top of the document body.
+
+        Returns:
+            The document body, with metadata prepended when applicable.
+        """
         if not is_future_work_doc_path(file_path):
             return body
         metadata_html = render_future_work_metadata(doc)
