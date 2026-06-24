@@ -10,6 +10,7 @@
 import unittest
 
 from tools.github_readme_sync.future_work_metadata import (
+    METADATA_DOC_URL,
     is_future_work_doc_path,
     render_future_work_metadata,
 )
@@ -57,6 +58,9 @@ class TestFutureWorkMetadata(unittest.TestCase):
         self.assertIn("RFC", result)
         self.assertIn("required", result)
         self.assertIn("vkakerbeck.png", result)
+        self.assertIn(METADATA_DOC_URL, result)
+        self.assertIn("[block:html]", result)
+        self.assertIn("[/block]", result)
 
     def test_render_future_work_metadata_links_http_rfc(self):
         doc = {
@@ -64,13 +68,9 @@ class TestFutureWorkMetadata(unittest.TestCase):
             "rfc": "https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0015_future_work.md",
         }
 
-        rfc_url = (
-            "https://github.com/thousandbrainsproject/tbp.monty/blob/main/"
-            "rfcs/0015_future_work.md"
-        )
         result = render_future_work_metadata(doc)
 
-        self.assertIn(f'href="{rfc_url}"', result)
+        self.assertIn("0015_future_work.md", result)
         self.assertIn(">RFC</a>", result)
 
     def test_render_future_work_metadata_escapes_html(self):

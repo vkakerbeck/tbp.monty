@@ -10,11 +10,13 @@
 from __future__ import annotations
 
 import html
+import json
 import re
 from pathlib import Path
 from typing import Any
 
 FUTURE_WORK_SECTION = "future-work"
+METADATA_DOC_URL = "/docs/future-work-widget-metadata"
 
 FUTURE_WORK_METADATA_KEYS = frozenset(
     {
@@ -97,6 +99,10 @@ def _label_row(label: str, content: str) -> str:
     )
 
 
+def _wrap_readme_html_block(html_content: str) -> str:
+    return f"[block:html]\n{json.dumps({'html': html_content}, indent=2)}\n[/block]"
+
+
 def render_future_work_metadata(doc: dict[str, Any]) -> str:
     """Render future work frontmatter fields as an HTML metadata block.
 
@@ -155,4 +161,12 @@ def render_future_work_metadata(doc: dict[str, Any]) -> str:
             rfc_content = html.escape(rfc)
         rows.append(_label_row("RFC", rfc_content))
 
-    return f'<div style="{METADATA_CONTAINER_STYLE}">{"".join(rows)}</div>'
+    rows.append(
+        '<div style="margin-top:8px;font-size:0.9em;">'
+        "For details on what these values mean, see "
+        f'<a href="{METADATA_DOC_URL}">here</a>.'
+        "</div>"
+    )
+
+    metadata_html = f'<div style="{METADATA_CONTAINER_STYLE}">{"".join(rows)}</div>'
+    return _wrap_readme_html_block(metadata_html)
