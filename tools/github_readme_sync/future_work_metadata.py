@@ -124,27 +124,38 @@ def _badges_html(values: list[str], style: str = DEFAULT_BADGE_STYLE) -> str:
     return " ".join(_badge(value, style) for value in values)
 
 
-def _status_cell_content(fields: dict[str, Any]) -> str:
-    parts: list[str] = []
-    if "status" in fields:
-        parts.append(_status_badge(str(fields["status"])))
+def _contributor_avatars_html(fields: dict[str, Any]) -> str:
+    if "contributor" not in fields:
+        return ""
 
     avatars: list[str] = []
-    if "contributor" in fields:
-        for username in _split_values(fields["contributor"]):
-            if GITHUB_USERNAME_PATTERN.match(username):
-                avatar_url = f"{GITHUB_AVATAR_URL}/{html.escape(username)}.png"
-                avatars.append(
-                    f'<img src="{avatar_url}" alt="{html.escape(username)}" '
-                    f'title="{html.escape(username)}" '
-                    f'style="width:24px;height:24px;border-radius:50%;'
-                    f'vertical-align:middle;margin-right:4px;" />'
-                )
+    for username in _split_values(fields["contributor"]):
+        if GITHUB_USERNAME_PATTERN.match(username):
+            avatar_url = f"{GITHUB_AVATAR_URL}/{html.escape(username)}.png"
+            avatars.append(
+                f'<img src="{avatar_url}" alt="{html.escape(username)}" '
+                f'title="{html.escape(username)}" '
+                f'style="width:24px;height:24px;border-radius:50%;'
+                f'vertical-align:middle;margin-right:4px;" />'
+            )
+    return " ".join(avatars)
 
+
+def _status_field_cell(fields: dict[str, Any]) -> str:
+    has_status = "status" in fields
+    parts: list[str] = []
+    if has_status:
+        parts.append(_status_badge(str(fields["status"])))
+
+    avatars = _contributor_avatars_html(fields)
     if avatars:
-        parts.append(" ".join(avatars))
+        parts.append(avatars)
 
-    return " ".join(parts)
+    if not parts:
+        return ""
+
+    label = "Status" if has_status else "Contributor"
+    return _label_cell(label, " ".join(parts))
 
 
 def _wrap_readme_html_block(html_content: str) -> str:
@@ -153,10 +164,7 @@ def _wrap_readme_html_block(html_content: str) -> str:
 
 def _field_cell(key: str, fields: dict[str, Any]) -> str:
     if key == "status":
-        content = _status_cell_content(fields)
-        if not content:
-            return ""
-        return _label_cell("Status", content)
+        return _status_field_cell(fields)
 
     if key not in fields:
         return ""

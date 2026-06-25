@@ -81,6 +81,14 @@ class TestFutureWorkMetadata(unittest.TestCase):
         self.assertIn(">monty-feature</span> <span", result)
         self.assertNotIn(">prototype</span><br>", result)
 
+    def test_render_future_work_metadata_contributor_without_status(self):
+        doc = {"contributor": "vkakerbeck"}
+        result = render_future_work_metadata(doc)
+
+        self.assertIn("Contributor", result)
+        self.assertNotIn("<strong>Status:</strong>", result)
+        self.assertIn("vkakerbeck.png", result)
+
     def test_render_future_work_metadata_status_colors(self):
         doc = {"status": "in-progress"}
         result = render_future_work_metadata(doc)
