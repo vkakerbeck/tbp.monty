@@ -14,6 +14,8 @@ Currently, training a hierarchical setup of Monty involves a complicated procedu
 
 A first step for this item would be to test what kind of models are learned if there is no supervision. The `max_model_size` parameter of the [constrained object models](../../how-monty-works/learning-module/object-models.md#object-models) can be leveraged to encourage the lower level LMs to learn smaller sub-components. 
 
+In addition, models which [learn and forget at different rates](learning-and-forgetting-speed-parameter.md) could gradually disentangle objects from one another by only storing information that consistently appears together (i.e. the features of a child object at their relative arrangements).
+
 Depending on the results, methods should be devised to improve Monty's ability to learn in this kind of scenario. This might involve testing other policies, such as model-free segmentation to stay on sub-components of an object. It might also involve changes to Monty's algorithm. 
 
 This item relates to [testing grid object models for unsupervised learning](./test-grid-object-models-for-unsupervised-learning.md).
