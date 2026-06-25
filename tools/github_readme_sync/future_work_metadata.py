@@ -37,6 +37,9 @@ BADGE_STYLE = (
     "padding:2px 4px;border-radius:4px;font-size:0.85em;"
     "display:inline-block;margin:2px 4px 2px 0;"
 )
+# Inline badge colors mirror tools/future_work_widget/app/css/future-work-widget.css
+# (.badge-status-*, .badge-size-*). ReadMe [block:html] cannot reference external
+# stylesheets, so keep these hex values in lockstep with the widget CSS.
 DEFAULT_BADGE_STYLE = f"{BADGE_STYLE}background-color:#e8e8f0;color:#2f2b5c;"
 SKILLS_BADGE_STYLE = DEFAULT_BADGE_STYLE
 SCOPE_STYLES = {
