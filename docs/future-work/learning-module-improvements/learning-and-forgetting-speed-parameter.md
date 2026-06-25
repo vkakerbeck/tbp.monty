@@ -4,7 +4,7 @@ description: Add a learning speed parameter to object models in LMs such that so
 rfc: required
 estimated-scope: unknown
 improved-metric: learning, compositional
-output-type: RFC, prototype, monty-feature, PR
+output-type: RFC, prototype, monty-feature, PR, publication
 skills: python, research, monty
 contributor: 
 status: open

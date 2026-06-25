@@ -4,7 +4,7 @@ description: Test and improve learning with multiple LMs stacked on top of each 
 rfc: optional
 estimated-scope: unknown
 improved-metric: learning, compositional
-output-type: experiments, analysis, PR
+output-type: experiments, analysis, PR, publication
 skills: python, research, monty
 contributor: 
 status: open

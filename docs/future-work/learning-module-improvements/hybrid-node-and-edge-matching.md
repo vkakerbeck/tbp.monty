@@ -4,7 +4,7 @@ description: Combine the matching approach taken in the EvidenceGraphLM (nodes) 
 rfc: optional
 estimated-scope: large
 improved-metric: numsteps, pose, scale
-output-type: experiments, analysis, PR
+output-type: experiments, analysis, PR, publication
 skills: python, research, monty
 contributor: 
 status: open

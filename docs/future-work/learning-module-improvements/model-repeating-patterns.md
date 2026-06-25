@@ -4,7 +4,7 @@ description: Come up with, implement, and test a way to model and recognize repe
 rfc: required
 estimated-scope: unknown
 improved-metric: learning, numsteps, features-and-morphology
-output-type: RFC, experiments, analysis, PR
+output-type: RFC, experiments, analysis, PR, publication
 skills: python, research, monty
 contributor: 
 status: open

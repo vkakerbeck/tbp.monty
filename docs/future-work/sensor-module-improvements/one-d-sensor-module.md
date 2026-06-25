@@ -4,7 +4,7 @@ description: Sensor module that converts 3D movement in space to 1D movement alo
 rfc: optional
 estimated-scope: medium
 improved-metric: features-and-morphology, transfer, deformations, generalization
-output-type: prototype, monty-feature, PR
+output-type: prototype, monty-feature, PR, publication
 skills: python, research, monty, computer-vision
 contributor: 
 status: open
