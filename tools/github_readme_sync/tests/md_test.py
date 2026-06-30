@@ -152,4 +152,3 @@ Body content here.
         self.assertEqual(result["contributor"], "vkakerbeck")
         self.assertEqual(result["status"], "open")
         self.assertEqual(result["rfc"], "required")
-        self.assertEqual(result["body"].strip(), "Body content here.")

@@ -37,13 +37,10 @@ BADGE_STYLE = (
     "padding:2px 4px;border-radius:4px;font-size:0.85em;"
     "display:inline-block;margin:2px 4px 2px 0;"
 )
-# Inline badge colors mirror tools/future_work_widget/app/css/future-work-widget.css
-# (.badge-status-*, .badge-size-*). ReadMe [block:html] cannot reference external
-# stylesheets, so keep these hex values in lockstep with the widget CSS.
 DEFAULT_BADGE_STYLE = f"{BADGE_STYLE}background-color:#e8e8f0;color:#2f2b5c;"
 SKILLS_BADGE_STYLE = DEFAULT_BADGE_STYLE
 SCOPE_STYLES = {
-    "small": f"{BADGE_STYLE}background-color:#f0f0f0;color:#666;",
+    "small": f"{BADGE_STYLE}background-color:#f0f0f0;color:#666666;",
     "medium": f"{BADGE_STYLE}background-color:#00a0df;color:#ffffff;",
     "large": f"{BADGE_STYLE}background-color:#2f2b5c;color:#ffffff;",
     "unknown": DEFAULT_BADGE_STYLE,
@@ -124,38 +121,27 @@ def _badges_html(values: list[str], style: str = DEFAULT_BADGE_STYLE) -> str:
     return " ".join(_badge(value, style) for value in values)
 
 
-def _contributor_avatars_html(fields: dict[str, Any]) -> str:
-    if "contributor" not in fields:
-        return ""
-
-    avatars: list[str] = []
-    for username in _split_values(fields["contributor"]):
-        if GITHUB_USERNAME_PATTERN.match(username):
-            avatar_url = f"{GITHUB_AVATAR_URL}/{html.escape(username)}.png"
-            avatars.append(
-                f'<img src="{avatar_url}" alt="{html.escape(username)}" '
-                f'title="{html.escape(username)}" '
-                f'style="width:24px;height:24px;border-radius:50%;'
-                f'vertical-align:middle;margin-right:4px;" />'
-            )
-    return " ".join(avatars)
-
-
-def _status_field_cell(fields: dict[str, Any]) -> str:
-    has_status = "status" in fields
+def _status_cell_content(fields: dict[str, Any]) -> str:
     parts: list[str] = []
-    if has_status:
+    if "status" in fields:
         parts.append(_status_badge(str(fields["status"])))
 
-    avatars = _contributor_avatars_html(fields)
+    avatars: list[str] = []
+    if "contributor" in fields:
+        for username in _split_values(fields["contributor"]):
+            if GITHUB_USERNAME_PATTERN.match(username):
+                avatar_url = f"{GITHUB_AVATAR_URL}/{html.escape(username)}.png"
+                avatars.append(
+                    f'<img src="{avatar_url}" alt="{html.escape(username)}" '
+                    f'title="{html.escape(username)}" '
+                    f'style="width:24px;height:24px;border-radius:50%;'
+                    f'vertical-align:middle;margin-right:4px;" />'
+                )
+
     if avatars:
-        parts.append(avatars)
+        parts.append(" ".join(avatars))
 
-    if not parts:
-        return ""
-
-    label = "Status" if has_status else "Contributor"
-    return _label_cell(label, " ".join(parts))
+    return " ".join(parts)
 
 
 def _wrap_readme_html_block(html_content: str) -> str:
@@ -164,7 +150,10 @@ def _wrap_readme_html_block(html_content: str) -> str:
 
 def _field_cell(key: str, fields: dict[str, Any]) -> str:
     if key == "status":
-        return _status_field_cell(fields)
+        content = _status_cell_content(fields)
+        if not content:
+            return ""
+        return _label_cell("Status", content)
 
     if key not in fields:
         return ""

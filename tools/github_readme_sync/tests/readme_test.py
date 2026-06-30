@@ -16,6 +16,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from tools.github_readme_sync.future_work_metadata import render_future_work_metadata
 from tools.github_readme_sync.readme import GITHUB_RAW, ReadMe
 
 
@@ -382,12 +383,12 @@ This is a test document.""",
         )
 
         actual_body = mock_post.call_args[0][1]["body"]
-        self.assertIn("Scope", actual_body)
-        self.assertIn("[block:html]", actual_body)
-        self.assertIn("/docs/future-work-widget-metadata", actual_body)
-        self.assertLess(
-            actual_body.index("Scope"),
-            actual_body.index("Body content here."),
+        expected_prefix = f"{render_future_work_metadata(doc)}\n\nBody content here."
+        self.assertTrue(
+            actual_body.startswith(expected_prefix),
+            f"Body did not start with the expected metadata block.\n"
+            f"Expected prefix:\n{expected_prefix!r}\n"
+            f"Actual body:\n{actual_body!r}",
         )
 
     @patch.dict(os.environ, {"IMAGE_PATH": "user/repo/refs/head/main/docs/figures"})

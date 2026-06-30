@@ -309,7 +309,7 @@ class ReadMe:
     def create_or_update_doc(
         self, order: int, category_id: str, doc: dict, parent_id: str, file_path: str
     ) -> tuple[str, bool]:
-        markdown = self.process_markdown(doc["body"], file_path, doc["slug"], doc=doc)
+        markdown = self.process_markdown(doc, file_path)
 
         create_doc_request = {
             "title": doc["title"],
@@ -345,12 +345,9 @@ class ReadMe:
 
         return doc_id, created
 
-    def process_markdown(
-        self, body: str, file_path: str, slug: str, doc: dict | None = None
-    ) -> str:
-        if doc is not None:
-            body = self.insert_future_work_metadata(body, doc, file_path)
-        body = self.insert_edit_this_page(body, slug, file_path)
+    def process_markdown(self, doc: dict, file_path: str) -> str:
+        body = self.insert_future_work_metadata(doc["body"], doc, file_path)
+        body = self.insert_edit_this_page(body, doc["slug"], file_path)
         body = self.insert_markdown_snippet(body, file_path)
         body = self.convert_csv_to_html_table(body, file_path)
         body = self.correct_image_locations(body)
