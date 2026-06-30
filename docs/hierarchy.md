@@ -172,6 +172,7 @@
   - [add-gpu-support-for-monty](future-work/framework-improvements/add-gpu-support-for-monty.md)
   - [use-state-class-inside-of-lms](future-work/framework-improvements/use-state-class-inside-of-lms.md)
   - [make-configs-easier-to-use](future-work/framework-improvements/make-configs-easier-to-use.md)
+  - [profile-and-optimize-monty](future-work/framework-improvements/profile-and-optimize-monty.md)
   - [find-faster-alternative-to-kdtree-search](future-work/framework-improvements/find-faster-alternative-to-kdtree-search.md)
   - [combine-dataloader-and-dataset-into-environment-interface](future-work/framework-improvements/combine-dataloader-and-dataset-into-environment-interface.md)
 - [oss-communication-improvements](future-work/oss-communication-improvements.md)
