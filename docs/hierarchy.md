@@ -157,6 +157,7 @@
   - [global-interval-timer](future-work/cmp-hierarchy-improvements/global-interval-timer.md)
   - [include-state-in-cmp](future-work/cmp-hierarchy-improvements/include-state-in-cmp.md)
 - [environment-improvements](future-work/environment-improvements.md)
+  - [replicable-real-world-test-bed.md](future-work/environment-improvements/replicable-real-world-test-bed.md)
   - [object-behavior-test-bed](future-work/environment-improvements/object-behavior-test-bed.md)
   - [make-dataset-to-test-compositional-objects](future-work/environment-improvements/make-dataset-to-test-compositional-objects.md)
   - [set-up-environment-that-allows-for-object-manipulation](future-work/environment-improvements/set-up-environment-that-allows-for-object-manipulation.md)
