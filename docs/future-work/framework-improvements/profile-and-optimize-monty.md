@@ -6,7 +6,7 @@ estimated-scope: unknown
 improved-metric: speed
 output-type: PR, analysis
 skills: python, performance-optimization
-contributor: vkakerbeck, 
+contributor: vkakerbeck
 status: evergreen
 ---
 
