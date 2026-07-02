@@ -275,7 +275,10 @@ class TestFutureWorkRecord(unittest.TestCase):
         self.assertEqual(len(errors), 1)
         self.assertEqual(
             errors[0]["msg"],
-            "Value error, When a contributor is specified, status must also be specified",
+            (
+                "Value error, When a contributor is specified, "
+                "status must also be specified"
+            ),
         )
 
     def test_invalid_github_username(self):

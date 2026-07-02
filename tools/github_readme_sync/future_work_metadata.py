@@ -72,9 +72,7 @@ def _label_cell(label: str, content: str) -> str:
     if not content:
         return ""
     return (
-        f'<div style="{METADATA_FIELD_STYLE}">'
-        f"<strong>{label}:</strong> {content}"
-        f"</div>"
+        f'<div style="{METADATA_FIELD_STYLE}"><strong>{label}:</strong> {content}</div>'
     )
 
 
@@ -135,8 +133,7 @@ def _field_cell(key: str, fields: dict[str, Any]) -> str:
         rfc = str(fields[key]).strip()
         if rfc.lower().startswith(("http://", "https://")):
             rfc_content = (
-                f'<a href="{rfc}" target="_blank" '
-                f'rel="noopener noreferrer">RFC</a>'
+                f'<a href="{rfc}" target="_blank" rel="noopener noreferrer">RFC</a>'
             )
         else:
             rfc_content = rfc
