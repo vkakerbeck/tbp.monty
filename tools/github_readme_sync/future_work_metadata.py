@@ -18,16 +18,14 @@ from typing import Any
 FUTURE_WORK_SECTION = "future-work"
 METADATA_DOC_URL = "/docs/future-work-widget-metadata"
 
-FUTURE_WORK_METADATA_KEYS = frozenset(
-    {
-        "estimated-scope",
-        "improved-metric",
-        "output-type",
-        "skills",
-        "contributor",
-        "status",
-        "rfc",
-    }
+FUTURE_WORK_METADATA_KEYS = (
+    "estimated-scope",
+    "improved-metric",
+    "output-type",
+    "skills",
+    "contributor",
+    "status",
+    "rfc",
 )
 
 GITHUB_AVATAR_URL = "https://github.com"
@@ -50,7 +48,7 @@ def is_future_work_doc_path(file_path: str) -> bool:
     Returns:
         True when the path is under the future work section.
     """
-    return FUTURE_WORK_SECTION in Path(file_path).as_posix().split("/")
+    return FUTURE_WORK_SECTION in Path(file_path).parts
 
 
 def _has_metadata_value(value: Any) -> bool:

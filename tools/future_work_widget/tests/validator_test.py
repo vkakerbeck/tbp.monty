@@ -272,11 +272,10 @@ class TestFutureWorkRecord(unittest.TestCase):
             FutureWorkRecord.model_validate(record)
 
         errors = cm.exception.errors()
-        self.assertTrue(
-            any(
-                "contributor is specified, status must also be specified" in e["msg"]
-                for e in errors
-            )
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(
+            errors[0]["msg"],
+            "Value error, When a contributor is specified, status must also be specified",
         )
 
     def test_invalid_github_username(self):
