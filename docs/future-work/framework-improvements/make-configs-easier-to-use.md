@@ -5,7 +5,7 @@ rfc: optional
 estimated-scope: large
 improved-metric: infrastructure, learning-experience, platform
 output-type: PR
-skills: python, refactoring, monty
+skills: python, refactoring
 contributor: tristanls-tbp, jeremyshoemaker, hlee9212, ramyamounir
 status: in-progress
 ---
