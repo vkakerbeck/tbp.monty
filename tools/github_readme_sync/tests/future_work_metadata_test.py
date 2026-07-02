@@ -72,8 +72,6 @@ class TestFutureWorkMetadata(unittest.TestCase):
         self.assertLess(result.index("Scope"), result.index("Metric"))
         self.assertLess(result.index("Output"), result.index("RFC"))
         self.assertIn(METADATA_DOC_URL, result)
-        self.assertIn("[block:html]", result)
-        self.assertIn("[/block]", result)
 
     def test_render_future_work_metadata_joins_multiple_values_with_commas(self):
         doc = {"output-type": "prototype, monty-feature, PR"}
@@ -101,17 +99,6 @@ class TestFutureWorkMetadata(unittest.TestCase):
 
         self.assertIn("0015_future_work.md", result)
         self.assertIn(">RFC</a>", result)
-
-    def test_render_future_work_metadata_escapes_html(self):
-        doc = {
-            "slug": "example",
-            "status": "<script>alert(1)</script>",
-        }
-
-        result = render_future_work_metadata(doc)
-
-        self.assertNotIn("<script>", result)
-        self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", result)
 
 
 if __name__ == "__main__":

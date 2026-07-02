@@ -34,6 +34,7 @@ from tools.github_readme_sync.constants import (
     REGEX_CSV_TABLE,
 )
 from tools.github_readme_sync.future_work_metadata import (
+    _wrap_readme_html_block,
     is_future_work_doc_path,
     render_future_work_metadata,
 )
@@ -364,11 +365,15 @@ class ReadMe:
         allowed_tags.add("style")
         allowed_tags.add("a")
         allowed_tags.add("label")
+        for tag in ("div", "strong"):
+            allowed_attributes[tag] = set()
         for tag in allowed_attributes:
             allowed_attributes[tag].add("width")
             allowed_attributes[tag].add("style")
             allowed_attributes[tag].add("target")
             allowed_attributes[tag].add("class")
+        allowed_attributes["a"].add("rel")
+        allowed_attributes["img"].add("title")
 
         return nh3.clean(
             body,
@@ -391,7 +396,8 @@ class ReadMe:
         metadata_html = render_future_work_metadata(doc)
         if not metadata_html:
             return body
-        return f"{metadata_html}\n\n{body.lstrip()}"
+        metadata_block = _wrap_readme_html_block(self.sanitize_html(metadata_html))
+        return f"{metadata_block}\n\n{body.lstrip()}"
 
     def insert_edit_this_page(self, body: str, filename: str, file_path: str) -> str:
         depth = len(file_path.split("/")) - 1

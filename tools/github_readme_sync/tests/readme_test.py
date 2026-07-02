@@ -16,7 +16,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.github_readme_sync.future_work_metadata import render_future_work_metadata
 from tools.github_readme_sync.readme import GITHUB_RAW, ReadMe
 
 
@@ -383,13 +382,32 @@ This is a test document.""",
         )
 
         actual_body = mock_post.call_args[0][1]["body"]
-        expected_prefix = f"{render_future_work_metadata(doc)}\n\nBody content here."
-        self.assertTrue(
-            actual_body.startswith(expected_prefix),
-            f"Body did not start with the expected metadata block.\n"
-            f"Expected prefix:\n{expected_prefix!r}\n"
-            f"Actual body:\n{actual_body!r}",
+        expected_prefix = self.readme.insert_future_work_metadata(
+            "Body content here.",
+            doc,
+            "docs/future-work/learning-module-improvements",
         )
+        self.assertTrue(actual_body.startswith(expected_prefix))
+
+    def test_insert_future_work_metadata_sanitizes_malicious_content(self):
+        doc = {
+            "slug": "example",
+            "status": "<script>alert(1)</script>",
+            "rfc": 'https://example.com" onclick="alert(1)',
+            "skills": "<img src=x onerror=alert(1)>",
+        }
+
+        result = self.readme.insert_future_work_metadata(
+            "Body content here.",
+            doc,
+            "docs/future-work/example",
+        )
+
+        self.assertNotIn("<script>", result)
+        self.assertNotIn("onerror=", result)
+        self.assertNotIn("onclick=", result)
+        self.assertIn("[block:html]", result)
+        self.assertIn("Body content here.", result)
 
     @patch.dict(os.environ, {"IMAGE_PATH": "user/repo/refs/head/main/docs/figures"})
     def test_correct_image_locations_markdown(self):

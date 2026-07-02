@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import html
 import json
 import re
 from pathlib import Path
@@ -74,28 +73,28 @@ def _label_cell(label: str, content: str) -> str:
         return ""
     return (
         f'<div style="{METADATA_FIELD_STYLE}">'
-        f"<strong>{html.escape(label)}:</strong> {content}"
+        f"<strong>{label}:</strong> {content}"
         f"</div>"
     )
 
 
 def _comma_separated_text(values: list[str]) -> str:
-    return ", ".join(html.escape(value) for value in values)
+    return ", ".join(values)
 
 
 def _status_cell_content(fields: dict[str, Any]) -> str:
     parts: list[str] = []
     if "status" in fields:
-        parts.append(html.escape(str(fields["status"]).strip()))
+        parts.append(str(fields["status"]).strip())
 
     avatars: list[str] = []
     if "contributor" in fields:
         for username in _split_values(fields["contributor"]):
             if GITHUB_USERNAME_PATTERN.match(username):
-                avatar_url = f"{GITHUB_AVATAR_URL}/{html.escape(username)}.png"
+                avatar_url = f"{GITHUB_AVATAR_URL}/{username}.png"
                 avatars.append(
-                    f'<img src="{avatar_url}" alt="{html.escape(username)}" '
-                    f'title="{html.escape(username)}" '
+                    f'<img src="{avatar_url}" alt="{username}" '
+                    f'title="{username}" '
                     f'style="width:24px;height:24px;border-radius:50%;'
                     f'vertical-align:middle;margin-right:4px;" />'
                 )
@@ -121,7 +120,7 @@ def _field_cell(key: str, fields: dict[str, Any]) -> str:
         return ""
 
     if key == "estimated-scope":
-        return _label_cell("Scope", html.escape(str(fields[key]).strip()))
+        return _label_cell("Scope", str(fields[key]).strip())
 
     if key == "output-type":
         return _label_cell("Output", _comma_separated_text(_split_values(fields[key])))
@@ -136,11 +135,11 @@ def _field_cell(key: str, fields: dict[str, Any]) -> str:
         rfc = str(fields[key]).strip()
         if rfc.lower().startswith(("http://", "https://")):
             rfc_content = (
-                f'<a href="{html.escape(rfc)}" target="_blank" '
+                f'<a href="{rfc}" target="_blank" '
                 f'rel="noopener noreferrer">RFC</a>'
             )
         else:
-            rfc_content = html.escape(rfc)
+            rfc_content = rfc
         return _label_cell("RFC", rfc_content)
 
     return ""
@@ -182,10 +181,9 @@ def render_future_work_metadata(doc: dict[str, Any]) -> str:
         "</div>"
     )
 
-    metadata_html = (
+    return (
         f'<div style="{METADATA_CONTAINER_STYLE}">'
         f'<div style="{METADATA_COLUMNS_STYLE}">{left_column}{right_column}</div>'
         f"{footer}"
         f"</div>"
     )
-    return _wrap_readme_html_block(metadata_html)
