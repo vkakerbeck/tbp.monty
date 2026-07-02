@@ -31,13 +31,24 @@ GITHUB_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$")
 
 METADATA_CONTAINER_STYLE = (
     "border:1px solid #ddd;border-radius:8px;padding:12px 16px;margin-bottom:16px;"
+    "overflow-wrap:break-word;"
 )
-METADATA_COLUMNS_STYLE = "display:flex;gap:32px;"
-METADATA_COLUMN_STYLE = "flex:1;min-width:0;"
-METADATA_FIELD_STYLE = "margin-bottom:8px;"
+METADATA_GRID_STYLE = (
+    "display:grid;"
+    "grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));"
+    "gap:16px;"
+)
+METADATA_FIELD_STYLE = "min-width:0;overflow-wrap:break-word;"
+METADATA_FOOTER_STYLE = "margin-top:8px;font-size:0.9em;overflow-wrap:break-word;"
 
-LEFT_COLUMN_KEYS = ("status", "estimated-scope", "output-type")
-RIGHT_COLUMN_KEYS = ("skills", "improved-metric", "rfc")
+DISPLAY_FIELD_KEYS = (
+    "status",
+    "estimated-scope",
+    "output-type",
+    "skills",
+    "improved-metric",
+    "rfc",
+)
 LIST_FIELD_LABELS = {
     "output-type": "Output",
     "skills": "Skills",
@@ -133,13 +144,6 @@ def _field_cell(key: str, fields: dict[str, Any]) -> str:
     return ""
 
 
-def _column_html(keys: tuple[str, ...], fields: dict[str, Any]) -> str:
-    cells = "".join(_field_cell(key, fields) for key in keys)
-    if not cells:
-        return ""
-    return f'<div style="{METADATA_COLUMN_STYLE}">{cells}</div>'
-
-
 def render_future_work_metadata(doc: dict[str, Any]) -> str:
     """Render future work frontmatter fields as HTML.
 
@@ -158,13 +162,14 @@ def render_future_work_metadata(doc: dict[str, Any]) -> str:
     if not fields:
         return ""
 
-    left_column = _column_html(LEFT_COLUMN_KEYS, fields)
-    right_column = _column_html(RIGHT_COLUMN_KEYS, fields)
-    if not left_column and not right_column:
+    field_cells = "".join(
+        _field_cell(key, fields) for key in DISPLAY_FIELD_KEYS if key in fields
+    )
+    if not field_cells:
         return ""
 
     footer = (
-        '<div style="width:100%;margin-top:8px;font-size:0.9em;">'
+        f'<div style="{METADATA_FOOTER_STYLE}">'
         "For details on what these values mean, see "
         f'<a href="{METADATA_DOC_URL}">here</a>.'
         "</div>"
@@ -172,7 +177,7 @@ def render_future_work_metadata(doc: dict[str, Any]) -> str:
 
     return (
         f'<div style="{METADATA_CONTAINER_STYLE}">'
-        f'<div style="{METADATA_COLUMNS_STYLE}">{left_column}{right_column}</div>'
+        f'<div style="{METADATA_GRID_STYLE}">{field_cells}</div>'
         f"{footer}"
         f"</div>"
     )
