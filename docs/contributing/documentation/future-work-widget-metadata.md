@@ -36,7 +36,7 @@ status:
 The following fields are validated against allow lists defined in snippet files to ensure consistency and quality.
 
 > [!WARNING]
-> If you want to add a new allowed value for the meta data fields, you will need to make a separate PR modifying the corresponding file in the [snippets folder](../../snippets/). This is because the future work validation tool uses what is in the main branch, not on your PR branch, when run in GitHub actions as part of the PR CI process.
+> If you want to add a new allowed value for the metadata fields, you will need to make a separate PR modifying the corresponding file in the [snippets folder](../../snippets/). This is because the future work validation tool uses what is in the main branch, not on your PR branch, when run in GitHub actions as part of the PR CI process.
 
 # RFC
 
