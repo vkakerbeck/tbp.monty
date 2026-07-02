@@ -34,7 +34,6 @@ from tools.github_readme_sync.constants import (
     REGEX_CSV_TABLE,
 )
 from tools.github_readme_sync.future_work_metadata import (
-    _wrap_readme_html_block,
     is_future_work_doc_path,
     render_future_work_metadata,
 )
@@ -62,6 +61,15 @@ regex_markdown_snippet = re.compile(r"!snippet\[(.*?)\]")
 
 # Allowlist of supported CSS properties
 ALLOWED_CSS_PROPERTIES = {"width", "height"}
+
+
+def _wrap_readme_html_block(html_content: str) -> str:
+    """Wrap sanitized HTML in a ReadMe HTML block.
+
+    Returns:
+        ReadMe markdown HTML block containing the content.
+    """
+    return f"[block:html]\n{json.dumps({'html': html_content}, indent=2)}\n[/block]"
 
 
 class OrderedDumper(yaml.SafeDumper):

@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import json
 import re
 from pathlib import Path
 from typing import Any
@@ -81,10 +80,6 @@ def _label_cell(label: str, content: str) -> str:
     )
 
 
-def _comma_separated_text(values: list[str]) -> str:
-    return ", ".join(values)
-
-
 def _status_cell_content(fields: dict[str, Any]) -> str:
     parts: list[str] = []
     if "status" in fields:
@@ -106,10 +101,6 @@ def _status_cell_content(fields: dict[str, Any]) -> str:
         parts.append(" ".join(avatars))
 
     return " ".join(parts)
-
-
-def _wrap_readme_html_block(html_content: str) -> str:
-    return f"[block:html]\n{json.dumps({'html': html_content}, indent=2)}\n[/block]"
 
 
 def _field_cell(key: str, fields: dict[str, Any]) -> str:
