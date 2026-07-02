@@ -150,13 +150,14 @@ def _column_html(keys: tuple[str, ...], fields: dict[str, Any]) -> str:
 
 
 def render_future_work_metadata(doc: dict[str, Any]) -> str:
-    """Render future work frontmatter fields as an HTML metadata block.
+    """Render future work frontmatter fields as HTML.
 
     Args:
         doc: Processed markdown document containing optional metadata fields.
 
     Returns:
-        HTML metadata block, or an empty string when no metadata is present.
+        HTML for the metadata block, or an empty string when no metadata is
+        present. Callers must sanitize this HTML before publishing it.
     """
     fields = {
         key: doc[key]
