@@ -39,6 +39,11 @@ METADATA_FIELD_STYLE = "margin-bottom:8px;"
 
 LEFT_COLUMN_KEYS = ("status", "estimated-scope", "output-type")
 RIGHT_COLUMN_KEYS = ("skills", "improved-metric", "rfc")
+LIST_FIELD_LABELS = {
+    "output-type": "Output",
+    "skills": "Skills",
+    "improved-metric": "Metric",
+}
 
 
 def is_future_work_doc_path(file_path: str) -> bool:
@@ -120,14 +125,9 @@ def _field_cell(key: str, fields: dict[str, Any]) -> str:
     if key == "estimated-scope":
         return _label_cell("Scope", str(fields[key]).strip())
 
-    if key == "output-type":
-        return _label_cell("Output", _comma_separated_text(_split_values(fields[key])))
-
-    if key == "skills":
-        return _label_cell("Skills", _comma_separated_text(_split_values(fields[key])))
-
-    if key == "improved-metric":
-        return _label_cell("Metric", _comma_separated_text(_split_values(fields[key])))
+    if key in LIST_FIELD_LABELS:
+        values = ", ".join(_split_values(fields[key]))
+        return _label_cell(LIST_FIELD_LABELS[key], values)
 
     if key == "rfc":
         rfc = str(fields[key]).strip()
