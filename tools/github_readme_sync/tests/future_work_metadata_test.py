@@ -9,53 +9,13 @@
 
 from __future__ import annotations
 
-import re
 import unittest
-from pathlib import Path
 
 from tools.github_readme_sync.future_work_metadata import (
-    DEFAULT_BADGE_STYLE,
     METADATA_DOC_URL,
-    SCOPE_STYLES,
-    STATUS_STYLES,
     is_future_work_doc_path,
     render_future_work_metadata,
 )
-
-WIDGET_CSS_PATH = (
-    Path(__file__).resolve().parents[2]
-    / "future_work_widget"
-    / "app"
-    / "css"
-    / "future-work-widget.css"
-)
-
-
-def _normalize_hex(color: str) -> str:
-    color = color.strip().lower()
-    if re.fullmatch(r"#[0-9a-f]{3}", color):
-        color = "#" + "".join(channel * 2 for channel in color[1:])
-    return color
-
-
-def _extract_colors(style: str) -> dict[str, str]:
-    colors = {}
-    for prop in ("background-color", "color"):
-        match = re.search(rf"(?<![-\w]){re.escape(prop)}\s*:\s*([^;}}]+)", style)
-        if match:
-            colors[prop] = _normalize_hex(match.group(1))
-    return colors
-
-
-def _parse_css_rules(css_text: str) -> dict[str, dict[str, str]]:
-    rules: dict[str, dict[str, str]] = {}
-    for match in re.finditer(r"([^{}]+)\{([^}]*)\}", css_text):
-        declarations = _extract_colors(match.group(2))
-        if not declarations:
-            continue
-        for selector in match.group(1).split(","):
-            rules[selector.strip()] = declarations
-    return rules
 
 
 class TestFutureWorkMetadata(unittest.TestCase):
@@ -97,11 +57,11 @@ class TestFutureWorkMetadata(unittest.TestCase):
         self.assertIn("python", result)
         self.assertIn("Status", result)
         self.assertIn("open", result)
-        self.assertIn("#cce5ff", result)
         self.assertIn("RFC", result)
         self.assertIn("required", result)
         self.assertIn("vkakerbeck.png", result)
-        self.assertNotIn(">open</span><br><img", result)
+        self.assertNotIn("background-color", result)
+        self.assertNotIn("<span", result)
         self.assertIn("display:flex", result)
         self.assertNotIn("<table", result)
         self.assertLess(result.index("Status"), result.index("Scope"))
@@ -115,20 +75,21 @@ class TestFutureWorkMetadata(unittest.TestCase):
         self.assertIn("[block:html]", result)
         self.assertIn("[/block]", result)
 
-    def test_render_future_work_metadata_wraps_multiple_badges_inline(self):
+    def test_render_future_work_metadata_joins_multiple_values_with_commas(self):
         doc = {"output-type": "prototype, monty-feature, PR"}
         result = render_future_work_metadata(doc)
 
-        self.assertIn(">prototype</span> <span", result)
-        self.assertIn(">monty-feature</span> <span", result)
-        self.assertNotIn(">prototype</span><br>", result)
+        self.assertIn("prototype, monty-feature, PR", result)
+        self.assertNotIn("<span", result)
+        self.assertNotIn("background-color", result)
 
-    def test_render_future_work_metadata_status_colors(self):
+    def test_render_future_work_metadata_status_plain_text(self):
         doc = {"status": "in-progress"}
         result = render_future_work_metadata(doc)
 
-        self.assertIn("#2f2b5c", result)
         self.assertIn("in-progress", result)
+        self.assertNotIn("background-color", result)
+        self.assertNotIn("<span", result)
 
     def test_render_future_work_metadata_links_http_rfc(self):
         doc = {
@@ -151,30 +112,6 @@ class TestFutureWorkMetadata(unittest.TestCase):
 
         self.assertNotIn("<script>", result)
         self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", result)
-
-    def test_badge_colors_match_widget_css(self):
-        css_rules = _parse_css_rules(WIDGET_CSS_PATH.read_text(encoding="utf-8"))
-
-        expected = [(".badge", DEFAULT_BADGE_STYLE)]
-        expected += [
-            (f".badge.badge-status-{status}", style)
-            for status, style in STATUS_STYLES.items()
-        ]
-        expected += [
-            (f".badge-size-{scope}", style)
-            for scope, style in SCOPE_STYLES.items()
-            if scope != "unknown"
-        ]
-
-        for selector, style in expected:
-            self.assertIn(
-                selector, css_rules, f"No CSS rule found for selector {selector}"
-            )
-            self.assertEqual(
-                _extract_colors(style),
-                css_rules[selector],
-                f"Badge colors for {selector} are out of sync with the widget CSS",
-            )
 
 
 if __name__ == "__main__":

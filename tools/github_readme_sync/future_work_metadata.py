@@ -33,30 +33,8 @@ FUTURE_WORK_METADATA_KEYS = frozenset(
 GITHUB_AVATAR_URL = "https://github.com"
 GITHUB_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$")
 
-BADGE_STYLE = (
-    "padding:2px 4px;border-radius:4px;font-size:0.85em;"
-    "display:inline-block;margin:2px 4px 2px 0;"
-)
-DEFAULT_BADGE_STYLE = f"{BADGE_STYLE}background-color:#e8e8f0;color:#2f2b5c;"
-SKILLS_BADGE_STYLE = DEFAULT_BADGE_STYLE
-SCOPE_STYLES = {
-    "small": f"{BADGE_STYLE}background-color:#f0f0f0;color:#666666;",
-    "medium": f"{BADGE_STYLE}background-color:#00a0df;color:#ffffff;",
-    "large": f"{BADGE_STYLE}background-color:#2f2b5c;color:#ffffff;",
-    "unknown": DEFAULT_BADGE_STYLE,
-}
-STATUS_STYLES = {
-    "open": f"{BADGE_STYLE}background-color:#cce5ff;color:#004085;",
-    "scoping": f"{BADGE_STYLE}background-color:#9bd4f5;color:#004a70;",
-    "scoped": f"{BADGE_STYLE}background-color:#00a0df;color:#ffffff;",
-    "in-progress": f"{BADGE_STYLE}background-color:#2f2b5c;color:#ffffff;",
-    "paused": f"{BADGE_STYLE}background-color:#e8d5f5;color:#5a3d7a;",
-    "completed": f"{BADGE_STYLE}background-color:#d4edda;color:#155724;",
-    "evergreen": f"{BADGE_STYLE}background-color:#004085;color:#ffffff;",
-}
 METADATA_CONTAINER_STYLE = (
-    "border:1px solid #ddd;border-radius:8px;padding:12px 16px;"
-    "margin-bottom:16px;background-color:#fafafa;"
+    "border:1px solid #ddd;border-radius:8px;padding:12px 16px;margin-bottom:16px;"
 )
 METADATA_COLUMNS_STYLE = "display:flex;gap:32px;"
 METADATA_COLUMN_STYLE = "flex:1;min-width:0;"
@@ -93,20 +71,6 @@ def _split_values(value: Any) -> list[str]:
     return [item.strip() for item in str(value).split(",") if item.strip()]
 
 
-def _badge(text: str, style: str = DEFAULT_BADGE_STYLE) -> str:
-    return f'<span style="{style}">{html.escape(text)}</span>'
-
-
-def _scope_badge(scope: str) -> str:
-    scope_key = scope.strip().lower()
-    return _badge(scope, SCOPE_STYLES.get(scope_key, DEFAULT_BADGE_STYLE))
-
-
-def _status_badge(status: str) -> str:
-    status_key = status.strip().lower()
-    return _badge(status, STATUS_STYLES.get(status_key, DEFAULT_BADGE_STYLE))
-
-
 def _label_cell(label: str, content: str) -> str:
     if not content:
         return ""
@@ -117,14 +81,14 @@ def _label_cell(label: str, content: str) -> str:
     )
 
 
-def _badges_html(values: list[str], style: str = DEFAULT_BADGE_STYLE) -> str:
-    return " ".join(_badge(value, style) for value in values)
+def _comma_separated_text(values: list[str]) -> str:
+    return ", ".join(html.escape(value) for value in values)
 
 
 def _status_cell_content(fields: dict[str, Any]) -> str:
     parts: list[str] = []
     if "status" in fields:
-        parts.append(_status_badge(str(fields["status"])))
+        parts.append(html.escape(str(fields["status"]).strip()))
 
     avatars: list[str] = []
     if "contributor" in fields:
@@ -159,19 +123,16 @@ def _field_cell(key: str, fields: dict[str, Any]) -> str:
         return ""
 
     if key == "estimated-scope":
-        return _label_cell("Scope", _scope_badge(str(fields[key])))
+        return _label_cell("Scope", html.escape(str(fields[key]).strip()))
 
     if key == "output-type":
-        return _label_cell("Output", _badges_html(_split_values(fields[key])))
+        return _label_cell("Output", _comma_separated_text(_split_values(fields[key])))
 
     if key == "skills":
-        return _label_cell(
-            "Skills",
-            _badges_html(_split_values(fields[key]), SKILLS_BADGE_STYLE),
-        )
+        return _label_cell("Skills", _comma_separated_text(_split_values(fields[key])))
 
     if key == "improved-metric":
-        return _label_cell("Metric", _badges_html(_split_values(fields[key])))
+        return _label_cell("Metric", _comma_separated_text(_split_values(fields[key])))
 
     if key == "rfc":
         rfc = str(fields[key]).strip()
