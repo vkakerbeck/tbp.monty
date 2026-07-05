@@ -2,7 +2,7 @@
 title: Set Up Replicable Real World Test Bed
 description: Create a real-world test bed for Monty with instructions on how to replicate it.
 rfc: optional
-estimated-scope: medium
+estimated-scope: large
 improved-metric: real-world
 output-type: experiments, testbed
 skills: python, robotics-hardware
