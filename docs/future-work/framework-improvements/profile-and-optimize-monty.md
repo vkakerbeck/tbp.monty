@@ -10,7 +10,7 @@ contributor: vkakerbeck
 status: evergreen
 ---
 
-We have profiled Monty a while ago and identified several computational bottlenecks. Some of them have been addressed but there are still many places where the Monty algorithm could be optimized. It has also been a long time since Monty was profiled, so repeating this now would be worth while. 
+We have profiled Monty a while ago and identified several computational bottlenecks. Some of them have been addressed but there are still many places where the Monty algorithm could be optimized. It has also been a long time since Monty was profiled, so repeating this now would be worthwhile. 
 
 > [!NOTE]
 > One of the most significant computational bottlenecks in Monty at the moment is the KD-Tree search, which is tracked in a separate future work item to [find a faster alternative to KT-Tree search](find-faster-alternative-to-kdtree-search.md).
