@@ -346,7 +346,7 @@ class ReadMe:
         return doc_id, created
 
     def process_markdown(self, doc: dict, file_path: str) -> str:
-        body = self.insert_future_work_metadata(doc["body"], doc, file_path)
+        body = self.insert_future_work_metadata(doc, file_path)
         body = self.insert_edit_this_page(body, doc["slug"], file_path)
         body = self.insert_markdown_snippet(body, file_path)
         body = self.convert_csv_to_html_table(body, file_path)
@@ -384,12 +384,13 @@ class ReadMe:
             clean_content_tags={"script"},
         )
 
-    def insert_future_work_metadata(self, body: str, doc: dict, file_path: str) -> str:
+    def insert_future_work_metadata(self, doc: dict, file_path: str) -> str:
         """Insert rendered future work metadata at the top of the document body.
 
         Returns:
             The document body, with metadata prepended when applicable.
         """
+        body = doc["body"]
         if not is_future_work_doc_path(file_path):
             return body
         metadata_html = render_future_work_metadata(doc)
