@@ -16,16 +16,6 @@ from typing import Any
 FUTURE_WORK_SECTION = "future-work"
 METADATA_DOC_URL = "/docs/future-work-widget-metadata"
 
-FUTURE_WORK_METADATA_KEYS = (
-    "estimated-scope",
-    "improved-metric",
-    "output-type",
-    "skills",
-    "contributor",
-    "status",
-    "rfc",
-)
-
 GITHUB_AVATAR_URL = "https://github.com"
 GITHUB_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$")
 
@@ -49,6 +39,7 @@ DISPLAY_FIELD_KEYS = (
     "improved-metric",
     "rfc",
 )
+FUTURE_WORK_METADATA_KEYS = DISPLAY_FIELD_KEYS + ("contributor",)
 LIST_FIELD_LABELS = {
     "output-type": "Output",
     "skills": "Skills",
