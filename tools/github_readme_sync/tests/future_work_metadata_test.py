@@ -12,9 +12,34 @@ from __future__ import annotations
 import unittest
 
 from tools.github_readme_sync.future_work_metadata import (
-    METADATA_DOC_URL,
     is_future_work_doc_path,
     render_future_work_metadata,
+)
+
+EXPECTED_ALL_FIELDS_RENDERED = (
+    '<div style="border:1px solid #ddd;border-radius:8px;padding:12px 16px;'
+    'margin-bottom:16px;overflow-wrap:break-word;">'
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,'
+    'minmax(min(300px,100%),1fr));gap:16px;">'
+    '<div style="min-width:0;overflow-wrap:break-word;"><strong>Status:</strong> open '
+    '<img src="https://github.com/vkakerbeck.png" alt="vkakerbeck" title="vkakerbeck" '
+    'style="width:24px;height:24px;border-radius:50%;vertical-align:middle;'
+    'margin-right:4px;" /></div>'
+    '<div style="min-width:0;overflow-wrap:break-word;">'
+    "<strong>Scope:</strong> large</div>"
+    '<div style="min-width:0;overflow-wrap:break-word;">'
+    "<strong>Output:</strong> prototype, monty-feature, PR</div>"
+    '<div style="min-width:0;overflow-wrap:break-word;">'
+    "<strong>Skills:</strong> python, research, monty</div>"
+    '<div style="min-width:0;overflow-wrap:break-word;">'
+    "<strong>Metric:</strong> learning</div>"
+    '<div style="min-width:0;overflow-wrap:break-word;"><strong>RFC:</strong> '
+    '<a href="https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/'
+    '0015_future_work.md" target="_blank" rel="noopener noreferrer">RFC</a></div>'
+    "</div>"
+    '<div style="margin-top:8px;font-size:0.9em;overflow-wrap:break-word;">'
+    "For details on what these values mean, see "
+    '<a href="/docs/future-work-widget-metadata">here</a>.</div></div>'
 )
 
 
@@ -42,64 +67,13 @@ class TestFutureWorkMetadata(unittest.TestCase):
             "skills": "python, research, monty",
             "contributor": "vkakerbeck",
             "status": "open",
-            "rfc": "required",
+            "rfc": (
+                "https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/"
+                "0015_future_work.md"
+            ),
         }
 
-        result = render_future_work_metadata(doc)
-
-        self.assertIn("Scope", result)
-        self.assertIn("large", result)
-        self.assertIn("Metric", result)
-        self.assertIn("learning", result)
-        self.assertIn("Output", result)
-        self.assertIn("prototype", result)
-        self.assertIn("Skills", result)
-        self.assertIn("python", result)
-        self.assertIn("Status", result)
-        self.assertIn("open", result)
-        self.assertIn("RFC", result)
-        self.assertIn("required", result)
-        self.assertIn("vkakerbeck.png", result)
-        self.assertNotIn("background-color", result)
-        self.assertNotIn("<span", result)
-        self.assertIn("display:grid", result)
-        self.assertIn("auto-fit", result)
-        self.assertNotIn("<table", result)
-        self.assertLess(result.index("Status"), result.index("Scope"))
-        self.assertLess(result.index("Scope"), result.index("Output"))
-        self.assertLess(result.index("Skills"), result.index("Metric"))
-        self.assertLess(result.index("Metric"), result.index("RFC"))
-        self.assertLess(result.index("Status"), result.index("Skills"))
-        self.assertLess(result.index("Scope"), result.index("Metric"))
-        self.assertLess(result.index("Output"), result.index("RFC"))
-        self.assertIn(METADATA_DOC_URL, result)
-
-    def test_render_future_work_metadata_joins_multiple_values_with_commas(self):
-        doc = {"output-type": "prototype, monty-feature, PR"}
-        result = render_future_work_metadata(doc)
-
-        self.assertIn("prototype, monty-feature, PR", result)
-        self.assertNotIn("<span", result)
-        self.assertNotIn("background-color", result)
-
-    def test_render_future_work_metadata_status_plain_text(self):
-        doc = {"status": "in-progress"}
-        result = render_future_work_metadata(doc)
-
-        self.assertIn("in-progress", result)
-        self.assertNotIn("background-color", result)
-        self.assertNotIn("<span", result)
-
-    def test_render_future_work_metadata_links_http_rfc(self):
-        doc = {
-            "slug": "example",
-            "rfc": "https://github.com/thousandbrainsproject/tbp.monty/blob/main/rfcs/0015_future_work.md",
-        }
-
-        result = render_future_work_metadata(doc)
-
-        self.assertIn("0015_future_work.md", result)
-        self.assertIn(">RFC</a>", result)
+        self.assertEqual(render_future_work_metadata(doc), EXPECTED_ALL_FIELDS_RENDERED)
 
 
 if __name__ == "__main__":
