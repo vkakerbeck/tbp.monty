@@ -383,7 +383,6 @@ This is a test document.""",
 
         actual_body = mock_post.call_args[0][1]["body"]
         expected_prefix = self.readme.insert_future_work_metadata(
-            "Body content here.",
             doc,
             "docs/future-work/learning-module-improvements",
         )
