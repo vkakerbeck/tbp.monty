@@ -63,15 +63,6 @@ regex_markdown_snippet = re.compile(r"!snippet\[(.*?)\]")
 ALLOWED_CSS_PROPERTIES = {"width", "height"}
 
 
-def _wrap_readme_html_block(html_content: str) -> str:
-    """Wrap sanitized HTML in a ReadMe HTML block.
-
-    Returns:
-        ReadMe markdown HTML block containing the content.
-    """
-    return f"[block:html]\n{json.dumps({'html': html_content}, indent=2)}\n[/block]"
-
-
 class OrderedDumper(yaml.SafeDumper):
     pass
 
@@ -404,7 +395,7 @@ class ReadMe:
         metadata_html = render_future_work_metadata(doc)
         if not metadata_html:
             return body
-        metadata_block = _wrap_readme_html_block(self.sanitize_html(metadata_html))
+        metadata_block = self._wrap_html_block(self.sanitize_html(metadata_html))
         return f"{metadata_block}\n\n{body.lstrip()}"
 
     def insert_edit_this_page(self, body: str, filename: str, file_path: str) -> str:
@@ -541,6 +532,14 @@ class ReadMe:
 
     def _should_ignore_video(self, identifier: str, ignore_list: list[str]) -> bool:
         return identifier in ignore_list
+
+    def _wrap_html_block(self, html_content: str) -> str:
+        """Wrap HTML in a ReadMe HTML block.
+
+        Returns:
+            ReadMe markdown HTML block containing the content.
+        """
+        return self._create_video_block("html", {"html": html_content})
 
     def _create_video_block(self, block_type: str, block_data: dict[str, Any]) -> str:
         return f"[block:{block_type}]\n{json.dumps(block_data, indent=2)}\n[/block]"
