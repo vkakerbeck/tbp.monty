@@ -392,13 +392,13 @@ This is a test document.""",
     def test_insert_future_work_metadata_sanitizes_malicious_content(self):
         doc = {
             "slug": "example",
+            "body": "Body content here.",
             "status": "<script>alert(1)</script>",
             "rfc": 'https://example.com" onclick="alert(1)',
             "skills": "<img src=x onerror=alert(1)>",
         }
 
         result = self.readme.insert_future_work_metadata(
-            "Body content here.",
             doc,
             "docs/future-work/example",
         )
