@@ -148,7 +148,7 @@ def render_future_work_metadata(doc: dict[str, Any]) -> str:
     fields = {
         key: doc[key]
         for key in FUTURE_WORK_METADATA_KEYS
-        if key in doc and _has_metadata_value(doc[key])
+        if _has_metadata_value(doc.get(key))
     }
     if not fields:
         return ""

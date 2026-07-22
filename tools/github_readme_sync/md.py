@@ -26,7 +26,7 @@ def process_markdown(body: str, slug: str) -> dict:
         doc["description"] = frontmatter.get("description", "")
 
     for key in FUTURE_WORK_METADATA_KEYS:
-        if key in frontmatter and frontmatter[key] is not None:
+        if frontmatter.get(key):
             doc[key] = frontmatter[key]
 
     body = body.split("---\n", maxsplit=2)
