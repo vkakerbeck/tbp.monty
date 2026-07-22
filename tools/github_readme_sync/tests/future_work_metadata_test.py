@@ -74,7 +74,3 @@ class TestFutureWorkMetadata(unittest.TestCase):
         }
 
         self.assertEqual(render_future_work_metadata(doc), EXPECTED_ALL_FIELDS_RENDERED)
-
-
-if __name__ == "__main__":
-    unittest.main()
