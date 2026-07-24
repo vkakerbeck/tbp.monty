@@ -1394,50 +1394,112 @@ class GraphMemory(LMMemory):
     def _mark_symmetric_locations_in_graph(
         self, object_id, symmetric_rotations, symmetric_locations
     ):
-        # save_dir = (
-        #     "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
-        #     "base_77obj_surf_agent_store_symmetry/symmetric_locations"
-        # )
-        # os.makedirs(save_dir, exist_ok=True)
+        save_dir = (
+            "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
+            "base_77obj_surf_agent_store_symmetry/symmetric_locations"
+        )
+        os.makedirs(save_dir, exist_ok=True)
+        # variables to play with:
+        num_neighbors = 20
+        max_radius = 0.01
         graph_to_update = self.get_graph(object_id)
         for input_channel in graph_to_update:
             nearest_node_ids = graph_to_update[input_channel].find_nearest_neighbors(
                 symmetric_locations,
-                num_neighbors=1,
+                num_neighbors=num_neighbors,
             )
-            print(f"nearest node ids ({input_channel}): {nearest_node_ids}")
-            fig = plt.figure()
-            ax = fig.add_subplot(1, 1, 1, projection="3d")
-            ax.scatter(
-                graph_to_update[input_channel].pos[:, 1],
-                graph_to_update[input_channel].pos[:, 0],
-                graph_to_update[input_channel].pos[:, 2],
-                color="grey",
-                s=10,
-                alpha=0.2,
+            if num_neighbors == 1:
+                nearest_node_ids = np.expand_dims(nearest_node_ids, axis=1)
+            nearest_node_locs = graph_to_update[input_channel].pos[nearest_node_ids]
+            nearest_node_dists = np.linalg.norm(
+                nearest_node_locs - symmetric_locations[:, None, :], axis=2
             )
-            ax.scatter(
-                symmetric_locations[:, 1],
-                symmetric_locations[:, 0],
-                symmetric_locations[:, 2],
-                color="red",
-                s=80,
-                alpha=0.7,
-            )
-            ax.scatter(
-                graph_to_update[input_channel].pos[nearest_node_ids, 1],
-                graph_to_update[input_channel].pos[nearest_node_ids, 0],
-                graph_to_update[input_channel].pos[nearest_node_ids, 2],
-                color="limegreen",
-                s=60,
-                alpha=1.0,
-            )
-            ax.set_title(f"Symmetric locations for {object_id}")
-            format_axes(ax)
+            # Arbitrarily keeping first ID as the one to mark (need to separate from the
+            # rest since the distance filter will make it impossible to recover)
+            first_sym_node_ids = nearest_node_ids[0][
+                nearest_node_dists[0] <= max_radius
+            ]
+            other_sym_node_ids = nearest_node_ids[1:][
+                nearest_node_dists[1:] <= max_radius
+            ]
+            other_sym_node_ids = np.setdiff1d(other_sym_node_ids, first_sym_node_ids)
+            # ==== Plotting ====
+            # fig = plt.figure()
+            # ax = fig.add_subplot(1, 1, 1, projection="3d")
+            # pos = graph_to_update[input_channel].pos
+            # ax.scatter(
+            #     pos[:, 1],
+            #     pos[:, 0],
+            #     pos[:, 2],
+            #     color="grey",
+            #     s=10,
+            #     alpha=0.2,
+            # )
+            # ax.scatter(
+            #     symmetric_locations[:, 1],
+            #     symmetric_locations[:, 0],
+            #     symmetric_locations[:, 2],
+            #     color="red",
+            #     s=80,
+            #     alpha=0.7,
+            # )
+            # ax.scatter(
+            #     pos[first_sym_node_ids, 1],
+            #     pos[first_sym_node_ids, 0],
+            #     pos[first_sym_node_ids, 2],
+            #     color="limegreen",
+            #     s=60,
+            #     alpha=1.0,
+            # )
+            # ax.scatter(
+            #     pos[other_sym_node_ids, 1],
+            #     pos[other_sym_node_ids, 0],
+            #     pos[other_sym_node_ids, 2],
+            #     color="cyan",
+            #     s=60,
+            #     alpha=1.0,
+            # )
+            # ax.set_title(f"Symmetric locations for {object_id}")
+            # format_axes(ax)
             # save_path = f"{save_dir}/{object_id}_{input_channel}.png"
             # fig.savefig(save_path, dpi=300)
             # plt.close(fig)
-            plt.show()
+            # # plt.show()
+
+            # ==== Update graph ====
+            use_for_hyp_init = graph_to_update[input_channel].use_for_hyp_init
+            unset = np.equal(use_for_hyp_init, None)
+            use_for_hyp_init[first_sym_node_ids[unset[first_sym_node_ids]]] = True
+            use_for_hyp_init[other_sym_node_ids[unset[other_sym_node_ids]]] = False
+            print(graph_to_update[input_channel].use_for_hyp_init)
+
+            # ==== Plot Again ====
+            # This time plot the graph with nodes colored by use_for_hyp_init
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1, projection="3d")
+            colors = [
+                "grey" if x is None else "limegreen" if x else "cyan"
+                for x in use_for_hyp_init
+            ]
+            pos = graph_to_update[input_channel].pos
+            ax.scatter(
+                pos[:, 1],
+                pos[:, 0],
+                pos[:, 2],
+                color=colors,
+                s=10,
+                alpha=0.2,
+            )
+            ax.set_title(f"Symmetric locations for {object_id}")
+            format_axes(ax)
+            save_path = f"{save_dir}/{object_id}_graph_updated_0.png"
+            counter = 0
+            while os.path.exists(save_path):
+                counter += 1
+                save_path = f"{save_dir}/{object_id}_graph_updated_{counter}.png"
+            fig.savefig(save_path, dpi=300)
+            plt.close(fig)
+            # plt.show()
 
     # ------------------------ Helper --------------------------
 
