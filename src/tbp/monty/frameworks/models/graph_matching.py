@@ -10,8 +10,10 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, ClassVar, Collection, Sequence
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
@@ -33,6 +35,7 @@ from tbp.monty.frameworks.models.buffer import FeatureAtLocationBuffer
 from tbp.monty.frameworks.models.goal_generation import GraphGoalGenerator
 from tbp.monty.frameworks.models.monty_base import MontyBase
 from tbp.monty.frameworks.models.object_model import GraphObjectModel
+from tbp.monty.frameworks.utils.plot_utils import format_axes
 from tbp.monty.geometry import Rotation
 from tbp.monty.memento import Memento
 
@@ -984,6 +987,14 @@ class GraphLM(LearningModule):
             args["object_rotation"] = args["object_rotation"].inv()
         self.graph_memory.update_memory(**args)
 
+    def _mark_symmetric_locations_in_graph(
+        self, object_id, symmetric_rotations, symmetric_locations
+    ):
+        """Mark symmetric locations in the graph."""
+        self.graph_memory._mark_symmetric_locations_in_graph(
+            object_id, symmetric_rotations, symmetric_locations
+        )
+
     def _update_target_graph_mapping(self, detected_object, target_object):
         """Update dicts that keep track which graphs were built from which objects."""
         if detected_object is not None:
@@ -1379,6 +1390,54 @@ class GraphMemory(LMMemory):
             f"Extended graph {graph_id} with new points. New model:\n"
             f"{self.models_in_memory[graph_id][input_channel]}"
         )
+
+    def _mark_symmetric_locations_in_graph(
+        self, object_id, symmetric_rotations, symmetric_locations
+    ):
+        # save_dir = (
+        #     "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
+        #     "base_77obj_surf_agent_store_symmetry/symmetric_locations"
+        # )
+        # os.makedirs(save_dir, exist_ok=True)
+        graph_to_update = self.get_graph(object_id)
+        for input_channel in graph_to_update:
+            nearest_node_ids = graph_to_update[input_channel].find_nearest_neighbors(
+                symmetric_locations,
+                num_neighbors=1,
+            )
+            print(f"nearest node ids ({input_channel}): {nearest_node_ids}")
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1, projection="3d")
+            ax.scatter(
+                graph_to_update[input_channel].pos[:, 1],
+                graph_to_update[input_channel].pos[:, 0],
+                graph_to_update[input_channel].pos[:, 2],
+                color="grey",
+                s=10,
+                alpha=0.2,
+            )
+            ax.scatter(
+                symmetric_locations[:, 1],
+                symmetric_locations[:, 0],
+                symmetric_locations[:, 2],
+                color="red",
+                s=80,
+                alpha=0.7,
+            )
+            ax.scatter(
+                graph_to_update[input_channel].pos[nearest_node_ids, 1],
+                graph_to_update[input_channel].pos[nearest_node_ids, 0],
+                graph_to_update[input_channel].pos[nearest_node_ids, 2],
+                color="limegreen",
+                s=60,
+                alpha=1.0,
+            )
+            ax.set_title(f"Symmetric locations for {object_id}")
+            format_axes(ax)
+            # save_path = f"{save_dir}/{object_id}_{input_channel}.png"
+            # fig.savefig(save_path, dpi=300)
+            # plt.close(fig)
+            plt.show()
 
     # ------------------------ Helper --------------------------
 

@@ -634,14 +634,19 @@ class EvidenceGraphLM(GraphLM):
                 }
                 self.buffer.add_overall_stats(lm_episode_stats)
                 if symmetry_detected:
+                    symmetric_rotations = np.array(object_hyps.poses)[
+                        possible_object_hypotheses_ids
+                    ]
+                    symmetric_locations = object_hyps.locations[
+                        possible_object_hypotheses_ids
+                    ]
                     symmetry_stats = {
-                        "symmetric_rotations": np.array(object_hyps.poses)[
-                            possible_object_hypotheses_ids
-                        ],
-                        "symmetric_locations": object_hyps.locations[
-                            possible_object_hypotheses_ids
-                        ],
+                        "symmetric_rotations": symmetric_rotations,
+                        "symmetric_locations": symmetric_locations,
                     }
+                    self._mark_symmetric_locations_in_graph(
+                        object_id, symmetric_rotations, symmetric_locations
+                    )
                     self.buffer.add_overall_stats(symmetry_stats)
                 return pose_and_scale
             logger.debug(f"object {object_id} detected but pose not resolved yet.")
