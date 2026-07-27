@@ -1,0 +1,61 @@
+# @package experiment.config
+
+do_eval: true
+eval_env_interface_args:
+  parent_to_child_mapping: null
+  object_names:
+  # - bowl
+  # - potted_meat_can
+  # - master_chef_can
+  # - i_cups
+  # - b_cups
+  # - b_marbles
+  # - h_cups
+  # - strawberry
+  - golf_ball
+  - softball
+  # - orange
+  # - c_lego_duplo
+  # - c_toy_airplane
+  # - b_lego_duplo
+  # - tomato_soup_can
+  # - baseball
+  # - g_cups
+  # - gelatin_box
+  # - lemon
+  # - plum
+  # - racquetball
+  # - plate
+  # - pudding_box
+  # - e_cups
+  # - apple
+  # - j_cups
+  # - foam_brick
+  # - large_marker
+  # - peach
+  # - phillips_screwdriver
+  # - e_lego_duplo
+  # - sugar_box
+  # - c_cups
+  # - pear
+  # - f_cups
+  # - wood_block
+  # - d_lego_duplo
+  # - b_colored_wood_blocks
+  # - g_lego_duplo
+  # - a_lego_duplo
+  # - mini_soccer_ball
+  # - medium_clamp
+  # - d_cups
+  # - rubiks_cube
+  # - f_lego_duplo
+  # - a_cups
+  # - skillet_lid
+  # - tennis_ball
+  # - tuna_fish_can
+  # - dice
+  # - flat_screwdriver
+  object_init_sampler:
+    _target_: tbp.monty.frameworks.environments.object_init_samplers.Predefined
+    rotations: ${constants.rotations_3}
+eval_env_interface_class: ${monty.class:tbp.monty.experiment.environment.OneObjectPerEpisodeInterface}
