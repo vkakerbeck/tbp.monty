@@ -663,6 +663,21 @@ class EvidenceGraphLM(GraphLM):
         """
         return self.current_mlh
 
+    def get_possible_locations_for_object(
+        self, object_id: str
+    ) -> npt.NDArray[np.float64]:
+        """Return all hypothesis locations for an object.
+
+        Args:
+            object_id: ID of the object whose hypothesis locations should be returned.
+
+        Returns:
+            The object's hypothesis locations, or an empty array if none exist.
+        """
+        if object_id not in self._hypotheses:
+            return np.empty((0, 3), dtype=np.float64)
+        return self._hypotheses[object_id].locations
+
     def get_mlh_for_object(self, object_id):
         """Get mlh for a specific object ID.
 
@@ -875,6 +890,8 @@ class EvidenceGraphLM(GraphLM):
             max_global_evidence=self.current_mlh["evidence"],
             evidence_all_channels=self._hypotheses[graph_id].evidence,
         )
+
+        self.hypotheses_updater.primary_target = self.primary_target
 
         hypotheses_update, hypotheses_update_telemetry = (
             self.hypotheses_updater.update_hypotheses(
