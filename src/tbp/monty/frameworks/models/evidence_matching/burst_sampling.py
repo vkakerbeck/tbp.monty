@@ -9,9 +9,11 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import asdict, dataclass
 from typing import Any, Literal
 
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 from typing_extensions import Self
@@ -52,6 +54,7 @@ from tbp.monty.frameworks.utils.graph_matching_utils import (
     get_initial_possible_poses,
     possible_sensed_directions,
 )
+from tbp.monty.frameworks.utils.plot_utils import format_axes
 from tbp.monty.frameworks.utils.spatial_arithmetics import (
     align_multiple_orthonormal_vectors,
 )
@@ -242,10 +245,12 @@ class BurstSamplingHypothesesUpdater:
         if self.sampling_multiplier < 0:
             raise ValueError("sampling_multiplier should be >= 0")
 
+        self.primary_target = None
         self.reset()
 
     def reset(self) -> None:
         self.sampling_burst_steps = 0
+        self.initial_sampling_plotted = False
 
         # Dictionary of slope trackers, one for each graph_id
         self.evidence_slope_trackers: dict[str, EvidenceSlopeTracker] = {}
@@ -669,6 +674,61 @@ class BurstSamplingHypothesesUpdater:
 
         # Newly sampled hypotheses cannot be marked as possible
         possible = np.zeros_like(selected_feature_evidence, dtype=np.bool_)
+
+        # Plot object graph with nodes colored by use_for_hyp_init and marked locations
+        # where hypotheses are sampled from. Only do this for primary target object
+        plot_initial_sampling = False
+        if (
+            self.primary_target == graph_id
+            and not self.initial_sampling_plotted
+            and plot_initial_sampling
+        ):
+            save_dir = (
+                "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
+                "base_77obj_surf_agent_store_symmetry/symmetric_locations"
+            )
+            os.makedirs(save_dir, exist_ok=True)
+
+            fig = plt.figure()
+            ax = fig.add_subplot(1, 1, 1, projection="3d")
+            colors = [
+                "grey" if x is None else "limegreen" if x else "cyan"
+                for x in use_for_hyp_init
+            ]
+            pos = self.graph_memory.get_graph(graph_id, input_channel).pos
+            ax.scatter(pos[:, 1], pos[:, 0], pos[:, 2], color=colors, s=5, alpha=0.2)
+            ax.scatter(
+                selected_locations[:, 1],
+                selected_locations[:, 0],
+                selected_locations[:, 2],
+                color="red",
+                s=10,
+                alpha=0.2,
+            )
+            ax.set_title(
+                f"Initialized hypotheses for {graph_id} ({len(selected_locations)} out "
+                f"of {count} requested)"
+            )
+            n_true = np.count_nonzero(use_for_hyp_init)
+            n_none = np.count_nonzero(np.equal(use_for_hyp_init, None))
+            n_false = len(use_for_hyp_init) - n_true - n_none
+            ax.text2D(
+                0.02,
+                0.98,
+                f"True: {n_true}\nFalse: {n_false}\nNone: {n_none}",
+                transform=ax.transAxes,
+                verticalalignment="top",
+                bbox={"boxstyle": "round", "facecolor": "white", "alpha": 0.8},
+            )
+            format_axes(ax)
+            save_path = f"{save_dir}/{graph_id}_hyp_init_0.png"
+            counter = 0
+            while os.path.exists(save_path):
+                counter += 1
+                save_path = f"{save_dir}/{graph_id}_hyp_init_{counter}.png"
+            fig.savefig(save_path, dpi=300)
+            plt.close(fig)
+            self.initial_sampling_plotted = True
 
         return Hypotheses(
             locations=selected_locations,
