@@ -1471,34 +1471,44 @@ class GraphMemory(LMMemory):
             unset = np.equal(use_for_hyp_init, None)
             use_for_hyp_init[first_sym_node_ids[unset[first_sym_node_ids]]] = True
             use_for_hyp_init[other_sym_node_ids[unset[other_sym_node_ids]]] = False
-            print(graph_to_update[input_channel].use_for_hyp_init)
+
+            # Log symetry mark stats
+            n_true = np.count_nonzero(use_for_hyp_init)
+            n_none = np.count_nonzero(np.equal(use_for_hyp_init, None))
+            n_false = len(use_for_hyp_init) - n_true - n_none
+            logging.info(
+                f"Updated use_for_hyp_init for {object_id} - {input_channel}. The graph"
+                f" now has {n_true} nodes marked True, "
+                f"{n_false} nodes marked False and "
+                f"{n_none} nodes marked None."
+            )
 
             # ==== Plot Again ====
             # This time plot the graph with nodes colored by use_for_hyp_init
-            fig = plt.figure()
-            ax = fig.add_subplot(1, 1, 1, projection="3d")
-            colors = [
-                "grey" if x is None else "limegreen" if x else "cyan"
-                for x in use_for_hyp_init
-            ]
-            pos = graph_to_update[input_channel].pos
-            ax.scatter(
-                pos[:, 1],
-                pos[:, 0],
-                pos[:, 2],
-                color=colors,
-                s=10,
-                alpha=0.2,
-            )
-            ax.set_title(f"Symmetric locations for {object_id}")
-            format_axes(ax)
-            save_path = f"{save_dir}/{object_id}_graph_updated_0.png"
-            counter = 0
-            while os.path.exists(save_path):
-                counter += 1
-                save_path = f"{save_dir}/{object_id}_graph_updated_{counter}.png"
-            fig.savefig(save_path, dpi=300)
-            plt.close(fig)
+            # fig = plt.figure()
+            # ax = fig.add_subplot(1, 1, 1, projection="3d")
+            # colors = [
+            #     "grey" if x is None else "limegreen" if x else "cyan"
+            #     for x in use_for_hyp_init
+            # ]
+            # pos = graph_to_update[input_channel].pos
+            # ax.scatter(
+            #     pos[:, 1],
+            #     pos[:, 0],
+            #     pos[:, 2],
+            #     color=colors,
+            #     s=10,
+            #     alpha=0.2,
+            # )
+            # ax.set_title(f"Symmetric locations for {object_id}")
+            # format_axes(ax)
+            # save_path = f"{save_dir}/{object_id}_graph_updated_0.png"
+            # counter = 0
+            # while os.path.exists(save_path):
+            #     counter += 1
+            #     save_path = f"{save_dir}/{object_id}_graph_updated_{counter}.png"
+            # fig.savefig(save_path, dpi=300)
+            # plt.close(fig)
             # plt.show()
 
     # ------------------------ Helper --------------------------
