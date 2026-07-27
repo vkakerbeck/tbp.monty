@@ -607,13 +607,21 @@ class BurstSamplingHypothesesUpdater:
             input_channel=input_channel,
             query_features=features,
         )
+        # Allow None and True; block False for hypothesis initialization.
+        use_for_hyp_init = self.graph_memory.get_graph(
+            graph_id, input_channel
+        ).use_for_hyp_init
+        allowed = np.not_equal(use_for_hyp_init, False)
+        node_feature_evidence = node_feature_evidence.copy()
+        node_feature_evidence[~allowed] = -np.inf
         # Find the indices for the nodes with highest evidence scores. The sorting
         # is done in ascending order, so extract the indices from the end of
         # the argsort array. We get the needed number of nodes, not
         # the number of needed hypotheses.
-        top_indices = np.argsort(node_feature_evidence)[
-            -int(count // num_hyps_per_node) :
-        ]
+        n_nodes_needed = min(int(count // num_hyps_per_node), int(np.sum(allowed)))
+        if n_nodes_needed == 0:
+            return Hypotheses.empty()
+        top_indices = np.argsort(node_feature_evidence)[-n_nodes_needed:]
         node_feature_evidence_filtered = node_feature_evidence[top_indices]
 
         selected_feature_evidence = np.tile(
