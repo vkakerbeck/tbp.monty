@@ -751,8 +751,11 @@ class GraphLM(LearningModule):
         # First step of detecting symmetry
         if self.terminal_state != "match_learning_symmetry":
             self.symmetry_learning_steps = 0
-            # Experiment configured to not take extra steps after symmetry detection.
-            if self.num_symmetry_learning_steps <= 0:
+            # Experiment configured to not take extra steps after symmetry detection
+            # or all nodes are already marked.
+            if self.num_symmetry_learning_steps <= 0 or self._all_graph_nodes_marked(
+                object_id
+            ):
                 self.set_individual_ts("match")
                 logger.info(
                     f"{self.learning_module_id} recognized object {object_id}"
@@ -767,12 +770,24 @@ class GraphLM(LearningModule):
             return
 
         self.symmetry_learning_steps += 1
-        if self.symmetry_learning_steps >= self.num_symmetry_learning_steps:
+        if (
+            self.symmetry_learning_steps >= self.num_symmetry_learning_steps
+            or self._all_graph_nodes_marked(object_id)
+        ):
             self.set_individual_ts("match")
             logger.info(
                 f"{self.learning_module_id} recognized object {object_id} "
                 f"after {self.symmetry_learning_steps} symmetry learning steps"
             )
+
+    def _all_graph_nodes_marked(self, object_id: str) -> bool:
+        graphs = self.get_graph(object_id)
+        channel_graphs = graphs.values() if isinstance(graphs, dict) else [graphs]
+        for channel_graph in channel_graphs:
+            use_for_hyp_init = channel_graph.use_for_hyp_init
+            if use_for_hyp_init is None or np.any(np.equal(use_for_hyp_init, None)):
+                return False
+        return True
 
     # ------------------ Getters & Setters ---------------------
 
