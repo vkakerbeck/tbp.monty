@@ -266,13 +266,34 @@ class BurstSamplingHypothesesUpdater:
         """
         self.max_slope = self._max_global_slope()
 
-        if (
-            self.max_slope <= self.burst_trigger_slope
-            and self.sampling_burst_steps == 0
-        ):
+        if self.sampling_burst_steps == 0 and self._should_trigger_burst():
             self.sampling_burst_steps = self.sampling_burst_duration
 
         return self
+
+    def _should_trigger_burst(self) -> bool:
+        """Return whether a new sampling burst should start.
+
+        A burst is triggered when there are no hypotheses (e.g. episode start), or
+        when the maximum finite evidence slope is at or below the trigger threshold.
+        Non-finite max slopes with existing hypotheses are ignored so that a burst is
+        not immediately re-triggered before newly sampled hypotheses have enough
+        evidence history to compute a slope.
+
+        Returns:
+            True if a new sampling burst should start.
+        """
+        has_hypotheses = any(
+            tracker.total_size() > 0
+            for tracker in self.evidence_slope_trackers.values()
+        )
+        if not has_hypotheses:
+            return True
+
+        return (
+            np.isfinite(self.max_slope)
+            and self.max_slope <= self.burst_trigger_slope
+        )
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Exit context manager, runs after updating the hypotheses.
