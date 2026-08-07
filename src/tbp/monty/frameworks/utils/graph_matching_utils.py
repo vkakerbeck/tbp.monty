@@ -480,6 +480,7 @@ def possible_sensed_directions(
     This function determines the possible sensed directions for a given set of sensed
     directions. It relies on two different behaviors depending on the value of
     num_hyps_per_node.
+        - If num_hyps_per_node equals 1: return the sensed directions unchanged.
         - If num_hyps_per_node equals 2: then pose is well defined (i.e., PC1 != PC2).
             A well defined pose does not distinguish between mirrored directions of PC1
             and PC2 (e.g., object can be upside down), therefore we sample both
@@ -494,7 +495,12 @@ def possible_sensed_directions(
     Returns:
         possible_s_d: Possible sensed directions for all nodes at each rotation.
     """
-    if num_hyps_per_node == 2:
+    if num_hyps_per_node == 1:
+        # TODO Sym: This will still not deterministically initialize the same rotation
+        # hypothesis each time since it is determined by the sensed direction (which
+        # can randomly point up or down).
+        possible_s_d = [sensed_directions]
+    elif num_hyps_per_node == 2:
         possible_s_d = [
             sensed_directions.copy(),
             sensed_directions.copy(),
