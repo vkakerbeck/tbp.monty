@@ -555,6 +555,7 @@ class GraphLM(LearningModule):
         # Will always be set during experiment setup, just setting here for unit tests
         self.has_detailed_logger = False
         self.symmetry_evidence = 0
+        self.num_symmetry_learning_steps = 0
 
         # TODO: make this part of `__init__()` after `reset_stm()` is removed.
         self._init_GraphLM()
@@ -564,6 +565,7 @@ class GraphLM(LearningModule):
         self.detected_object = None
         self.detected_pose = [None for _ in range(7)]
         self.detected_rotation_r = None
+        self.symmetry_learning_steps = 0
 
     def init_from_ltm(self) -> None:
         (
@@ -726,20 +728,51 @@ class GraphLM(LearningModule):
             and len(possible_matches) == 1  # We have it narrowed down to 1 object
         ):
             object_id = possible_matches[0]
-            pose = self.get_unique_pose_if_available(object_id)
+            pose, symmetry_recognized = self.get_unique_pose_if_available(object_id)
             if pose is None:  # No pose determined yet
-                if self.terminal_state == "match":
+                if self.terminal_state in {"match", "match_learning_symmetry"}:
                     self.set_individual_ts(None)
                 logger.info(f"Pose for {self.learning_module_id} not narrowed down yet")
+            elif symmetry_recognized:
+                self._update_symmetry_learning_terminal_condition(object_id)
             else:
                 self.set_individual_ts("match")
                 logger.info(f"{self.learning_module_id} recognized object {object_id}")
         # > 1 possible match
         else:
-            if self.terminal_state == "match":
+            if self.terminal_state in {"match", "match_learning_symmetry"}:
                 self.set_individual_ts(None)
             logger.info(f"{self.learning_module_id} did not recognize an object yet.")
         return self.terminal_state
+
+    def _update_symmetry_learning_terminal_condition(self, object_id: str) -> None:
+        if self.terminal_state == "match":
+            return
+        # First step of detecting symmetry
+        if self.terminal_state != "match_learning_symmetry":
+            self.symmetry_learning_steps = 0
+            # Experiment configured to not take extra steps after symmetry detection.
+            if self.num_symmetry_learning_steps <= 0:
+                self.set_individual_ts("match")
+                logger.info(
+                    f"{self.learning_module_id} recognized object {object_id}"
+                )
+            # set ts to match_learning_symmetry to continue learning symmetry
+            else:
+                self.set_individual_ts("match_learning_symmetry")
+                logger.info(
+                    f"{self.learning_module_id} detected symmetry for {object_id}; "
+                    f"learning for {self.num_symmetry_learning_steps} more steps"
+                )
+            return
+
+        self.symmetry_learning_steps += 1
+        if self.symmetry_learning_steps >= self.num_symmetry_learning_steps:
+            self.set_individual_ts("match")
+            logger.info(
+                f"{self.learning_module_id} recognized object {object_id} "
+                f"after {self.symmetry_learning_steps} symmetry learning steps"
+            )
 
     # ------------------ Getters & Setters ---------------------
 
@@ -879,7 +912,7 @@ class GraphLM(LearningModule):
         determine whether we have reached a terminal state.
 
         Returns:
-            7d pose array or None.
+            Tuple of (7d pose array or None, symmetry_recognized).
         """
         raise NotImplementedError("This should be implemented in any subclass.")
 
@@ -899,7 +932,7 @@ class GraphLM(LearningModule):
                 f" and scale {self.detected_pose[6]}"
             )
             self.buffer.set_individual_ts(self.detected_object, self.detected_pose)
-        else:
+        elif terminal_state != "match_learning_symmetry":
             self.buffer.set_individual_ts(None, None)
 
     def collect_stats_to_save(self):

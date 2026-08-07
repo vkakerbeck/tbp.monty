@@ -189,6 +189,8 @@ class EvidenceGraphLM(GraphLM):
             unique when checking for the terminal condition (in radians).
         required_symmetry_evidence: number of steps with unchanged possible poses
             to classify an object as symmetric and go into terminal condition.
+        num_symmetry_learning_steps: additional matching steps after symmetry
+            detection before promoting to ``match``.
 
     Model Attributes:
         graph_delta_thresholds: Thresholds used to compare nodes in the graphs being
@@ -248,6 +250,7 @@ class EvidenceGraphLM(GraphLM):
         path_similarity_threshold=0.1,
         pose_similarity_threshold=0.35,
         required_symmetry_evidence=5,
+        num_symmetry_learning_steps=0,
         graph_delta_thresholds=None,
         max_graph_size=0.3,  # 30cm
         max_nodes_per_graph=2000,
@@ -289,6 +292,7 @@ class EvidenceGraphLM(GraphLM):
         self.path_similarity_threshold = path_similarity_threshold
         self.pose_similarity_threshold = pose_similarity_threshold
         self.required_symmetry_evidence = required_symmetry_evidence
+        self.num_symmetry_learning_steps = num_symmetry_learning_steps
         # --- Model Params ---
         self.max_graph_size = max_graph_size
         # --- Debugging Params ---
@@ -585,7 +589,7 @@ class EvidenceGraphLM(GraphLM):
         If there is not one unique possible pose or symmetry detected, return None
 
         Returns:
-            The pose and scale if a unique pose is available, otherwise None.
+            Tuple of (pose and scale if available else None, symmetry_recognized).
         """
         possible_object_hypotheses_ids = self.get_possible_hypothesis_ids(object_id)
         # Only try to determine object pose if the evidence for it is high enough.
@@ -633,6 +637,9 @@ class EvidenceGraphLM(GraphLM):
                     "detected_scale": 1,  # TODO: scale doesn't work yet
                 }
                 self.buffer.add_overall_stats(lm_episode_stats)
+                # If pose is unique (all hypotheses within same location/orientation
+                # range), don't learn about symmetry anymore.
+                symmetry_recognized = symmetry_detected and not pose_is_unique
                 if symmetry_detected:
                     symmetric_rotations = np.array(object_hyps.poses)[
                         possible_object_hypotheses_ids
@@ -648,12 +655,12 @@ class EvidenceGraphLM(GraphLM):
                         object_id, symmetric_rotations, symmetric_locations
                     )
                     self.buffer.add_overall_stats(symmetry_stats)
-                return pose_and_scale
+                return pose_and_scale, symmetry_recognized
             logger.debug(f"object {object_id} detected but pose not resolved yet.")
-            return None
+            return None, False
 
         self._hypotheses[object_id].possible[:] = False
-        return None
+        return None, False
 
     def get_current_mlh(self):
         """Return the current most likely hypothesis of the learning module.

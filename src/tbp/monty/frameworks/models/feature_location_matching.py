@@ -269,7 +269,8 @@ class FeatureGraphLM(GraphLM):
                     "symmetric_locations": np.array(possible_paths)[:, -1],
                 }
                 self.buffer.add_overall_stats(symmetry_stats)
-        return pose_and_scale
+                return pose_and_scale, True
+        return pose_and_scale, False
 
     def get_object_rotation(self, graph_id, get_reverse_r=False):
         """Get the rotation of an object from the possible poses if resolved.
