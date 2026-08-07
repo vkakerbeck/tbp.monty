@@ -512,6 +512,10 @@ class MontyForGraphMatching(MontyBase):
             for lm in self.learning_modules:
                 if lm.terminal_state is None:
                     lm.terminal_state = "time_out"
+                elif lm.terminal_state == "match_learning_symmetry":
+                    # Object was already recognized; finalize as match so logging and
+                    # memory updates treat the episode as a successful recognition.
+                    lm.set_individual_ts("match")
         if global_time_out:
             # Don't go into exploratory mode if we timed out
             self._is_done = True
