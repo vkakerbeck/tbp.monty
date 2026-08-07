@@ -568,16 +568,19 @@ class EvidenceGoalGenerator(GraphGoalGenerator):
     # ------------------- Main Algorithm -----------------------
 
     def _generate_goal(self, observations) -> Goal:
-        """Use the hypothesis-testing policy to generate a Goal.
+        """Generate a Goal using the active model-based policy.
 
-        The Goal will rapidly disambiguate the pose and/or ID of the object the
-        LM is currently observing.
+        During ``match_learning_symmetry``, propose an unmarked node on the MLH
+        graph. Otherwise use the hypothesis-testing policy to disambiguate pose
+        and/or object ID.
 
         Returns:
             A Goal for the motor system.
         """
-        # Determine where we want to test in the MLH graph
-        target_loc_id = self._compute_graph_mismatch()
+        if self.parent_lm.terminal_state == "match_learning_symmetry":
+            target_loc_id = self._compute_unmarked_node_target()
+        else:
+            target_loc_id = self._compute_graph_mismatch()
 
         # Get pose information for the target point
         target_info = self._get_target_loc_info(target_loc_id)
@@ -592,6 +595,30 @@ class EvidenceGoalGenerator(GraphGoalGenerator):
             target_info,
             goal_confidence=goal_confidence,
         )
+
+    def _compute_unmarked_node_target(self) -> int:
+        """Propose an unmarked MLH graph node for symmetry learning.
+
+        Selects among nodes whose ``use_for_hyp_init`` is still ``None``,
+        preferring the unmarked node closest to the current MLH location.
+
+        Assumes the parent LM is in ``match_learning_symmetry``, which is only
+        maintained while unmarked nodes remain.
+
+        Returns:
+            Index of an unmarked node in the MLH graph.
+        """
+        logger.debug("Proposing an unmarked location for symmetry learning")
+
+        mlh = self.parent_lm.get_current_mlh()
+        mlh_id = mlh["graph_id"]
+        sensor_channel_name = self.parent_lm.buffer.get_first_sensory_input_channel()
+        target_graph = self.parent_lm.get_graph(
+            mlh_id, input_channel=sensor_channel_name
+        )
+        unmarked = np.flatnonzero(np.equal(target_graph.use_for_hyp_init, None))
+        dists = np.linalg.norm(target_graph.pos[unmarked] - mlh["location"], axis=1)
+        return int(unmarked[np.argmin(dists)])
 
     def _compute_graph_mismatch(self):
         """Propose a point for the model to test.
@@ -860,6 +887,9 @@ class EvidenceGoalGenerator(GraphGoalGenerator):
         """
         if output_goal_achieved:
             return False
+
+        if self.parent_lm.terminal_state == "match_learning_symmetry":
+            return True
 
         return self._check_conditions_for_hypothesis_test(ctx)
 
