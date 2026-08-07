@@ -186,6 +186,10 @@ class LivePlotter:
                     possible_matches=first_learning_module.get_possible_matches(),
                     graph_ids=graph_ids,
                     evidences=evidences,
+                    terminal_state=first_learning_module.terminal_state,
+                    symmetry_learning_steps=getattr(
+                        first_learning_module, "symmetry_learning_steps", 0
+                    ),
                 )
 
     def show_patch(self, first_sensor_depth):
@@ -203,9 +207,10 @@ class LivePlotter:
             return
 
         self.ax[2].cla()
+        use_for_hyp_init = mlh_model.use_for_hyp_init
         colors = [
             "grey" if value is None else "limegreen" if value else "cyan"
-            for value in mlh_model.use_for_hyp_init
+            for value in use_for_hyp_init
         ]
         self.ax[2].scatter(
             mlh_model.pos[:, 1],
@@ -230,7 +235,18 @@ class LivePlotter:
         self.ax[2].scatter(
             mlh["location"][1], mlh["location"][0], mlh["location"][2], c="red", s=15
         )
+        n_true = np.count_nonzero(use_for_hyp_init)
+        n_none = np.count_nonzero(np.equal(use_for_hyp_init, None))
+        n_false = len(use_for_hyp_init) - n_true - n_none
         self.ax[2].set_title("MLH")
+        self.ax[2].text2D(
+            0.5,
+            -0.05,
+            f"True: {n_true}  False: {n_false}  None: {n_none}",
+            transform=self.ax[2].transAxes,
+            ha="center",
+            va="top",
+        )
         self.ax[2].set_axis_off()
         self.ax[2].set_aspect("equal")
 
@@ -241,6 +257,8 @@ class LivePlotter:
         possible_matches,
         graph_ids,
         evidences,
+        terminal_state=None,
+        symmetry_learning_steps=0,
     ):
         if self.text:
             self.text.remove()
@@ -258,6 +276,11 @@ class LivePlotter:
             for word in second_id:
                 new_text += r"$\bf{" + word + "}$ "
             new_text += f"with evidence {np.round(evidences[top_indices[1]], 2)}\n\n"
+
+        new_text += f"Terminal state: {terminal_state}"
+        if terminal_state == "match_learning_symmetry":
+            new_text += f"\nSymmetry learning steps: {symmetry_learning_steps}"
+        new_text += "\n\n"
 
         new_text += r"$\bf{Possible}$ $\bf{matches:}$"
         for gid, ev in zip(graph_ids, evidences):
