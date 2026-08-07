@@ -665,7 +665,7 @@ class MontyExperiment:
 
         # Hacky way to save models with marked up nodes during evaluation.
         run_name = self.config["logging"]["run_name"]
-        if run_name == "base_77obj_surf_agent_store_symmetry":
+        if run_name.startswith("base_77obj_surf_agent_store_symmetry"):
             pretrained_dir = self.model_path
             if pretrained_dir.name == "model.pt":
                 pretrained_dir = pretrained_dir.parent
