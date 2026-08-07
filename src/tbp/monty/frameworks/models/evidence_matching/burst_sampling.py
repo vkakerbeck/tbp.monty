@@ -132,6 +132,7 @@ class BurstSamplingHypothesesUpdater:
         ),
         sampling_multiplier: float = 0.4,
         deletion_trigger_slope: float = 0.5,
+        # sampling_burst_duration: int = 1, # SYM INF
         sampling_burst_duration: int = 5,
         burst_trigger_slope: float = 1.0,
         include_telemetry: bool = False,
@@ -428,6 +429,7 @@ class BurstSamplingHypothesesUpdater:
         """
         if self.initial_possible_poses is None:
             return 2 if features["pose_fully_defined"] else self.umbilical_num_poses
+            # return 1 # SYM INF
 
         return len(self.initial_possible_poses)
 
@@ -638,6 +640,9 @@ class BurstSamplingHypothesesUpdater:
             graph_id, input_channel
         ).use_for_hyp_init
         allowed = np.not_equal(use_for_hyp_init, False)
+        # TODO SYM: Once we get all locations marked during learning, this should become
+        # the default.
+        # allowed = np.equal(use_for_hyp_init, True) # SYM INF
         node_feature_evidence = node_feature_evidence.copy()
         node_feature_evidence[~allowed] = -np.inf
         # Find the indices for the nodes with highest evidence scores. The sorting
