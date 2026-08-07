@@ -678,15 +678,15 @@ class BurstSamplingHypothesesUpdater:
         # Plot object graph with nodes colored by use_for_hyp_init and marked locations
         # where hypotheses are sampled from. Only do this for primary target object
         plot_initial_sampling = False
+        save_dir = (
+            "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
+            "base_77obj_surf_agent_load_symmetry/symmetric_locations"
+        )
         if (
             self.primary_target == graph_id
             and not self.initial_sampling_plotted
             and plot_initial_sampling
         ):
-            save_dir = (
-                "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
-                "base_77obj_surf_agent_store_symmetry/symmetric_locations"
-            )
             os.makedirs(save_dir, exist_ok=True)
 
             fig = plt.figure()

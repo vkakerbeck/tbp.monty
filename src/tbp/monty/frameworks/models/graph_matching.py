@@ -1405,6 +1405,8 @@ class GraphMemory(LMMemory):
     def _mark_symmetric_locations_in_graph(
         self, object_id, symmetric_rotations, symmetric_locations
     ):
+        plot_symmetric_locations = False
+        plot_use_for_hyp_init = False
         save_dir = (
             "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
             "base_77obj_surf_agent_store_symmetry/symmetric_locations"
@@ -1435,47 +1437,48 @@ class GraphMemory(LMMemory):
             ]
             other_sym_node_ids = np.setdiff1d(other_sym_node_ids, first_sym_node_ids)
             # ==== Plotting ====
-            # fig = plt.figure()
-            # ax = fig.add_subplot(1, 1, 1, projection="3d")
-            # pos = graph_to_update[input_channel].pos
-            # ax.scatter(
-            #     pos[:, 1],
-            #     pos[:, 0],
-            #     pos[:, 2],
-            #     color="grey",
-            #     s=10,
-            #     alpha=0.2,
-            # )
-            # ax.scatter(
-            #     symmetric_locations[:, 1],
-            #     symmetric_locations[:, 0],
-            #     symmetric_locations[:, 2],
-            #     color="red",
-            #     s=80,
-            #     alpha=0.7,
-            # )
-            # ax.scatter(
-            #     pos[first_sym_node_ids, 1],
-            #     pos[first_sym_node_ids, 0],
-            #     pos[first_sym_node_ids, 2],
-            #     color="limegreen",
-            #     s=60,
-            #     alpha=1.0,
-            # )
-            # ax.scatter(
-            #     pos[other_sym_node_ids, 1],
-            #     pos[other_sym_node_ids, 0],
-            #     pos[other_sym_node_ids, 2],
-            #     color="cyan",
-            #     s=60,
-            #     alpha=1.0,
-            # )
-            # ax.set_title(f"Symmetric locations for {object_id}")
-            # format_axes(ax)
-            # save_path = f"{save_dir}/{object_id}_{input_channel}.png"
-            # fig.savefig(save_path, dpi=300)
-            # plt.close(fig)
-            # # plt.show()
+            if plot_symmetric_locations:
+                fig = plt.figure()
+                ax = fig.add_subplot(1, 1, 1, projection="3d")
+                pos = graph_to_update[input_channel].pos
+                ax.scatter(
+                    pos[:, 1],
+                    pos[:, 0],
+                    pos[:, 2],
+                    color="grey",
+                    s=10,
+                    alpha=0.2,
+                )
+                ax.scatter(
+                    symmetric_locations[:, 1],
+                    symmetric_locations[:, 0],
+                    symmetric_locations[:, 2],
+                    color="red",
+                    s=80,
+                    alpha=0.7,
+                )
+                ax.scatter(
+                    pos[first_sym_node_ids, 1],
+                    pos[first_sym_node_ids, 0],
+                    pos[first_sym_node_ids, 2],
+                    color="limegreen",
+                    s=60,
+                    alpha=1.0,
+                )
+                ax.scatter(
+                    pos[other_sym_node_ids, 1],
+                    pos[other_sym_node_ids, 0],
+                    pos[other_sym_node_ids, 2],
+                    color="cyan",
+                    s=60,
+                    alpha=1.0,
+                )
+                ax.set_title(f"Symmetric locations for {object_id}")
+                format_axes(ax)
+                save_path = f"{save_dir}/{object_id}_{input_channel}.png"
+                fig.savefig(save_path, dpi=300)
+                plt.close(fig)
+                # plt.show()
 
             # ==== Update graph ====
             use_for_hyp_init = graph_to_update[input_channel].use_for_hyp_init
@@ -1495,32 +1498,33 @@ class GraphMemory(LMMemory):
             )
 
             # ==== Plot Again ====
+            if plot_use_for_hyp_init:
             # This time plot the graph with nodes colored by use_for_hyp_init
-            # fig = plt.figure()
-            # ax = fig.add_subplot(1, 1, 1, projection="3d")
-            # colors = [
-            #     "grey" if x is None else "limegreen" if x else "cyan"
-            #     for x in use_for_hyp_init
-            # ]
-            # pos = graph_to_update[input_channel].pos
-            # ax.scatter(
-            #     pos[:, 1],
-            #     pos[:, 0],
-            #     pos[:, 2],
-            #     color=colors,
-            #     s=10,
-            #     alpha=0.2,
-            # )
-            # ax.set_title(f"Symmetric locations for {object_id}")
-            # format_axes(ax)
-            # save_path = f"{save_dir}/{object_id}_graph_updated_0.png"
-            # counter = 0
-            # while os.path.exists(save_path):
-            #     counter += 1
-            #     save_path = f"{save_dir}/{object_id}_graph_updated_{counter}.png"
-            # fig.savefig(save_path, dpi=300)
-            # plt.close(fig)
-            # plt.show()
+                fig = plt.figure()
+                ax = fig.add_subplot(1, 1, 1, projection="3d")
+                colors = [
+                    "grey" if x is None else "limegreen" if x else "cyan"
+                    for x in use_for_hyp_init
+                ]
+                pos = graph_to_update[input_channel].pos
+                ax.scatter(
+                    pos[:, 1],
+                    pos[:, 0],
+                    pos[:, 2],
+                    color=colors,
+                    s=10,
+                    alpha=0.2,
+                )
+                ax.set_title(f"Symmetric locations for {object_id}")
+                format_axes(ax)
+                save_path = f"{save_dir}/{object_id}_graph_updated_0.png"
+                counter = 0
+                while os.path.exists(save_path):
+                    counter += 1
+                    save_path = f"{save_dir}/{object_id}_graph_updated_{counter}.png"
+                fig.savefig(save_path, dpi=300)
+                plt.close(fig)
+                # plt.show()
 
     # ------------------------ Helper --------------------------
 
