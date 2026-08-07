@@ -637,9 +637,6 @@ class EvidenceGraphLM(GraphLM):
                     "detected_scale": 1,  # TODO: scale doesn't work yet
                 }
                 self.buffer.add_overall_stats(lm_episode_stats)
-                # If pose is unique (all hypotheses within same location/orientation
-                # range), don't learn about symmetry anymore.
-                symmetry_recognized = symmetry_detected and not pose_is_unique
                 if symmetry_detected:
                     symmetric_rotations = np.array(object_hyps.poses)[
                         possible_object_hypotheses_ids
@@ -655,6 +652,9 @@ class EvidenceGraphLM(GraphLM):
                         object_id, symmetric_rotations, symmetric_locations
                     )
                     self.buffer.add_overall_stats(symmetry_stats)
+                # If pose is unique (all hypotheses within same location/orientation
+                # range), don't learn about symmetry anymore.
+                symmetry_recognized = symmetry_detected and not pose_is_unique
                 return pose_and_scale, symmetry_recognized
             logger.debug(f"object {object_id} detected but pose not resolved yet.")
             return None, False
@@ -673,17 +673,19 @@ class EvidenceGraphLM(GraphLM):
     def get_possible_locations_for_object(
         self, object_id: str
     ) -> npt.NDArray[np.float64]:
-        """Return all hypothesis locations for an object.
+        """Return possible hypothesis locations for an object.
 
         Args:
             object_id: ID of the object whose hypothesis locations should be returned.
 
         Returns:
-            The object's hypothesis locations, or an empty array if none exist.
+            Locations of hypotheses currently considered possible for the object,
+            or an empty array if none exist.
         """
         if object_id not in self._hypotheses:
             return np.empty((0, 3), dtype=np.float64)
-        return self._hypotheses[object_id].locations
+        possible_ids = self.get_possible_hypothesis_ids(object_id)
+        return self._hypotheses[object_id].locations[possible_ids]
 
     def get_mlh_for_object(self, object_id):
         """Get mlh for a specific object ID.
