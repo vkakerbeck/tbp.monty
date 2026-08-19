@@ -202,3 +202,7 @@ class TheoreticalLimitLMLoggingMixin:
         obj_rotation = self.get_mlh_for_object(self.primary_target)["rotation"].inv()
         target_rotation = Rotation.from_quat(self.primary_target_rotation_quat)
         return compute_pose_error(obj_rotation, target_rotation)
+
+
+class EvidenceGraphLMWithTelemetry(TheoreticalLimitLMLoggingMixin, EvidenceGraphLM):
+    """EvidenceGraphLM that logs hypotheses-updater telemetry for tbp.plot."""
