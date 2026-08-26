@@ -1464,7 +1464,7 @@ class GraphMemory(LMMemory):
             "base_77obj_surf_agent_store_symmetry_once_nn20_all/symmetric_locations"
         )
         os.makedirs(save_dir, exist_ok=True)
-        # variables to play with:
+        # TODO SYM: variables to play with:
         num_neighbors = 20
         max_radius = 0.01
         graph_to_update = self.get_graph(object_id)
