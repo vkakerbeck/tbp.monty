@@ -10,10 +10,10 @@ eval_env_interface_args:
   # - i_cups
   # - b_cups
   # - b_marbles
-  # - h_cups
+  - h_cups
   # - strawberry
   - golf_ball
-  - softball
+  # - softball
   # - orange
   # - c_lego_duplo
   # - c_toy_airplane

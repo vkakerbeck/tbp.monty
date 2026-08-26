@@ -1461,7 +1461,7 @@ class GraphMemory(LMMemory):
         plot_use_for_hyp_init = False
         save_dir = (
             "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
-            "base_77obj_surf_agent_store_symmetry/symmetric_locations"
+            "base_77obj_surf_agent_store_symmetry_once_nn20_all/symmetric_locations"
         )
         os.makedirs(save_dir, exist_ok=True)
         # variables to play with:
