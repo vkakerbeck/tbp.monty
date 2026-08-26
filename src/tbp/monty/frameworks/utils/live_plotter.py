@@ -85,13 +85,25 @@ class LivePlotter:
             mlh = first_learning_module.get_current_mlh()
             if mlh["graph_id"] == "no_observations_yet":
                 mlh_model = None
+                mlh_possible_locations = None
             else:
                 mlh_model = first_learning_module.graph_memory.get_graph(
                     mlh["graph_id"]
                 )[first_sensor_module_id]
+                if hasattr(
+                    first_learning_module, "get_possible_locations_for_object"
+                ):
+                    mlh_possible_locations = (
+                        first_learning_module.get_possible_locations_for_object(
+                            mlh["graph_id"]
+                        )
+                    )
+                else:
+                    mlh_possible_locations = None
         else:
             mlh = None
             mlh_model = None
+            mlh_possible_locations = None
         return (
             first_learning_module,
             first_sensor_module_raw_observations,
@@ -99,6 +111,7 @@ class LivePlotter:
             view_finder_rgba,
             mlh,
             mlh_model,
+            mlh_possible_locations,
         )
 
     def show_observations(
@@ -109,6 +122,7 @@ class LivePlotter:
         view_finder_rgba,
         mlh,
         mlh_model,
+        mlh_possible_locations,
         step: int,
         is_saccade_on_image_data_loader=False,
     ) -> None:
@@ -122,7 +136,7 @@ class LivePlotter:
         )
         self.show_patch(first_sensor_depth)
         if mlh_model:
-            self.show_mlh(mlh, mlh_model)
+            self.show_mlh(mlh, mlh_model, mlh_possible_locations)
         plt.pause(0.00001)
 
     def show_view_finder(
@@ -172,6 +186,10 @@ class LivePlotter:
                     possible_matches=first_learning_module.get_possible_matches(),
                     graph_ids=graph_ids,
                     evidences=evidences,
+                    terminal_state=first_learning_module.terminal_state,
+                    symmetry_learning_steps=getattr(
+                        first_learning_module, "symmetry_learning_steps", 0
+                    ),
                 )
 
     def show_patch(self, first_sensor_depth):
@@ -183,24 +201,52 @@ class LivePlotter:
         )
         # self.colorbar.update_normal(self.depth_image)
 
-    def show_mlh(self, mlh, mlh_model):
+    def show_mlh(self, mlh, mlh_model, possible_locations):
         if not mlh_model:
             self.ax[2].set_title("No MLH")
             return
 
         self.ax[2].cla()
+        use_for_hyp_init = mlh_model.use_for_hyp_init
+        colors = [
+            "grey" if value is None else "limegreen" if value else "cyan"
+            for value in use_for_hyp_init
+        ]
         self.ax[2].scatter(
             mlh_model.pos[:, 1],
             mlh_model.pos[:, 0],
             mlh_model.pos[:, 2],
-            c="black",
+            c=colors,
             s=2,
         )
+        if possible_locations is not None and len(possible_locations) > 0:
+            possible_locations = np.unique(possible_locations, axis=0)
+            other_locations = possible_locations[
+                ~np.all(np.isclose(possible_locations, mlh["location"]), axis=1)
+            ]
+            self.ax[2].scatter(
+                other_locations[:, 1],
+                other_locations[:, 0],
+                other_locations[:, 2],
+                c="pink",
+                s=10,
+            )
         # add mlh location to the graph
         self.ax[2].scatter(
             mlh["location"][1], mlh["location"][0], mlh["location"][2], c="red", s=15
         )
+        n_true = np.count_nonzero(use_for_hyp_init)
+        n_none = np.count_nonzero(np.equal(use_for_hyp_init, None))
+        n_false = len(use_for_hyp_init) - n_true - n_none
         self.ax[2].set_title("MLH")
+        self.ax[2].text2D(
+            0.5,
+            -0.05,
+            f"True: {n_true}  False: {n_false}  None: {n_none}",
+            transform=self.ax[2].transAxes,
+            ha="center",
+            va="top",
+        )
         self.ax[2].set_axis_off()
         self.ax[2].set_aspect("equal")
 
@@ -211,6 +257,8 @@ class LivePlotter:
         possible_matches,
         graph_ids,
         evidences,
+        terminal_state=None,
+        symmetry_learning_steps=0,
     ):
         if self.text:
             self.text.remove()
@@ -228,6 +276,11 @@ class LivePlotter:
             for word in second_id:
                 new_text += r"$\bf{" + word + "}$ "
             new_text += f"with evidence {np.round(evidences[top_indices[1]], 2)}\n\n"
+
+        new_text += f"Terminal state: {terminal_state}"
+        if terminal_state == "match_learning_symmetry":
+            new_text += f"\nSymmetry learning steps: {symmetry_learning_steps}"
+        new_text += "\n\n"
 
         new_text += r"$\bf{Possible}$ $\bf{matches:}$"
         for gid, ev in zip(graph_ids, evidences):

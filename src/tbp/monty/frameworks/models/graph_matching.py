@@ -10,8 +10,10 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, ClassVar, Collection, Sequence
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
@@ -34,6 +36,7 @@ from tbp.monty.frameworks.models.buffer import FeatureAtLocationBuffer
 from tbp.monty.frameworks.models.goal_generation import GraphGoalGenerator
 from tbp.monty.frameworks.models.monty_base import MontyBase
 from tbp.monty.frameworks.models.object_model import GraphObjectModel
+from tbp.monty.frameworks.utils.plot_utils import format_axes
 from tbp.monty.geometry import Rotation
 from tbp.monty.memento import Memento
 
@@ -509,6 +512,10 @@ class MontyForGraphMatching(MontyBase):
             for lm in self.learning_modules:
                 if lm.terminal_state is None:
                     lm.terminal_state = "time_out"
+                elif lm.terminal_state == "match_learning_symmetry":
+                    # Object was already recognized; finalize as match so logging and
+                    # memory updates treat the episode as a successful recognition.
+                    lm.set_individual_ts("match")
         if global_time_out:
             # Don't go into exploratory mode if we timed out
             self._is_done = True
@@ -552,6 +559,7 @@ class GraphLM(LearningModule):
         # Will always be set during experiment setup, just setting here for unit tests
         self.has_detailed_logger = False
         self.symmetry_evidence = 0
+        self.num_symmetry_learning_steps = 0
 
         # TODO: make this part of `__init__()` after `reset_stm()` is removed.
         self._init_GraphLM()
@@ -561,6 +569,7 @@ class GraphLM(LearningModule):
         self.detected_object = None
         self.detected_pose = [None for _ in range(7)]
         self.detected_rotation_r = None
+        self.symmetry_learning_steps = 0
 
     def init_from_ltm(self) -> None:
         (
@@ -723,20 +732,66 @@ class GraphLM(LearningModule):
             and len(possible_matches) == 1  # We have it narrowed down to 1 object
         ):
             object_id = possible_matches[0]
-            pose = self.get_unique_pose_if_available(object_id)
+            pose, symmetry_recognized = self.get_unique_pose_if_available(object_id)
             if pose is None:  # No pose determined yet
-                if self.terminal_state == "match":
+                if self.terminal_state in {"match", "match_learning_symmetry"}:
                     self.set_individual_ts(None)
                 logger.info(f"Pose for {self.learning_module_id} not narrowed down yet")
+            elif symmetry_recognized:
+                self._update_symmetry_learning_terminal_condition(object_id)
             else:
                 self.set_individual_ts("match")
                 logger.info(f"{self.learning_module_id} recognized object {object_id}")
         # > 1 possible match
         else:
-            if self.terminal_state == "match":
+            if self.terminal_state in {"match", "match_learning_symmetry"}:
                 self.set_individual_ts(None)
             logger.info(f"{self.learning_module_id} did not recognize an object yet.")
         return self.terminal_state
+
+    def _update_symmetry_learning_terminal_condition(self, object_id: str) -> None:
+        if self.terminal_state == "match":
+            return
+        # First step of detecting symmetry
+        if self.terminal_state != "match_learning_symmetry":
+            self.symmetry_learning_steps = 0
+            # Experiment configured to not take extra steps after symmetry detection
+            # or all nodes are already marked.
+            if self.num_symmetry_learning_steps <= 0 or self._all_graph_nodes_marked(
+                object_id
+            ):
+                self.set_individual_ts("match")
+                logger.info(
+                    f"{self.learning_module_id} recognized object {object_id}"
+                )
+            # set ts to match_learning_symmetry to continue learning symmetry
+            else:
+                self.set_individual_ts("match_learning_symmetry")
+                logger.info(
+                    f"{self.learning_module_id} detected symmetry for {object_id}; "
+                    f"learning for {self.num_symmetry_learning_steps} more steps"
+                )
+            return
+
+        self.symmetry_learning_steps += 1
+        if (
+            self.symmetry_learning_steps >= self.num_symmetry_learning_steps
+            or self._all_graph_nodes_marked(object_id)
+        ):
+            self.set_individual_ts("match")
+            logger.info(
+                f"{self.learning_module_id} recognized object {object_id} "
+                f"after {self.symmetry_learning_steps} symmetry learning steps"
+            )
+
+    def _all_graph_nodes_marked(self, object_id: str) -> bool:
+        graphs = self.get_graph(object_id)
+        channel_graphs = graphs.values() if isinstance(graphs, dict) else [graphs]
+        for channel_graph in channel_graphs:
+            use_for_hyp_init = channel_graph.use_for_hyp_init
+            if use_for_hyp_init is None or np.any(np.equal(use_for_hyp_init, None)):
+                return False
+        return True
 
     # ------------------ Getters & Setters ---------------------
 
@@ -876,7 +931,7 @@ class GraphLM(LearningModule):
         determine whether we have reached a terminal state.
 
         Returns:
-            7d pose array or None.
+            Tuple of (7d pose array or None, symmetry_recognized).
         """
         raise NotImplementedError("This should be implemented in any subclass.")
 
@@ -896,7 +951,7 @@ class GraphLM(LearningModule):
                 f" and scale {self.detected_pose[6]}"
             )
             self.buffer.set_individual_ts(self.detected_object, self.detected_pose)
-        else:
+        elif terminal_state != "match_learning_symmetry":
             self.buffer.set_individual_ts(None, None)
 
     def collect_stats_to_save(self):
@@ -994,6 +1049,14 @@ class GraphLM(LearningModule):
             # the model or rel environment.
             args["object_rotation"] = args["object_rotation"].inv()
         self.graph_memory.update_memory(**args)
+
+    def _mark_symmetric_locations_in_graph(
+        self, object_id, symmetric_rotations, symmetric_locations
+    ):
+        """Mark symmetric locations in the graph."""
+        self.graph_memory._mark_symmetric_locations_in_graph(
+            object_id, symmetric_rotations, symmetric_locations
+        )
 
     def _update_target_graph_mapping(self, detected_object, target_object):
         """Update dicts that keep track which graphs were built from which objects."""
@@ -1390,6 +1453,130 @@ class GraphMemory(LMMemory):
             f"Extended graph {graph_id} with new points. New model:\n"
             f"{self.models_in_memory[graph_id][input_channel]}"
         )
+
+    def _mark_symmetric_locations_in_graph(
+        self, object_id, symmetric_rotations, symmetric_locations
+    ):
+        plot_symmetric_locations = False
+        plot_use_for_hyp_init = False
+        save_dir = (
+            "/Users/vclay/tbp/results/monty/projects/evidence_eval_runs/logs/"
+            "base_77obj_surf_agent_store_symmetry_once_nn20_all/symmetric_locations"
+        )
+        os.makedirs(save_dir, exist_ok=True)
+        # TODO SYM: variables to play with:
+        num_neighbors = 20
+        max_radius = 0.01
+        graph_to_update = self.get_graph(object_id)
+        for input_channel in graph_to_update:
+            nearest_node_ids = graph_to_update[input_channel].find_nearest_neighbors(
+                symmetric_locations,
+                num_neighbors=num_neighbors,
+            )
+            if num_neighbors == 1:
+                nearest_node_ids = np.expand_dims(nearest_node_ids, axis=1)
+            nearest_node_locs = graph_to_update[input_channel].pos[nearest_node_ids]
+            nearest_node_dists = np.linalg.norm(
+                nearest_node_locs - symmetric_locations[:, None, :], axis=2
+            )
+            # Arbitrarily keeping first ID as the one to mark (need to separate from the
+            # rest since the distance filter will make it impossible to recover)
+            first_sym_node_ids = nearest_node_ids[0][
+                nearest_node_dists[0] <= max_radius
+            ]
+            other_sym_node_ids = nearest_node_ids[1:][
+                nearest_node_dists[1:] <= max_radius
+            ]
+            other_sym_node_ids = np.setdiff1d(other_sym_node_ids, first_sym_node_ids)
+            # ==== Plotting ====
+            if plot_symmetric_locations:
+                fig = plt.figure()
+                ax = fig.add_subplot(1, 1, 1, projection="3d")
+                pos = graph_to_update[input_channel].pos
+                ax.scatter(
+                    pos[:, 1],
+                    pos[:, 0],
+                    pos[:, 2],
+                    color="grey",
+                    s=10,
+                    alpha=0.2,
+                )
+                ax.scatter(
+                    symmetric_locations[:, 1],
+                    symmetric_locations[:, 0],
+                    symmetric_locations[:, 2],
+                    color="red",
+                    s=80,
+                    alpha=0.7,
+                )
+                ax.scatter(
+                    pos[first_sym_node_ids, 1],
+                    pos[first_sym_node_ids, 0],
+                    pos[first_sym_node_ids, 2],
+                    color="limegreen",
+                    s=60,
+                    alpha=1.0,
+                )
+                ax.scatter(
+                    pos[other_sym_node_ids, 1],
+                    pos[other_sym_node_ids, 0],
+                    pos[other_sym_node_ids, 2],
+                    color="cyan",
+                    s=60,
+                    alpha=1.0,
+                )
+                ax.set_title(f"Symmetric locations for {object_id}")
+                format_axes(ax)
+                save_path = f"{save_dir}/{object_id}_{input_channel}.png"
+                fig.savefig(save_path, dpi=300)
+                plt.close(fig)
+                # plt.show()
+
+            # ==== Update graph ====
+            use_for_hyp_init = graph_to_update[input_channel].use_for_hyp_init
+            unset = np.equal(use_for_hyp_init, None)
+            use_for_hyp_init[first_sym_node_ids[unset[first_sym_node_ids]]] = True
+            use_for_hyp_init[other_sym_node_ids[unset[other_sym_node_ids]]] = False
+
+            # Log symetry mark stats
+            n_true = np.count_nonzero(use_for_hyp_init)
+            n_none = np.count_nonzero(np.equal(use_for_hyp_init, None))
+            n_false = len(use_for_hyp_init) - n_true - n_none
+            logging.info(
+                f"Updated use_for_hyp_init for {object_id} - {input_channel}. The graph"
+                f" now has {n_true} nodes marked True, "
+                f"{n_false} nodes marked False and "
+                f"{n_none} nodes marked None."
+            )
+
+            # ==== Plot Again ====
+            if plot_use_for_hyp_init:
+            # This time plot the graph with nodes colored by use_for_hyp_init
+                fig = plt.figure()
+                ax = fig.add_subplot(1, 1, 1, projection="3d")
+                colors = [
+                    "grey" if x is None else "limegreen" if x else "cyan"
+                    for x in use_for_hyp_init
+                ]
+                pos = graph_to_update[input_channel].pos
+                ax.scatter(
+                    pos[:, 1],
+                    pos[:, 0],
+                    pos[:, 2],
+                    color=colors,
+                    s=10,
+                    alpha=0.2,
+                )
+                ax.set_title(f"Symmetric locations for {object_id}")
+                format_axes(ax)
+                save_path = f"{save_dir}/{object_id}_graph_updated_0.png"
+                counter = 0
+                while os.path.exists(save_path):
+                    counter += 1
+                    save_path = f"{save_dir}/{object_id}_graph_updated_{counter}.png"
+                fig.savefig(save_path, dpi=300)
+                plt.close(fig)
+                # plt.show()
 
     # ------------------------ Helper --------------------------
 

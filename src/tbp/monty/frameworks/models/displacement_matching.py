@@ -142,7 +142,7 @@ class DisplacementGraphLM(GraphLM):
                 self.buffer.add_overall_stats(lm_episode_stats)
                 logger.debug(f"(location, rotation, scale): {pose_and_scale}")
 
-        return pose_and_scale
+        return pose_and_scale, False
 
     def get_object_rotation(
         self, sensed_displacements, model_displacements, get_reverse_r=False

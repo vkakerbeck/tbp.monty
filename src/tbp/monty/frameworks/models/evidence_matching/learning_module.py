@@ -189,6 +189,8 @@ class EvidenceGraphLM(GraphLM):
             unique when checking for the terminal condition (in radians).
         required_symmetry_evidence: number of steps with unchanged possible poses
             to classify an object as symmetric and go into terminal condition.
+        num_symmetry_learning_steps: additional matching steps after symmetry
+            detection before promoting to ``match``.
 
     Model Attributes:
         graph_delta_thresholds: Thresholds used to compare nodes in the graphs being
@@ -248,6 +250,7 @@ class EvidenceGraphLM(GraphLM):
         path_similarity_threshold=0.1,
         pose_similarity_threshold=0.35,
         required_symmetry_evidence=5,
+        num_symmetry_learning_steps=0,
         graph_delta_thresholds=None,
         max_graph_size=0.3,  # 30cm
         max_nodes_per_graph=2000,
@@ -289,6 +292,7 @@ class EvidenceGraphLM(GraphLM):
         self.path_similarity_threshold = path_similarity_threshold
         self.pose_similarity_threshold = pose_similarity_threshold
         self.required_symmetry_evidence = required_symmetry_evidence
+        self.num_symmetry_learning_steps = num_symmetry_learning_steps
         # --- Model Params ---
         self.max_graph_size = max_graph_size
         # --- Debugging Params ---
@@ -585,7 +589,7 @@ class EvidenceGraphLM(GraphLM):
         If there is not one unique possible pose or symmetry detected, return None
 
         Returns:
-            The pose and scale if a unique pose is available, otherwise None.
+            Tuple of (pose and scale if available else None, symmetry_recognized).
         """
         possible_object_hypotheses_ids = self.get_possible_hypothesis_ids(object_id)
         # Only try to determine object pose if the evidence for it is high enough.
@@ -634,21 +638,29 @@ class EvidenceGraphLM(GraphLM):
                 }
                 self.buffer.add_overall_stats(lm_episode_stats)
                 if symmetry_detected:
+                    symmetric_rotations = np.array(object_hyps.poses)[
+                        possible_object_hypotheses_ids
+                    ]
+                    symmetric_locations = object_hyps.locations[
+                        possible_object_hypotheses_ids
+                    ]
                     symmetry_stats = {
-                        "symmetric_rotations": np.array(object_hyps.poses)[
-                            possible_object_hypotheses_ids
-                        ],
-                        "symmetric_locations": object_hyps.locations[
-                            possible_object_hypotheses_ids
-                        ],
+                        "symmetric_rotations": symmetric_rotations,
+                        "symmetric_locations": symmetric_locations,
                     }
+                    self._mark_symmetric_locations_in_graph(
+                        object_id, symmetric_rotations, symmetric_locations
+                    )
                     self.buffer.add_overall_stats(symmetry_stats)
-                return pose_and_scale
+                # If pose is unique (all hypotheses within same location/orientation
+                # range), don't learn about symmetry anymore.
+                symmetry_recognized = symmetry_detected and not pose_is_unique
+                return pose_and_scale, symmetry_recognized
             logger.debug(f"object {object_id} detected but pose not resolved yet.")
-            return None
+            return None, False
 
         self._hypotheses[object_id].possible[:] = False
-        return None
+        return None, False
 
     def get_current_mlh(self):
         """Return the current most likely hypothesis of the learning module.
@@ -657,6 +669,23 @@ class EvidenceGraphLM(GraphLM):
             dict with keys: graph_id, location, rotation, scale, evidence
         """
         return self.current_mlh
+
+    def get_possible_locations_for_object(
+        self, object_id: str
+    ) -> npt.NDArray[np.float64]:
+        """Return possible hypothesis locations for an object.
+
+        Args:
+            object_id: ID of the object whose hypothesis locations should be returned.
+
+        Returns:
+            Locations of hypotheses currently considered possible for the object,
+            or an empty array if none exist.
+        """
+        if object_id not in self._hypotheses:
+            return np.empty((0, 3), dtype=np.float64)
+        possible_ids = self.get_possible_hypothesis_ids(object_id)
+        return self._hypotheses[object_id].locations[possible_ids]
 
     def get_mlh_for_object(self, object_id):
         """Get mlh for a specific object ID.
@@ -870,6 +899,8 @@ class EvidenceGraphLM(GraphLM):
             max_global_evidence=self.current_mlh["evidence"],
             evidence_all_channels=self._hypotheses[graph_id].evidence,
         )
+
+        self.hypotheses_updater.primary_target = self.primary_target
 
         hypotheses_update, hypotheses_update_telemetry = (
             self.hypotheses_updater.update_hypotheses(

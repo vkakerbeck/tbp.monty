@@ -663,6 +663,17 @@ class MontyExperiment:
             self.run_epoch()
         self.logger_handler.post_eval(self.logger_args)
 
+        # Hacky way to save models with marked up nodes during evaluation.
+        run_name = self.config["logging"]["run_name"]
+        if run_name.startswith("base_77obj_surf_agent_store_symmetry"):
+            pretrained_dir = self.model_path
+            if pretrained_dir.name == "model.pt":
+                pretrained_dir = pretrained_dir.parent
+            marked_up_dir = (
+                pretrained_dir.parent.parent / f"{run_name}_marked_up" / "pretrained"
+            )
+            self.save_state_dir(output_dir=marked_up_dir)
+
     def state_dict(self):
         """Return state_dict with total steps."""
         return dict(

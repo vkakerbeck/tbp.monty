@@ -148,6 +148,15 @@ class GraphObjectModel(ObjectModel):
             return self._graph.feature_mapping
 
     @property
+    def use_for_hyp_init(self):
+        if self._graph is not None:
+            if not hasattr(self._graph, "use_for_hyp_init"):
+                self._graph.use_for_hyp_init = np.full(
+                    len(self._graph.pos), None, dtype=object
+                )
+            return self._graph.use_for_hyp_init
+
+    @property
     def edge_index(self):
         if self._graph is not None:
             # Newer versions of torch_geometric change `keys` from a
@@ -185,6 +194,10 @@ class GraphObjectModel(ObjectModel):
     def set_graph(self, graph):
         """Set self._graph property with given graph (i.e. from pretraining)."""
         self._graph = graph
+        if self._graph is not None and not hasattr(self._graph, "use_for_hyp_init"):
+            self._graph.use_for_hyp_init = np.full(
+                len(self._graph.pos), None, dtype=object
+            )
 
     def get_values_for_feature(self, feature):
         featue_idx = self.feature_mapping[feature]
@@ -317,8 +330,15 @@ class GraphObjectModel(ObjectModel):
 
         x = torch.tensor(node_features, dtype=torch.float)
         pos = torch.tensor(locations_reduced, dtype=torch.float)
+        use_for_hyp_init = np.full(num_nodes, None, dtype=object)
 
-        graph = Data(x=x, pos=pos, norm=norm, feature_mapping=feature_mapping)
+        graph = Data(
+            x=x,
+            pos=pos,
+            norm=norm,
+            feature_mapping=feature_mapping,
+            use_for_hyp_init=use_for_hyp_init,
+        )
 
         if k_n is not None:
             k_n = get_correct_k_n(k_n, num_nodes)
@@ -507,6 +527,10 @@ class GridObjectModel(GraphObjectModel):
         if self.use_original_graph:
             # Just use pretrained graph. Do not use grids to constrain nodes.
             self._graph = graph
+            if not hasattr(self._graph, "use_for_hyp_init"):
+                self._graph.use_for_hyp_init = np.full(
+                    len(self._graph.pos), None, dtype=object
+                )
             self._location_tree = KDTree(
                 graph.pos,
                 leafsize=40,

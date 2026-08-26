@@ -51,6 +51,26 @@ def mark_obs(vis_obs, patch_obs):
     return marked_obs
 
 
+def format_axes(ax, show_axticks=False, ax_lim=None):
+    if not show_axticks:
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_zticks([])
+        ax.set_xlabel("x", labelpad=-10)
+        ax.set_zlabel("z", labelpad=-15)
+        ax.set_ylabel("y", labelpad=-15)
+    else:
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
+    if ax_lim is not None:
+        ax.set_xlim([0, ax_lim])
+        ax.set_ylim([ax_lim, 0])
+    else:
+        ax.set_aspect("equal")
+    return ax
+
+
 def add_patch_outline_to_view_finder(view_finder_image, center_pixel_id, patch_size):
     # Calculate top-left and bottom-right coordinates of the square
     # Careful here: x coordinates and y coordinates in pixel space are inverted
